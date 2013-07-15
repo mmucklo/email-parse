@@ -1,9 +1,9 @@
 {
     "name": "oodle/email-parse",
     "type": "library",
-    "description": "email-parse an RF2822-compliant library for parsing multiple (and single) email addresses",
+    "description": "email-parse a (reasonably) RFC822 / RF2822-compliant library for parsing multiple (and single) email addresses",
     "license": "TBD",
-    "keywords": ["email", "parse", "RFC822", "RFC2822"],
+    "keywords": ["email", "parse", "RFC822", "RFC2822", "email-parse"],
     "authors": [
 	{
 	    "name": "Matthew J. Mucklo",
