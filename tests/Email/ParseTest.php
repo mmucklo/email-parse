@@ -7,75 +7,75 @@ use Email\Parse;
 
 class InflectTest extends PHPUnit_Framework_TestCase
 {
-	function testParseEmailAddresses()
-	{
-		$emails = "t.name@asdf.ghjkl.com";
-		$result = serialize(Parse::getInstance()->parse($emails));
-		$this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:21:"t.name@asdf.ghjkl.com";s:14:"simple_address";s:21:"t.name@asdf.ghjkl.com";s:16:"original_address";s:21:"t.name@asdf.ghjkl.com";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:6:"t.name";s:17:"local_part_parsed";s:6:"t.name";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
+    function testParseEmailAddresses()
+    {
+        $emails = "t.name@asdf.ghjkl.com";
+        $result = serialize(Parse::getInstance()->parse($emails));
+        $this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:21:"t.name@asdf.ghjkl.com";s:14:"simple_address";s:21:"t.name@asdf.ghjkl.com";s:16:"original_address";s:21:"t.name@asdf.ghjkl.com";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:6:"t.name";s:17:"local_part_parsed";s:6:"t.name";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
 
-		$emails = "tname@asdf.ghjkl.com";
-		$result = serialize(Parse::getInstance()->parse($emails));
-		$this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:20:"tname@asdf.ghjkl.com";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:20:"tname@asdf.ghjkl.com";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
+        $emails = "tname@asdf.ghjkl.com";
+        $result = serialize(Parse::getInstance()->parse($emails));
+        $this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:20:"tname@asdf.ghjkl.com";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:20:"tname@asdf.ghjkl.com";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
 
-		// Test as single address
-		$result = serialize(Parse::getInstance()->parse($emails, false));
-		$this->assertEquals('a:12:{s:7:"address";s:20:"tname@asdf.ghjkl.com";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:20:"tname@asdf.ghjkl.com";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}', $result);
+        // Test as single address
+        $result = serialize(Parse::getInstance()->parse($emails, false));
+        $this->assertEquals('a:12:{s:7:"address";s:20:"tname@asdf.ghjkl.com";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:20:"tname@asdf.ghjkl.com";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}', $result);
 
-		$emails = "Testing Name <tname@asdf.ghjkl.com>";
-		$result = serialize(Parse::getInstance()->parse($emails));
-		$this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:4:"name";s:12:"Testing Name";s:11:"name_parsed";s:12:"Testing Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
+        $emails = "Testing Name <tname@asdf.ghjkl.com>";
+        $result = serialize(Parse::getInstance()->parse($emails));
+        $this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:4:"name";s:12:"Testing Name";s:11:"name_parsed";s:12:"Testing Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
 
-		// Test as single address
-		$result = serialize(Parse::getInstance()->parse($emails, false));
-		$this->assertEquals('a:12:{s:7:"address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:4:"name";s:12:"Testing Name";s:11:"name_parsed";s:12:"Testing Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}', $result);
+        // Test as single address
+        $result = serialize(Parse::getInstance()->parse($emails, false));
+        $this->assertEquals('a:12:{s:7:"address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:35:"Testing Name <tname@asdf.ghjkl.com>";s:4:"name";s:12:"Testing Name";s:11:"name_parsed";s:12:"Testing Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}', $result);
 
-		$emails = "Testing D Name <tname@asdf.ghjkl.com>";
-		$result = serialize(Parse::getInstance()->parse($emails));
-		$this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:4:"name";s:14:"Testing D Name";s:11:"name_parsed";s:14:"Testing D Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
+        $emails = "Testing D Name <tname@asdf.ghjkl.com>";
+        $result = serialize(Parse::getInstance()->parse($emails));
+        $this->assertEquals('a:3:{s:7:"success";b:1;s:6:"reason";N;s:15:"email_addresses";a:1:{i:0;a:12:{s:7:"address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:4:"name";s:14:"Testing D Name";s:11:"name_parsed";s:14:"Testing D Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
 
-		// Test as single address
-		$result = serialize(Parse::getInstance()->parse($emails, false));
-		$this->assertEquals('a:12:{s:7:"address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:4:"name";s:14:"Testing D Name";s:11:"name_parsed";s:14:"Testing D Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}', $result);
+        // Test as single address
+        $result = serialize(Parse::getInstance()->parse($emails, false));
+        $this->assertEquals('a:12:{s:7:"address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:37:"Testing D Name <tname@asdf.ghjkl.com>";s:4:"name";s:14:"Testing D Name";s:11:"name_parsed";s:14:"Testing D Name";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}', $result);
 
-		$emails = "Testing D. Name  <tname@asdf.ghjkl.com>";
-		$result = serialize(Parse::getInstance()->parse($emails));
-		$this->assertEquals('a:3:{s:7:"success";b:0;s:6:"reason";s:21:"Invalid email address";s:15:"email_addresses";a:2:{i:0;a:12:{s:7:"address";s:0:"";s:14:"simple_address";s:0:"";s:16:"original_address";s:15:"Testing D. Name";s:4:"name";s:10:"Testing D.";s:11:"name_parsed";s:10:"Testing D.";s:10:"local_part";s:0:"";s:17:"local_part_parsed";s:0:"";s:11:"domain_part";s:0:"";s:6:"domain";s:0:"";s:2:"ip";s:0:"";s:7:"invalid";b:1;s:14:"invalid_reason";s:110:"Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>";}i:1;a:12:{s:7:"address";s:20:"tname@asdf.ghjkl.com";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:22:"<tname@asdf.ghjkl.com>";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
+        $emails = "Testing D. Name  <tname@asdf.ghjkl.com>";
+        $result = serialize(Parse::getInstance()->parse($emails));
+        $this->assertEquals('a:3:{s:7:"success";b:0;s:6:"reason";s:21:"Invalid email address";s:15:"email_addresses";a:2:{i:0;a:12:{s:7:"address";s:0:"";s:14:"simple_address";s:0:"";s:16:"original_address";s:15:"Testing D. Name";s:4:"name";s:10:"Testing D.";s:11:"name_parsed";s:10:"Testing D.";s:10:"local_part";s:0:"";s:17:"local_part_parsed";s:0:"";s:11:"domain_part";s:0:"";s:6:"domain";s:0:"";s:2:"ip";s:0:"";s:7:"invalid";b:1;s:14:"invalid_reason";s:110:"Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>";}i:1;a:12:{s:7:"address";s:20:"tname@asdf.ghjkl.com";s:14:"simple_address";s:20:"tname@asdf.ghjkl.com";s:16:"original_address";s:22:"<tname@asdf.ghjkl.com>";s:4:"name";s:0:"";s:11:"name_parsed";s:0:"";s:10:"local_part";s:5:"tname";s:17:"local_part_parsed";s:5:"tname";s:11:"domain_part";s:14:"asdf.ghjkl.com";s:6:"domain";s:14:"asdf.ghjkl.com";s:2:"ip";s:0:"";s:7:"invalid";b:0;s:14:"invalid_reason";N;}}}', $result);
 
-		// Test as single address
-		$result = serialize(Parse::getInstance()->parse($emails, false));
-		$this->assertEquals('a:12:{s:7:"address";s:0:"";s:14:"simple_address";s:0:"";s:16:"original_address";s:39:"Testing D. Name  <tname@asdf.ghjkl.com>";s:4:"name";s:10:"Testing D.";s:11:"name_parsed";s:10:"Testing D.";s:10:"local_part";s:0:"";s:17:"local_part_parsed";s:0:"";s:11:"domain_part";s:0:"";s:6:"domain";s:0:"";s:2:"ip";s:0:"";s:7:"invalid";b:1;s:14:"invalid_reason";s:110:"Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>";}', $result);
-			
-		$emails = "test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com";
-		$result = json_encode(Parse::getInstance()->parse($emails));
-		$this->assertEquals('{"success":true,"reason":null,"email_addresses":[{"address":"test.testing@asdf.ghjkl.com","simple_address":"test.testing@asdf.ghjkl.com","original_address":"test.testing@asdf.ghjkl.com","name":"","name_parsed":"","local_part":"test.testing","local_part_parsed":"test.testing","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null},{"address":"test.testing2@asdf.ghjkl.com","simple_address":"test.testing2@asdf.ghjkl.com","original_address":"test.testing2@asdf.ghjkl.com","name":"","name_parsed":"","local_part":"test.testing2","local_part_parsed":"test.testing2","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}]}', $result);
-			
-		$emails = array(
-				"\"Testing D. Name\" <tname@asdf.ghjkl.com>",
-				"<tname@asdf.ghjkl.com>",
-				"<.tname@asdf.ghjkl.com>",
-				"\"test .s set .set\"@asdf.ghjkl.com",
-				"<t.name@asdf.ghjkl.com>",
-				"<t.name.@asdf.ghjkl.com>",
-				"tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com",
-				"tnam e@asdf.g asdfa hjkl.com, tn'''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com",
-				"Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com",
-				"Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com",
-				"Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com",
-				"tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com",
-				"t\"na\"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com",
-				"t(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com",
-				"testing@tūdaliņ.lv",
-				"testing@xn--tdali-d8a8w.lv",
-				"testing@-bad-domain.com",
-				"testing@192.168.0.1",
-				"testing@256.26.52.5",
-				"testing@[256.26.52.5]",
-				"testing@[299.236.532.265]",
-				"testing@[80.67.66.65]",
-				"testing@80.67.66.65");
+        // Test as single address
+        $result = serialize(Parse::getInstance()->parse($emails, false));
+        $this->assertEquals('a:12:{s:7:"address";s:0:"";s:14:"simple_address";s:0:"";s:16:"original_address";s:39:"Testing D. Name  <tname@asdf.ghjkl.com>";s:4:"name";s:10:"Testing D.";s:11:"name_parsed";s:10:"Testing D.";s:10:"local_part";s:0:"";s:17:"local_part_parsed";s:0:"";s:11:"domain_part";s:0:"";s:6:"domain";s:0:"";s:2:"ip";s:0:"";s:7:"invalid";b:1;s:14:"invalid_reason";s:110:"Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>";}', $result);
+            
+        $emails = "test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com";
+        $result = json_encode(Parse::getInstance()->parse($emails));
+        $this->assertEquals('{"success":true,"reason":null,"email_addresses":[{"address":"test.testing@asdf.ghjkl.com","simple_address":"test.testing@asdf.ghjkl.com","original_address":"test.testing@asdf.ghjkl.com","name":"","name_parsed":"","local_part":"test.testing","local_part_parsed":"test.testing","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null},{"address":"test.testing2@asdf.ghjkl.com","simple_address":"test.testing2@asdf.ghjkl.com","original_address":"test.testing2@asdf.ghjkl.com","name":"","name_parsed":"","local_part":"test.testing2","local_part_parsed":"test.testing2","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}]}', $result);
+            
+        $emails = array(
+                "\"Testing D. Name\" <tname@asdf.ghjkl.com>",
+                "<tname@asdf.ghjkl.com>",
+                "<.tname@asdf.ghjkl.com>",
+                "\"test .s set .set\"@asdf.ghjkl.com",
+                "<t.name@asdf.ghjkl.com>",
+                "<t.name.@asdf.ghjkl.com>",
+                "tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com",
+                "tnam e@asdf.g asdfa hjkl.com, tn'''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com",
+                "Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com",
+                "Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com",
+                "Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com",
+                "tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com",
+                "t\"na\"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com",
+                "t(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com",
+                "testing@tūdaliņ.lv",
+                "testing@xn--tdali-d8a8w.lv",
+                "testing@-bad-domain.com",
+                "testing@192.168.0.1",
+                "testing@256.26.52.5",
+                "testing@[256.26.52.5]",
+                "testing@[299.236.532.265]",
+                "testing@[80.67.66.65]",
+                "testing@80.67.66.65");
 
 
-		$results1 = array('{"success":true,"reason":null,"email_addresses":[{"address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","simple_address":"tname@asdf.ghjkl.com","original_address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","name":"\"Testing D. Name\"","name_parsed":"Testing D. Name","local_part":"tname","local_part_parsed":"tname","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}]}',
+        $results1 = array('{"success":true,"reason":null,"email_addresses":[{"address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","simple_address":"tname@asdf.ghjkl.com","original_address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","name":"\"Testing D. Name\"","name_parsed":"Testing D. Name","local_part":"tname","local_part_parsed":"tname","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}]}',
 '{"success":true,"reason":null,"email_addresses":[{"address":"tname@asdf.ghjkl.com","simple_address":"tname@asdf.ghjkl.com","original_address":"<tname@asdf.ghjkl.com>","name":"","name_parsed":"","local_part":"tname","local_part_parsed":"tname","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}]}',
 '{"success":false,"reason":"Invalid email address","email_addresses":[{"address":"","simple_address":"","original_address":"<.tname@asdf.ghjkl.com>","name":"","name_parsed":"","local_part":"","local_part_parsed":"","domain_part":"","domain":"","ip":"","invalid":true,"invalid_reason":"Email address can not start with \'.\'"}]}',
 '{"success":true,"reason":null,"email_addresses":[{"address":"\"test .s set .set\"@asdf.ghjkl.com","simple_address":"\"test .s set .set\"@asdf.ghjkl.com","original_address":"\"test .s set .set\"@asdf.ghjkl.com","name":"","name_parsed":"","local_part":"\"test .s set .set\"","local_part_parsed":"test .s set .set","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}]}',
@@ -98,9 +98,9 @@ class InflectTest extends PHPUnit_Framework_TestCase
 '{"success":false,"reason":"Invalid email address","email_addresses":[{"address":"","simple_address":"","original_address":"testing@[299.236.532.265]","name":"","name_parsed":"","local_part":"testing","local_part_parsed":"testing","domain_part":"[299.236.532.265]","domain":"","ip":"299.236.532.265","invalid":true,"invalid_reason":"IP address invalid: \'299.236.532.265\' does not appear to be a valid IP address"}]}',
 '{"success":true,"reason":null,"email_addresses":[{"address":"testing@[80.67.66.65]","simple_address":"testing@[80.67.66.65]","original_address":"testing@[80.67.66.65]","name":"","name_parsed":"","local_part":"testing","local_part_parsed":"testing","domain_part":"[80.67.66.65]","domain":"","ip":"80.67.66.65","invalid":false,"invalid_reason":null}]}',
 '{"success":true,"reason":null,"email_addresses":[{"address":"testing@[80.67.66.65]","simple_address":"testing@[80.67.66.65]","original_address":"testing@80.67.66.65","name":"","name_parsed":"","local_part":"testing","local_part_parsed":"testing","domain_part":"[80.67.66.65]","domain":null,"ip":"80.67.66.65","invalid":false,"invalid_reason":null}]}',
-		);
+        );
 
-		$results2 = array('{"address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","simple_address":"tname@asdf.ghjkl.com","original_address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","name":"\"Testing D. Name\"","name_parsed":"Testing D. Name","local_part":"tname","local_part_parsed":"tname","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}',
+        $results2 = array('{"address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","simple_address":"tname@asdf.ghjkl.com","original_address":"\"Testing D. Name\" <tname@asdf.ghjkl.com>","name":"\"Testing D. Name\"","name_parsed":"Testing D. Name","local_part":"tname","local_part_parsed":"tname","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}',
 '{"address":"tname@asdf.ghjkl.com","simple_address":"tname@asdf.ghjkl.com","original_address":"<tname@asdf.ghjkl.com>","name":"","name_parsed":"","local_part":"tname","local_part_parsed":"tname","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}',
 '{"address":"","simple_address":"","original_address":"<.tname@asdf.ghjkl.com>","name":"","name_parsed":"","local_part":"","local_part_parsed":"","domain_part":"","domain":"","ip":"","invalid":true,"invalid_reason":"Email address can not start with \'.\'"}',
 '{"address":"\"test .s set .set\"@asdf.ghjkl.com","simple_address":"\"test .s set .set\"@asdf.ghjkl.com","original_address":"\"test .s set .set\"@asdf.ghjkl.com","name":"","name_parsed":"","local_part":"\"test .s set .set\"","local_part_parsed":"test .s set .set","domain_part":"asdf.ghjkl.com","domain":"asdf.ghjkl.com","ip":"","invalid":false,"invalid_reason":null}',
@@ -123,15 +123,15 @@ class InflectTest extends PHPUnit_Framework_TestCase
 '{"address":"","simple_address":"","original_address":"testing@[299.236.532.265]","name":"","name_parsed":"","local_part":"testing","local_part_parsed":"testing","domain_part":"[299.236.532.265]","domain":"","ip":"299.236.532.265","invalid":true,"invalid_reason":"IP address invalid: \'299.236.532.265\' does not appear to be a valid IP address"}',
 '{"address":"testing@[80.67.66.65]","simple_address":"testing@[80.67.66.65]","original_address":"testing@[80.67.66.65]","name":"","name_parsed":"","local_part":"testing","local_part_parsed":"testing","domain_part":"[80.67.66.65]","domain":"","ip":"80.67.66.65","invalid":false,"invalid_reason":null}',
 '{"address":"testing@[80.67.66.65]","simple_address":"testing@[80.67.66.65]","original_address":"testing@80.67.66.65","name":"","name_parsed":"","local_part":"testing","local_part_parsed":"testing","domain_part":"[80.67.66.65]","domain":null,"ip":"80.67.66.65","invalid":false,"invalid_reason":null}',
-		);
+        );
 
-		for($i = 0 ; $i < count($emails) ; $i++)
-		{			
-			$a = Parse::getInstance()->parse($emails[$i]);
-			$b = Parse::getInstance()->parse($emails[$i], false);
-			
-			$this->assertEquals($results1[$i], json_encode($a));
-			$this->assertEquals($results2[$i], json_encode($b));
-		}
-	}
+        for($i = 0 ; $i < count($emails) ; $i++)
+        {            
+            $a = Parse::getInstance()->parse($emails[$i]);
+            $b = Parse::getInstance()->parse($emails[$i], false);
+            
+            $this->assertEquals($results1[$i], json_encode($a));
+            $this->assertEquals($results2[$i], json_encode($b));
+        }
+    }
 }
