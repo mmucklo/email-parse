@@ -92,9 +92,9 @@ class Parse {
      *  how-about-an-ip@[10.0.10.2]
      *  how-about-comments(this is a comment!!)@xyz.com
      *
-     * @param $emails - List of Email addresses separated by comma or space if multiple
-     * @param $multiple - Whether to parse for multiple email addresses or not
-     * @param $encoding - The encoding if not 'UTF-8'
+     * @param string $emails List of Email addresses separated by comma or space if multiple
+     * @param bool $multiple (optional, default: true) Whether to parse for multiple email addresses or not
+     * @param string $encoding (optional, default: 'UTF-8') The encoding if not 'UTF-8'
      * @return  if ($multiple):
      *         array('success' => boolean, // whether totally successful or not
      *               'reason' => string, // if unsuccessful, the reason why

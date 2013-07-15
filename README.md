@@ -38,15 +38,14 @@ how-about-an-ip@[10.0.10.2]
 how-about-comments(this is a comment!!)@xyz.com
 ```
 
-####PHPDoc####
+####Function Spec####
 ```php
 /**
- * function parseEmailAddresses
- * @param $emails - List of Email addresses separated by comma or space if multiple
- * @param $multiple - Whether to parse for multiple email addresses or not
- * @param $encoding - The encoding if not 'UTF-8'
- * @return:
- */
+ * function parse($emails, $multiple = true, $encoding = 'UTF-8')
+ * @param string $emails List of Email addresses separated by comma or space if multiple
+ * @param bool $multiple (optional, default: true) Whether to parse for multiple email addresses or not
+ * @param string $encoding (optional, default: 'UTF-8')The encoding if not 'UTF-8'
+ * @return: see below: */
 
     if ($multiple):
          array('success' => boolean, // whether totally successful or not
@@ -77,11 +76,11 @@ how-about-comments(this is a comment!!)@xyz.com
     endif;
 ```
 
-Other Example Usage:
---------------------
+Other Examples:
+---------------
 ```php
  $email = "\"J Doe\" <johndoe@xyz.com>";
- $result = Email\Parse->getInstance()->parseEmailAddresses($email, false);
+ $result = Email\Parse->getInstance()->parse($email, false);
 
  $result == array('address' => '"JD" <johndoe@xyz.com>',
           'original_address' => '"JD" <johndoe@xyz.com>',
@@ -96,7 +95,7 @@ Other Example Usage:
           'invalid_reason' => '');
 
  $emails = "testing@[10.0.10.45] testing@xyz.com, testing-"test...2"@xyz.com (comment)";
- $result = Email\Parse->getInstance()->parseEmailAddresses($emails);
+ $result = Email\Parse->getInstance()->parse($emails);
  $result == array(
             'success' => boolean true
             'reason' => null
