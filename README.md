@@ -39,12 +39,15 @@ how-about-comments(this is a comment!!)@xyz.com
 ```
 
 ####PHPDoc####
-function parseEmailAddresses
-@param $emails - List of Email addresses separated by comma or space if multiple
-@param $multiple - Whether to parse for multiple email addresses or not
-@param $encoding - The encoding if not 'UTF-8'
-@return 
 ```php
+/**
+ * function parseEmailAddresses
+ * @param $emails - List of Email addresses separated by comma or space if multiple
+ * @param $multiple - Whether to parse for multiple email addresses or not
+ * @param $encoding - The encoding if not 'UTF-8'
+ * @return:
+ */
+
     if ($multiple):
          array('success' => boolean, // whether totally successful or not
                'reason' => string, // if unsuccessful, the reason why
