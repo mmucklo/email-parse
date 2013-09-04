@@ -22,7 +22,7 @@ Usage:
 ```php
 use Email\Parse;
 
-$result = Parse::getInstance()->parseEmailAddresses("a@aaa.com b@bbb.com");
+$result = Parse::getInstance()->parse("a@aaa.com b@bbb.com");
 ```
 
 Notes:
