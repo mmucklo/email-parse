@@ -10,12 +10,6 @@
 	    "email": "mmucklo@corp.oodle.com"
 	}
     ],
-    "repositories": [
-        {
-            "type": "pear",
-            "url": "http://pear.php.net/"
-        }
-    ],
     "require-dev": {
         "phpunit/phpunit": "3.7.*",
         "symfony/yaml": ">=2.3,<=2.4"
@@ -23,7 +17,6 @@
     "require": {
         "php": ">=5.3.17",
 	"psr/log": "1.0.0",
-        "pear-pear/NET_IDNA2" : "*",
 	"zendframework/zend-validator" : "*"
     },
     "autoload": {

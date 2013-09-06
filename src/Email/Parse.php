@@ -5,6 +5,8 @@ namespace Email;
 use Zend\Validator\Ip;
 use Psr\Log\LoggerInterface;
 
+require_once(__DIR__ . "/../Net/IDNA2.php");
+
 class Parse {
 
     // Constants for the state-machine of the parser
