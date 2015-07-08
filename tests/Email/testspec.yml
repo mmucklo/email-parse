@@ -1,0 +1,1274 @@
+%YAML 1.2
+---
+-
+    emails: t.name@asdf.ghjkl.com
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: t.name@asdf.ghjkl.com
+                simple_address: t.name@asdf.ghjkl.com
+                original_address: t.name@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: t.name
+                local_part_parsed: t.name
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: tname@asdf.ghjkl.com
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: tname@asdf.ghjkl.com
+    multiple: false
+    result:
+        address: tname@asdf.ghjkl.com
+        simple_address: tname@asdf.ghjkl.com
+        original_address: tname@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Testing Name <tname@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'Testing Name <tname@asdf.ghjkl.com>'
+                simple_address: tname@asdf.ghjkl.com
+                original_address: 'Testing Name <tname@asdf.ghjkl.com>'
+                name: 'Testing Name'
+                name_parsed: 'Testing Name'
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Testing Name <tname@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: 'Testing Name <tname@asdf.ghjkl.com>'
+        simple_address: tname@asdf.ghjkl.com
+        original_address: 'Testing Name <tname@asdf.ghjkl.com>'
+        name: 'Testing Name'
+        name_parsed: 'Testing Name'
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Testing D Name <tname@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'Testing D Name <tname@asdf.ghjkl.com>'
+                simple_address: tname@asdf.ghjkl.com
+                original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
+                name: 'Testing D Name'
+                name_parsed: 'Testing D Name'
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Testing D Name <tname@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: 'Testing D Name <tname@asdf.ghjkl.com>'
+        simple_address: tname@asdf.ghjkl.com
+        original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
+        name: 'Testing D Name'
+        name_parsed: 'Testing D Name'
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Testing D. Name  <tname@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'Testing D. Name'
+                name: 'Testing D.'
+                name_parsed: 'Testing D.'
+                local_part: ''
+                local_part_parsed: ''
+                domain_part: ''
+                domain: ''
+                ip: ''
+                invalid: true
+                invalid_reason: 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>'
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: '<tname@asdf.ghjkl.com>'
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Testing D. Name  <tname@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'Testing D. Name  <tname@asdf.ghjkl.com>'
+        name: 'Testing D.'
+        name_parsed: 'Testing D.'
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>'
+-
+    emails: 'test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: test.testing@asdf.ghjkl.com
+                simple_address: test.testing@asdf.ghjkl.com
+                original_address: test.testing@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: test.testing
+                local_part_parsed: test.testing
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: test.testing2@asdf.ghjkl.com
+                simple_address: test.testing2@asdf.ghjkl.com
+                original_address: test.testing2@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: test.testing2
+                local_part_parsed: test.testing2
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+                simple_address: tname@asdf.ghjkl.com
+                original_address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+                name: '"Testing D. Name"'
+                name_parsed: 'Testing D. Name'
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+        simple_address: tname@asdf.ghjkl.com
+        original_address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+        name: '"Testing D. Name"'
+        name_parsed: 'Testing D. Name'
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: '<tname@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: '<tname@asdf.ghjkl.com>'
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '<tname@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: tname@asdf.ghjkl.com
+        simple_address: tname@asdf.ghjkl.com
+        original_address: '<tname@asdf.ghjkl.com>'
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: '<.tname@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: '<.tname@asdf.ghjkl.com>'
+                name: ''
+                name_parsed: ''
+                local_part: ''
+                local_part_parsed: ''
+                domain_part: ''
+                domain: ''
+                ip: ''
+                invalid: true
+                invalid_reason: 'Email address can not start with ''.'''
+-
+    emails: '<.tname@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: '<.tname@asdf.ghjkl.com>'
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'Email address can not start with ''.'''
+-
+    emails: '"test .s set .set"@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: '"test .s set .set"@asdf.ghjkl.com'
+                simple_address: '"test .s set .set"@asdf.ghjkl.com'
+                original_address: '"test .s set .set"@asdf.ghjkl.com'
+                name: ''
+                name_parsed: ''
+                local_part: '"test .s set .set"'
+                local_part_parsed: 'test .s set .set'
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '"test .s set .set"@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: '"test .s set .set"@asdf.ghjkl.com'
+        simple_address: '"test .s set .set"@asdf.ghjkl.com'
+        original_address: '"test .s set .set"@asdf.ghjkl.com'
+        name: ''
+        name_parsed: ''
+        local_part: '"test .s set .set"'
+        local_part_parsed: 'test .s set .set'
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: '<t.name@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: t.name@asdf.ghjkl.com
+                simple_address: t.name@asdf.ghjkl.com
+                original_address: '<t.name@asdf.ghjkl.com>'
+                name: ''
+                name_parsed: ''
+                local_part: t.name
+                local_part_parsed: t.name
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '<t.name@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: t.name@asdf.ghjkl.com
+        simple_address: t.name@asdf.ghjkl.com
+        original_address: '<t.name@asdf.ghjkl.com>'
+        name: ''
+        name_parsed: ''
+        local_part: t.name
+        local_part_parsed: t.name
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: '<t.name.@asdf.ghjkl.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: t.name.@asdf.ghjkl.com
+                simple_address: t.name.@asdf.ghjkl.com
+                original_address: '<t.name.@asdf.ghjkl.com>'
+                name: ''
+                name_parsed: ''
+                local_part: t.name.
+                local_part_parsed: t.name.
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '<t.name.@asdf.ghjkl.com>'
+    multiple: false
+    result:
+        address: t.name.@asdf.ghjkl.com
+        simple_address: t.name.@asdf.ghjkl.com
+        original_address: '<t.name.@asdf.ghjkl.com>'
+        name: ''
+        name_parsed: ''
+        local_part: t.name.
+        local_part_parsed: t.name.
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test1@asdf.ghjkl.com
+                simple_address: tname-test1@asdf.ghjkl.com
+                original_address: tname-test1@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test1
+                local_part_parsed: tname-test1
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: true
+        invalid_reason: 'Comma not permitted - only one email address allowed'
+-
+    emails: 'tnam e@asdf.g asdfa hjkl.com, tn''''''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: 'tnam <e@asdf.g>'
+                simple_address: e@asdf.g
+                original_address: 'tnam e@asdf.g'
+                name: tnam
+                name_parsed: tnam
+                local_part: e
+                local_part_parsed: e
+                domain_part: asdf.g
+                domain: asdf.g
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'asdfa hjkl.com'
+                name: asdfa
+                name_parsed: asdfa
+                local_part: ''
+                local_part_parsed: ''
+                domain_part: ''
+                domain: ''
+                ip: ''
+                invalid: true
+                invalid_reason: 'Misplaced Comma or missing "@" symbol'
+            -
+                address: 'tn''''''ame@asdf.ghjkl.com'
+                simple_address: 'tn''''''ame@asdf.ghjkl.com'
+                original_address: 'tn''''''ame@asdf.ghjkl.com'
+                name: ''
+                name_parsed: ''
+                local_part: 'tn''''''ame'
+                local_part_parsed: 'tn''''''ame'
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test1@asdf.ghjkl.com
+                simple_address: tname-test1@asdf.ghjkl.com
+                original_address: tname-test1@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test1
+                local_part_parsed: tname-test1
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'tnam e@asdf.g asdfa hjkl.com, tn''''''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: 'tnam <e@asdf.g>'
+        simple_address: e@asdf.g
+        original_address: 'tnam e@asdf.g'
+        name: tnam
+        name_parsed: tnam
+        local_part: e
+        local_part_parsed: e
+        domain_part: asdf.g
+        domain: asdf.g
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'Testing D Name <tname@asdf.ghjkl.com>'
+                simple_address: tname@asdf.ghjkl.com
+                original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
+                name: 'Testing D Name'
+                name_parsed: 'Testing D Name'
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test1@asdf.ghjkl.com
+                simple_address: tname-test1@asdf.ghjkl.com
+                original_address: tname-test1@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test1
+                local_part_parsed: tname-test1
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: 'Testing D Name <tname@asdf.ghjkl.com>'
+        simple_address: tname@asdf.ghjkl.com
+        original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
+        name: 'Testing D Name'
+        name_parsed: 'Testing D Name'
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'Testing D Name <tname@asdf.ghjkl.com>'
+                simple_address: tname@asdf.ghjkl.com
+                original_address: 'Testing D Name <tname@asdf.ghjkl.com> (comment)'
+                name: 'Testing D Name'
+                name_parsed: 'Testing D Name'
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tn(comment1)ame@asdf.gh(comment2)jkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test1@asdf.ghjkl.com
+                simple_address: tname-test1@asdf.ghjkl.com
+                original_address: tname-test1(comment3)@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test1
+                local_part_parsed: tname-test1
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: 'Testing D Name <tname@asdf.ghjkl.com>'
+        simple_address: tname@asdf.ghjkl.com
+        original_address: 'Testing D Name <tname@asdf.ghjkl.com> (comment)'
+        name: 'Testing D Name'
+        name_parsed: 'Testing D Name'
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'Tes!@#$@$&*&%(*ti)ng'
+                name: ''
+                name_parsed: ''
+                local_part: ''
+                local_part_parsed: ''
+                domain_part: ''
+                domain: ''
+                ip: ''
+                invalid: true
+                invalid_reason: 'This character is not allowed in email addresses submitted (please put in quotes if needed): ''!'''
+            -
+                address: 'D Name <tname@asdf.ghjkl.com>'
+                simple_address: tname@asdf.ghjkl.com
+                original_address: 'D Name <tname@asdf.ghjkl.com> (comment)'
+                name: 'D Name'
+                name_parsed: 'D Name'
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tnamment1e@asdf.ghjkl.com
+                simple_address: tnamment1e@asdf.ghjkl.com
+                original_address: 'tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com'
+                name: ''
+                name_parsed: ''
+                local_part: tnamment1e
+                local_part_parsed: tnamment1e
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test1@asdf.ghjkl.com
+                simple_address: tname-test1@asdf.ghjkl.com
+                original_address: tname-test1(comment3)@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test1
+                local_part_parsed: tname-test1
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'This character is not allowed in email addresses submitted (please put in quotes if needed): ''!'''
+-
+    emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'tname@[10.0.10.45]'
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: '[10.0.10.45]'
+                domain: ''
+                ip: 10.0.10.45
+                invalid: true
+                invalid_reason: 'IP address invalid (private): 10.0.10.45'
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test2@asdf.ghjkl.com
+                simple_address: tname-test2@asdf.ghjkl.com
+                original_address: tname-test2@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test2
+                local_part_parsed: tname-test2
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'tname@[10.0.10.45]'
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: '[10.0.10.45]'
+        domain: ''
+        ip: 10.0.10.45
+        invalid: true
+        invalid_reason: 'IP address invalid (private): 10.0.10.45'
+-
+    emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 't"na"me@[10.0.10.45]'
+                name: ''
+                name_parsed: ''
+                local_part: '"tname"'
+                local_part_parsed: tname
+                domain_part: '[10.0.10.45]'
+                domain: ''
+                ip: 10.0.10.45
+                invalid: true
+                invalid_reason: 'IP address invalid (private): 10.0.10.45'
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test2@asdf.ghjkl.com
+                simple_address: tname-test2@asdf.ghjkl.com
+                original_address: tname-test2@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test2
+                local_part_parsed: tname-test2
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 't"na"me@[10.0.10.45]'
+        name: ''
+        name_parsed: ''
+        local_part: '"tname"'
+        local_part_parsed: tname
+        domain_part: '[10.0.10.45]'
+        domain: ''
+        ip: 10.0.10.45
+        invalid: true
+        invalid_reason: 'IP address invalid (private): 10.0.10.45'
+-
+    emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 't(comment with spaces !!!)name@[10.0.10.45]'
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: '[10.0.10.45]'
+                domain: ''
+                ip: 10.0.10.45
+                invalid: true
+                invalid_reason: 'IP address invalid (private): 10.0.10.45'
+            -
+                address: tname@asdf.ghjkl.com
+                simple_address: tname@asdf.ghjkl.com
+                original_address: tname@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname
+                local_part_parsed: tname
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: tname-test2@asdf.ghjkl.com
+                simple_address: tname-test2@asdf.ghjkl.com
+                original_address: tname-test2@asdf.ghjkl.com
+                name: ''
+                name_parsed: ''
+                local_part: tname-test2
+                local_part_parsed: tname-test2
+                domain_part: asdf.ghjkl.com
+                domain: asdf.ghjkl.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 't(comment with spaces !!!)name@[10.0.10.45]'
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: '[10.0.10.45]'
+        domain: ''
+        ip: 10.0.10.45
+        invalid: true
+        invalid_reason: 'IP address invalid (private): 10.0.10.45'
+-
+    emails: testing@tūdaliņ.lv
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: testing@xn--tdali-d8a8w.lv
+                simple_address: testing@xn--tdali-d8a8w.lv
+                original_address: testing@tūdaliņ.lv
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: xn--tdali-d8a8w.lv
+                domain: xn--tdali-d8a8w.lv
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: testing@tūdaliņ.lv
+    multiple: false
+    result:
+        address: testing@xn--tdali-d8a8w.lv
+        simple_address: testing@xn--tdali-d8a8w.lv
+        original_address: testing@tūdaliņ.lv
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: xn--tdali-d8a8w.lv
+        domain: xn--tdali-d8a8w.lv
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: testing@xn--tdali-d8a8w.lv
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: testing@xn--tdali-d8a8w.lv
+                simple_address: testing@xn--tdali-d8a8w.lv
+                original_address: testing@xn--tdali-d8a8w.lv
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: xn--tdali-d8a8w.lv
+                domain: xn--tdali-d8a8w.lv
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: testing@xn--tdali-d8a8w.lv
+    multiple: false
+    result:
+        address: testing@xn--tdali-d8a8w.lv
+        simple_address: testing@xn--tdali-d8a8w.lv
+        original_address: testing@xn--tdali-d8a8w.lv
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: xn--tdali-d8a8w.lv
+        domain: xn--tdali-d8a8w.lv
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: testing@-bad-domain.com
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: testing@-bad-domain.com
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '-bad-domain.com'
+                domain: '-bad-domain.com'
+                ip: ''
+                invalid: true
+                invalid_reason: 'Domain invalid: Parts of the domain name ''-bad-domain.com'' can not start or end with ''-''.  This part does: -bad-domain'
+-
+    emails: testing@-bad-domain.com
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: testing@-bad-domain.com
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '-bad-domain.com'
+        domain: '-bad-domain.com'
+        ip: ''
+        invalid: true
+        invalid_reason: 'Domain invalid: Parts of the domain name ''-bad-domain.com'' can not start or end with ''-''.  This part does: -bad-domain'
+-
+    emails: testing@192.168.0.1
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: testing@192.168.0.1
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[192.168.0.1]'
+                domain: null
+                ip: 192.168.0.1
+                invalid: true
+                invalid_reason: 'IP address invalid (private): 192.168.0.1'
+-
+    emails: testing@192.168.0.1
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: testing@192.168.0.1
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[192.168.0.1]'
+        domain: null
+        ip: 192.168.0.1
+        invalid: true
+        invalid_reason: 'IP address invalid (private): 192.168.0.1'
+-
+    emails: testing@256.26.52.5
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: testing@256.26.52.5
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[256.26.52.5]'
+                domain: null
+                ip: 256.26.52.5
+                invalid: true
+                invalid_reason: 'IP address invalid: ''256.26.52.5'' does not appear to be a valid IP address'
+-
+    emails: testing@256.26.52.5
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: testing@256.26.52.5
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[256.26.52.5]'
+        domain: null
+        ip: 256.26.52.5
+        invalid: true
+        invalid_reason: 'IP address invalid: ''256.26.52.5'' does not appear to be a valid IP address'
+-
+    emails: 'testing@[256.26.52.5]'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'testing@[256.26.52.5]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[256.26.52.5]'
+                domain: ''
+                ip: 256.26.52.5
+                invalid: true
+                invalid_reason: 'IP address invalid: ''256.26.52.5'' does not appear to be a valid IP address'
+-
+    emails: 'testing@[256.26.52.5]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'testing@[256.26.52.5]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[256.26.52.5]'
+        domain: ''
+        ip: 256.26.52.5
+        invalid: true
+        invalid_reason: 'IP address invalid: ''256.26.52.5'' does not appear to be a valid IP address'
+-
+    emails: 'testing@[299.236.532.265]'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'testing@[299.236.532.265]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[299.236.532.265]'
+                domain: ''
+                ip: 299.236.532.265
+                invalid: true
+                invalid_reason: 'IP address invalid: ''299.236.532.265'' does not appear to be a valid IP address'
+-
+    emails: 'testing@[299.236.532.265]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'testing@[299.236.532.265]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[299.236.532.265]'
+        domain: ''
+        ip: 299.236.532.265
+        invalid: true
+        invalid_reason: 'IP address invalid: ''299.236.532.265'' does not appear to be a valid IP address'
+-
+    emails: 'testing@[80.67.66.65]'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'testing@[80.67.66.65]'
+                simple_address: 'testing@[80.67.66.65]'
+                original_address: 'testing@[80.67.66.65]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[80.67.66.65]'
+                domain: ''
+                ip: 80.67.66.65
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'testing@[80.67.66.65]'
+    multiple: false
+    result:
+        address: 'testing@[80.67.66.65]'
+        simple_address: 'testing@[80.67.66.65]'
+        original_address: 'testing@[80.67.66.65]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[80.67.66.65]'
+        domain: ''
+        ip: 80.67.66.65
+        invalid: false
+        invalid_reason: null
+-
+    emails: testing@80.67.66.65
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'testing@[80.67.66.65]'
+                simple_address: 'testing@[80.67.66.65]'
+                original_address: testing@80.67.66.65
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[80.67.66.65]'
+                domain: null
+                ip: 80.67.66.65
+                invalid: false
+                invalid_reason: null
+-
+    emails: testing@80.67.66.65
+    multiple: false
+    result:
+        address: 'testing@[80.67.66.65]'
+        simple_address: 'testing@[80.67.66.65]'
+        original_address: testing@80.67.66.65
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[80.67.66.65]'
+        domain: null
+        ip: 80.67.66.65
+        invalid: false
+        invalid_reason: null
