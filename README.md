@@ -1,4 +1,4 @@
-email-parse
+email-parse [![Build Status](https://travis-ci.org/mmucklo/email-parse.svg?branch=master)](https://travis-ci.org/mmucklo/email-parse)
 ===========
 
 Email\Parse is a multiple (and single) email address parser that is reasonably RFC822 / RFC2822 compliant.
