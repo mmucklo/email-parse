@@ -1,9 +1,9 @@
 {
   "name": "mmucklo/email-parse",
   "type": "library",
-  "description": "email-parse a (reasonably) RFC822 / RF2822-compliant library for parsing multiple (and single) email addresses",
-  "license": "TBD",
-  "keywords": ["email", "parse", "RFC822", "RFC2822", "email-parse"],
+  "description": "email-parse a (reasonably) RFC822 / RF2822-compliant library for batch parsing multiple (and single) email addresses",
+  "license": "MIT",
+  "keywords": ["email", "parse", "RFC822", "RFC2822", "email-parse", "multiple-email", "batch-email"],
   "authors": [
     {
       "name": "Matthew J. Mucklo",
@@ -19,7 +19,7 @@
     "php": ">=5.4.0",
     "true/punycode": "~2.0",
     "psr/log": "~1.0",
-    "zendframework/zend-validator" : "*"
+    "zendframework/zend-validator" : ">=2.0,<=3.0"
   },
   "autoload": {
     "psr-4": {
