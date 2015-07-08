@@ -6,7 +6,6 @@ use Zend\Validator\Ip;
 use Psr\Log\LoggerInterface;
 use TrueBV\Punycode;
 
-
 class Parse
 {
     // Constants for the state-machine of the parser
@@ -54,9 +53,11 @@ class Parse
     }
 
 
-    public function getPunycode() {
-        if (!$this->punycode)
+    public function getPunycode()
+    {
+        if (!$this->punycode) {
             $this->punycode = new Punycode();
+        }
 
         return $this->punycode;
     }
