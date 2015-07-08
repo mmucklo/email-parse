@@ -16,7 +16,7 @@
     "symfony/yaml": ">=2.7,<=2.9"
   },
   "require": {
-    "php": ">=5.4.46",
+    "php": ">=5.4.0",
     "true/punycode": "~2.0",
     "psr/log": "1.0.0",
     "zendframework/zend-validator" : "*"
