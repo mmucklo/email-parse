@@ -2339,7 +2339,9 @@ class Net_IDNA2
         }
 
         // No input, no output, what else did you expect?
-        if (empty($decoded)) return '';
+        if (empty($decoded)) {
+            return '';
+        }
 
         // Anchors for iteration
         $last_begin = 0;
@@ -2348,7 +2350,7 @@ class Net_IDNA2
 
         foreach ($decoded as $k => $v) {
             // Make sure to use just the plain dot
-            switch($v) {
+            switch ($v) {
             case 0x3002:
             case 0xFF0E:
             case 0xFF61:
@@ -2437,7 +2439,9 @@ class Net_IDNA2
             $arr = explode('.', $input);
             foreach ($arr as $k => $v) {
                 $conv = $this->_decode($v);
-                if ($conv) $arr[$k] = $conv;
+                if ($conv) {
+                    $arr[$k] = $conv;
+                }
             }
             $return = $email_pref . '@' . join('.', $arr);
         } elseif (preg_match('![:\./]!', $input)) { // Or a complete domain name (with or without paths / parameters)
@@ -2451,7 +2455,9 @@ class Net_IDNA2
                 $arr = explode('.', $parsed['host']);
                 foreach ($arr as $k => $v) {
                     $conv = $this->_decode($v);
-                    if ($conv) $arr[$k] = $conv;
+                    if ($conv) {
+                        $arr[$k] = $conv;
+                    }
                 }
                 $parsed['host'] = join('.', $arr);
                 if (isset($parsed['scheme'])) {
@@ -2462,7 +2468,9 @@ class Net_IDNA2
                 $arr = explode('.', $input);
                 foreach ($arr as $k => $v) {
                     $conv = $this->_decode($v);
-                    if ($conv) $arr[$k] = $conv;
+                    if ($conv) {
+                        $arr[$k] = $conv;
+                    }
                 }
                 $return = join('.', $arr);
             }
@@ -2626,7 +2634,7 @@ class Net_IDNA2
             for ($i = 0; $i < $deco_len; $i++) {
                 if ($decoded[$i] < $cur_code) {
                     $delta++;
-                } else if ($decoded[$i] == $cur_code) {
+                } elseif ($decoded[$i] == $cur_code) {
                     for ($q = $delta, $k = $this->_base; 1; $k += $this->_base) {
                         $t = ($k <= $bias)?
                             $this->_tmin :
@@ -2820,7 +2828,7 @@ class Net_IDNA2
                 foreach ($this->_hangulDecompose($v) as $out) {
                     $output[] = $out;
                 }
-            } else if (($this->_version == '2003') && isset(self::$_np_replacemaps[$v])) {
+            } elseif (($this->_version == '2003') && isset(self::$_np_replacemaps[$v])) {
                 // There's a decomposition mapping for that code point
                 // Decompositions only in version 2003 (original) of IDNA
                 foreach ($this->_applyCannonicalOrdering(self::$_np_replacemaps[$v]) as $out) {
@@ -3191,29 +3199,29 @@ class Net_IDNA2
             if ($v < 128) {
                 // 7bit are transferred literally
                 $output .= chr($v);
-            } else if ($v < 1 << 11) {
+            } elseif ($v < 1 << 11) {
                 // 2 bytes
                 $output .= chr(192 + ($v >> 6))
                     . chr(128 + ($v & 63));
-            } else if ($v < 1 << 16) {
+            } elseif ($v < 1 << 16) {
                 // 3 bytes
                 $output .= chr(224 + ($v >> 12))
                     . chr(128 + (($v >> 6) & 63))
                     . chr(128 + ($v & 63));
-            } else if ($v < 1 << 21) {
+            } elseif ($v < 1 << 21) {
                 // 4 bytes
                 $output .= chr(240 + ($v >> 18))
                     . chr(128 + (($v >> 12) & 63))
                     . chr(128 + (($v >>  6) & 63))
                     . chr(128 + ($v & 63));
-            } else if ($v < 1 << 26) {
+            } elseif ($v < 1 << 26) {
                 // 5 bytes
                 $output .= chr(248 + ($v >> 24))
                     . chr(128 + (($v >> 18) & 63))
                     . chr(128 + (($v >> 12) & 63))
                     . chr(128 + (($v >>  6) & 63))
                     . chr(128 + ($v & 63));
-            } else if ($v < 1 << 31) {
+            } elseif ($v < 1 << 31) {
                 // 6 bytes
                 $output .= chr(252 + ($v >> 30))
                     . chr(128 + (($v >> 24) & 63))
@@ -3279,7 +3287,7 @@ class Net_IDNA2
                 $out_len++;
                 $output[$out_len] = 0;
             }
-            $output[$out_len] += ord($input{$i}) << (8 * (3 - ($i % 4) ) );
+            $output[$out_len] += ord($input{$i}) << (8 * (3 - ($i % 4)));
         }
         return $output;
     }
@@ -3321,7 +3329,7 @@ class Net_IDNA2
     {
         if ($octet >= (1 << 16)) {
             $w = 31;
-        } else if ($octet >= (1 << 8)) {
+        } elseif ($octet >= (1 << 8)) {
             $w = 15;
         } else {
             $w = 7;
@@ -3365,7 +3373,7 @@ class Net_IDNA2
      * @return Net_IDNA2
      * @access public
      */
-    function getInstance($params = array())
+    public function getInstance($params = array())
     {
         return new Net_IDNA2($params);
     }
@@ -3382,7 +3390,7 @@ class Net_IDNA2
      * @return object Net_IDNA2
      * @access public
      */
-    function singleton($params = array())
+    public function singleton($params = array())
     {
         static $instances;
         if (!isset($instances)) {
@@ -3398,5 +3406,3 @@ class Net_IDNA2
     }
     // }}}
 }
-
-?>
