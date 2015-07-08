@@ -4,8 +4,8 @@ namespace Email;
 
 use Zend\Validator\Ip;
 use Psr\Log\LoggerInterface;
+use TrueBV\Punycode;
 
-require_once(__DIR__ . "/../Net/IDNA2.php");
 
 class Parse
 {
@@ -38,6 +38,7 @@ class Parse
      */
     protected $logger      = null;
 
+    protected $punycode;
 
     /**
      * Allow Parse to be instantiated as a singleton
@@ -50,6 +51,14 @@ class Parse
         }
 
         return self::$instance;
+    }
+
+
+    public function getPunycode() {
+        if (!$this->punycode)
+            $this->punycode = new Punycode();
+
+        return $this->punycode;
     }
 
     /**
@@ -477,11 +486,10 @@ class Parse
                     }
                 } else {
                     if ($subState == self::STATE_DOMAIN) {
-                        $idna = new \Net_IDNA2();
                         try {
                             // Test by trying to encode the current character into Punycode
                             // Punycode should match the traditional domain name subset of characters
-                            if (preg_match('/[a-z0-9\-]/', $idna->encode($curChar))) {
+                            if (preg_match('/[a-z0-9\-]/', $this->getPunycode()->encode($curChar))) {
                                 $emailAddress['domain'] .= $curChar;
                             } else {
                                 $emailAddress['invalid'] = true;
@@ -715,9 +723,8 @@ class Parse
             } elseif ($emailAddress['domain']) {
                 // Check for IDNA
                 if (max(array_keys(count_chars($emailAddress['domain'], 1))) > 127) {
-                    $idna = new \Net_IDNA2();
                     try {
-                        $emailAddress['domain'] = $idna->encode($emailAddress['domain']);
+                        $emailAddress['domain'] = $this->getPunycode()->encode($emailAddress['domain']);
                     } catch (Exception $e) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";

@@ -1,29 +1,30 @@
 {
-    "name": "mmucklo/email-parse",
-    "type": "library",
-    "description": "email-parse a (reasonably) RFC822 / RF2822-compliant library for parsing multiple (and single) email addresses",
-    "license": "TBD",
-    "keywords": ["email", "parse", "RFC822", "RFC2822", "email-parse"],
-    "authors": [
-	{
-	    "name": "Matthew J. Mucklo",
-	    "email": "mmucklo@gmail.com"
-	}
-    ],
-    "require-dev": {
-        "phpunit/phpunit": "4.7.*",
-	"fabpot/php-cs-fixer": "dev-master",
-        "symfony/yaml": ">=2.7,<=2.9"
-    },
-    "require": {
-        "php": ">=5.3.17",
-	"psr/log": "1.0.0",
-	"zendframework/zend-validator" : "*"
-    },
-    "autoload": {
-        "psr-0": {
-	    "Email": "src/"
-	}
+  "name": "mmucklo/email-parse",
+  "type": "library",
+  "description": "email-parse a (reasonably) RFC822 / RF2822-compliant library for parsing multiple (and single) email addresses",
+  "license": "TBD",
+  "keywords": ["email", "parse", "RFC822", "RFC2822", "email-parse"],
+  "authors": [
+    {
+      "name": "Matthew J. Mucklo",
+      "email": "mmucklo@gmail.com"
     }
+  ],
+  "require-dev": {
+    "phpunit/phpunit": "4.7.*",
+    "fabpot/php-cs-fixer": "dev-master",
+    "symfony/yaml": ">=2.7,<=2.9"
+  },
+  "require": {
+    "php": ">=5.4.46",
+    "true/punycode": "~2.0",
+    "psr/log": "1.0.0",
+    "zendframework/zend-validator" : "*"
+  },
+  "autoload": {
+    "psr-4": {
+	    "Email\\": "src/"
+    }
+  }
 }
 
