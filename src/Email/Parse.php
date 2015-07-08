@@ -118,7 +118,7 @@ class Parse
      *               'email_addresses' =>
      *                    array('address' => string, // the full address (not including comments)
      *                        'original_address' => string, // the full address including comments
-     *                        'simple_address' => string, // simply local_part@domain_part (e.g. someone@oodle.com)
+     *                        'simple_address' => string, // simply local_part@domain_part (e.g. someone@somewhere.com)
      *                         'name' => string, // the name on the email if given (e.g.: John Q. Public), including any quotes
      *                         'name_parsed' => string, // the name on the email if given (e.g.: John Q. Public), excluding any quotes
      *                        'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
