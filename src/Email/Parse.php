@@ -52,6 +52,15 @@ class Parse
         return self::$instance;
     }
 
+    /**
+     * Constructor
+     * @param LoggerInterface $logger (optional) Psr-compliant logger
+     */
+    public function __construct(LoggerInterface $logger = null)
+    {
+        $this->logger = $logger;
+    }
+
 
     public function getPunycode()
     {
@@ -62,14 +71,6 @@ class Parse
         return $this->punycode;
     }
 
-    /**
-     * Constructor
-     * @param LoggerInterface $logger (optional) Psr-compliant logger
-     */
-    public function __construct(LoggerInterface $logger = null)
-    {
-        $this->logger = $logger;
-    }
 
     /**
      * Allows for post-construct injection of a logger
@@ -329,6 +330,8 @@ class Parse
                             $emailAddress['invalid_reason'] = 'Email address contains whitespace';
                         } else {
                             // If the previous section was a quoted string, then use that for the name
+
+
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
                                 $emailAddress['name_quoted'] = true;
@@ -653,6 +656,22 @@ class Parse
         }
     }
 
+    private function handleQuote(&$emailAddress) {
+        if ($emailAddress['quote_temp']) {
+            $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
+            $emailAddress['name_quoted'] = true;
+            $emailAddress['quote_temp'] = '';
+        } elseif ($emailAddress['address_temp']) {
+            $emailAddress['name_parsed'] .= $emailAddress['address_temp'];
+            $emailAddress['name_quoted'] = $emailAddress['address_temp_quoted'];
+            $emailAddress['address_temp_quoted'] = false;
+            $emailAddress['address_temp'] = '';
+            if ($emailAddress['address_temp_period'] > 0) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
+            }
+        }
+    }
 
     /**
      * Helper function for creating a blank email address array used by Email\Parse->parse
