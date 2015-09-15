@@ -25,7 +25,7 @@
     "psr-4": {
 	    "Email\\": "src/"
     }
-  }
+  },
   "autoload-dev": {
     "psr-4": {
 	    "Email\\Tests\\": "tests/"
