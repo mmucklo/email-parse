@@ -1,7 +1,7 @@
 <?php
 
 require_once(__DIR__ . '/../../vendor/autoload.php');
-require_once(__DIR__ . '/../../src/Email/Parse.php');
+require_once(__DIR__ . '/../../src/Parse.php');
 
 use Email\Parse;
 
