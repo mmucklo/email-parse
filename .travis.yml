@@ -9,6 +9,7 @@ php:
     - 7.0
 
 before_script:
-    - COMPOSER_ROOT_VERSION=dev-master composer --prefer-source install
+    - composer self-update
+    - composer install
 
 script: vendor/phpunit/phpunit/phpunit --configuration phpunit.xml-dist
