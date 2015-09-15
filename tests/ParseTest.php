@@ -1,11 +1,13 @@
 <?php
 
-require_once(__DIR__ . '/../../vendor/autoload.php');
-require_once(__DIR__ . '/../../src/Email/Parse.php');
+namespace Email\Tests;
+
+require_once(__DIR__ . '/../vendor/autoload.php');
+require_once(__DIR__ . '/../src/Parse.php');
 
 use Email\Parse;
 
-class InflectTest extends PHPUnit_Framework_TestCase
+class InflectTest extends \PHPUnit_Framework_TestCase
 {
     function testParseEmailAddresses()
     {
