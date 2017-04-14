@@ -54,7 +54,7 @@ class Parse
 
     /**
      * Constructor
-     * @param LoggerInterface $logger (optional) Psr-compliant logger
+     * @param null|LoggerInterface $logger (optional) Psr-compliant logger
      */
     public function __construct(LoggerInterface $logger = null)
     {
@@ -207,10 +207,10 @@ class Parse
      */
     public function parse($emails, $multiple = true, $encoding = 'UTF-8')
     {
-        $emailAddresses = array();
+        $emailAddresses = [];
 
         // Variables to be used during email address collection
-        $emailAddress = $this->_buildEmailAddressArray();
+        $emailAddress = $this->buildEmailAddressArray();
 
         $success = true;
         $reason = null;
@@ -586,7 +586,7 @@ class Parse
                 }
 
                 // Reset all local variables used during parsing
-                $emailAddress = $this->_buildEmailAddressArray();
+                $emailAddress = $this->buildEmailAddressArray();
                 $subState = self::STATE_START;
                 $state = self::STATE_TRIM;
             }
@@ -649,7 +649,7 @@ class Parse
             }
         }
         if ($multiple) {
-            return (array('success' => $success, 'reason' => $reason, 'email_addresses' => $emailAddresses));
+            return (['success' => $success, 'reason' => $reason, 'email_addresses' => $emailAddresses]);
         } else {
             return $emailAddresses[0];
         }
@@ -676,9 +676,9 @@ class Parse
     /**
      * Helper function for creating a blank email address array used by Email\Parse->parse
      */
-    private static function _buildEmailAddressArray()
+    private function buildEmailAddressArray()
     {
-        $emailAddress = array('original_address' => '',
+        $emailAddress = ['original_address' => '',
                       'name_parsed' => '',
                       'local_part_parsed' => '',
                       'domain' => '',
@@ -691,7 +691,7 @@ class Parse
                       'quote_temp' => '',
                       'address_temp' => '',
                       'address_temp_period' => 0
-                      );
+                      ];
         return $emailAddress;
     }
 
@@ -789,7 +789,7 @@ class Parse
         }
 
         // Build the email address hash
-        $emailAddrDef = array('address' => '',
+        $emailAddrDef = ['address' => '',
                       'simple_address' => '',
                       'original_address' => rtrim($emailAddress['original_address']),
                       'name' => $name,
@@ -800,7 +800,7 @@ class Parse
                       'domain' => $emailAddress['domain'],
                       'ip' => $emailAddress['ip'],
                       'invalid' => $emailAddress['invalid'],
-                      'invalid_reason' => $emailAddress['invalid_reason']);
+                      'invalid_reason' => $emailAddress['invalid_reason']];
 
 
 
@@ -825,7 +825,7 @@ class Parse
     protected function validateDomainName($domain, $encoding = 'UTF-8')
     {
         if (mb_strlen($domain, $encoding) > 255) {
-            return array('valid' => false, 'reason' => 'Domain name too long');
+            return ['valid' => false, 'reason' => 'Domain name too long'];
         } else {
             $origEncoding = mb_regex_encoding();
             mb_regex_encoding($encoding);
@@ -833,18 +833,18 @@ class Parse
             mb_regex_encoding($origEncoding);
             foreach ($parts as $part) {
                 if (mb_strlen($part, $encoding) > 63) {
-                    return array('valid' => false, 'reason' => "Domain name part '${part}' too long");
+                    return ['valid' => false, 'reason' => "Domain name part '${part}' too long"];
                 }
                 if (!preg_match('/^[a-zA-Z0-9\-]+$/', $part)) {
-                    return array('valid' => false, 'reason' => "Domain name '${domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '${part}' contains characters outside of that range.");
+                    return ['valid' => false, 'reason' => "Domain name '${domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '${part}' contains characters outside of that range."];
                 }
                 if (mb_substr($part, 0, 1, $encoding) == '-' || mb_substr($part, mb_strlen($part) - 1, 1, $encoding) == '-') {
-                    return array('valid' => false, 'reason' => "Parts of the domain name '${domain}' can not start or end with '-'.  This part does: ${part}");
+                    return ['valid' => false, 'reason' => "Parts of the domain name '${domain}' can not start or end with '-'.  This part does: ${part}"];
                 }
             }
         }
 
         // @TODO - possibly check DNS / MX records for domain to make sure it exists?
-        return array('valid' => true);
+        return ['valid' => true];
     }
 }
