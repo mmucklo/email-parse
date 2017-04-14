@@ -332,7 +332,7 @@ class Parse
                             $emailAddress['invalid_reason'] = 'Email address contains whitespace';
                         } else {
                             // If the previous section was a quoted string, then use that for the name
-			    $this->handleQuote($emailAddress);
+                $this->handleQuote($emailAddress);
                             $emailAddress['name_parsed'] .= $curChar;
                         }
                     }
@@ -344,7 +344,7 @@ class Parse
                     } else {
                         // Here should be the start of the local part for sure everything else then is part of the name
                         $subState = self::STATE_LOCAL_PART;
-    			$this->handleQuote($emailAddress);
+                $this->handleQuote($emailAddress);
                     }
                 } elseif ($curChar == '>') {
                     // should be end of domain part
@@ -604,15 +604,15 @@ class Parse
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'No email address found';
                 $this->addAddress(
-                  $emailAddresses,
-                  $emailAddress,
-                  $encoding, $i);
+                    $emailAddresses,
+                    $emailAddress,
+                    $encoding, $i);
             }
         } elseif ($emailAddress['original_address']) {
             $invalid = $this->addAddress(
-                      $emailAddresses,
-                      $emailAddress,
-                      $encoding, $i);
+                        $emailAddresses,
+                        $emailAddress,
+                        $encoding, $i);
             if ($invalid) {
                 if (!$success) {
                     $reason = 'Invalid email addresses';
@@ -658,19 +658,19 @@ class Parse
     private function buildEmailAddressArray()
     {
         $emailAddress = ['original_address' => '',
-                      'name_parsed' => '',
-                      'local_part_parsed' => '',
-                      'domain' => '',
-                      'ip' => '',
-                      'invalid' => false,
-                      'invalid_reason' => null,
-                      'local_part_quoted' => false,
-                      'name_quoted' => false,
-                      'address_temp_quoted' => false,
-                      'quote_temp' => '',
-                      'address_temp' => '',
-                      'address_temp_period' => 0
-                      ];
+                        'name_parsed' => '',
+                        'local_part_parsed' => '',
+                        'domain' => '',
+                        'ip' => '',
+                        'invalid' => false,
+                        'invalid_reason' => null,
+                        'local_part_quoted' => false,
+                        'name_quoted' => false,
+                        'address_temp_quoted' => false,
+                        'quote_temp' => '',
+                        'address_temp' => '',
+                        'address_temp_period' => 0
+                        ];
         return $emailAddress;
     }
 
@@ -769,17 +769,17 @@ class Parse
 
         // Build the email address hash
         $emailAddrDef = ['address' => '',
-                      'simple_address' => '',
-                      'original_address' => rtrim($emailAddress['original_address']),
-                      'name' => $name,
-                      'name_parsed' => $emailAddress['name_parsed'],
-                      'local_part' => $localPart,
-                      'local_part_parsed' => $emailAddress['local_part_parsed'],
-                      'domain_part' => $domainPart,
-                      'domain' => $emailAddress['domain'],
-                      'ip' => $emailAddress['ip'],
-                      'invalid' => $emailAddress['invalid'],
-                      'invalid_reason' => $emailAddress['invalid_reason']];
+                        'simple_address' => '',
+                        'original_address' => rtrim($emailAddress['original_address']),
+                        'name' => $name,
+                        'name_parsed' => $emailAddress['name_parsed'],
+                        'local_part' => $localPart,
+                        'local_part_parsed' => $emailAddress['local_part_parsed'],
+                        'domain_part' => $domainPart,
+                        'domain' => $emailAddress['domain'],
+                        'ip' => $emailAddress['ip'],
+                        'invalid' => $emailAddress['invalid'],
+                        'invalid_reason' => $emailAddress['invalid_reason']];
 
 
 
