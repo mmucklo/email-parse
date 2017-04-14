@@ -62,6 +62,9 @@ class Parse
     }
 
 
+    /**
+     * @return Punycode
+     */
     public function getPunycode()
     {
         if (!$this->punycode) {
@@ -626,7 +629,12 @@ class Parse
         }
     }
 
-    private function handleQuote(&$emailAddress)
+    /**
+     * Handles the case of a quoted name
+     *
+     * @param array $emailAddress
+     */
+    private function handleQuote(array &$emailAddress)
     {
         if ($emailAddress['quote_temp']) {
             $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
