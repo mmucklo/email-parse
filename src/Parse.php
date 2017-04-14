@@ -35,7 +35,7 @@ class Parse
     /**
      * @var LoggerInterface
      */
-    protected $logger      = null;
+    protected $logger = null;
 
     protected $punycode;
 
@@ -228,7 +228,7 @@ class Parse
             $reason = 'No emails passed in';
         }
         $curChar = null;
-        for ($i = 0; $i < $len ; $i++) {
+        for ($i = 0; $i < $len; $i++) {
             $prevChar = $curChar; // Previous Charater
             $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
             switch ($state) {
@@ -299,7 +299,7 @@ class Parse
 
                     // Look ahead for comments after the address
                     $foundComment = false;
-                    for ($j = ($i + 1) ; $j < $len ; $j++) {
+                    for ($j = ($i + 1); $j < $len; $j++) {
                         $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
                         if ($lookAheadChar == '(') {
                             $foundComment = true;
@@ -530,7 +530,7 @@ class Parse
                 $emailAddress['original_address'] .= $curChar;
                 if ($curChar == '"') {
                     $backslashCount = 0;
-                    for ($j = $i ; $j >= 0 ; $j--) {
+                    for ($j = $i; $j >= 0; $j--) {
                         if (mb_substr($emails, $j, 1, $encoding) == '\\') {
                             $backslashCount++;
                         } else {
@@ -735,19 +735,19 @@ class Parse
                 try {
                     if (!$this->ipValidator->isValid($emailAddress['ip'])) {
                         $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
+                        $emailAddress['invalid_reason'] = 'IP address invalid: \''.$emailAddress['ip'].'\' does not appear to be a valid IP address';
                     } elseif (preg_match('/192\.168\.\d+\.\d+/', $emailAddress['ip']) ||
                         preg_match('/172\.(1[6-9]|2[0-9]|3[0-2])\.\d+\.\d+/', $emailAddress['ip']) ||
                         preg_match('/10\.\d+\.\d+\.\d+/', $emailAddress['ip'])) {
                         $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid (private): ' .  $emailAddress['ip'];
+                        $emailAddress['invalid_reason'] = 'IP address invalid (private): '.$emailAddress['ip'];
                     } elseif (preg_match('/169\.254\.\d+\.\d+/', $emailAddress['ip'])) {
                         $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid (APIPA): ' .  $emailAddress['ip'];
+                        $emailAddress['invalid_reason'] = 'IP address invalid (APIPA): '.$emailAddress['ip'];
                     }
                 } catch (\Exception $e) {
                     $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = 'IP address invalid: ' . $emailAddress['ip'];
+                    $emailAddress['invalid_reason'] = 'IP address invalid: '.$emailAddress['ip'];
                 }
             } elseif ($emailAddress['domain']) {
                 // Check for IDNA
@@ -763,7 +763,7 @@ class Parse
                 $result = $this->validateDomainName($emailAddress['domain']);
                 if (!$result['valid']) {
                     $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: ' . $result['reason'] : 'Domain invalid for some unknown reason';
+                    $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: '.$result['reason'] : 'Domain invalid for some unknown reason';
                 }
             }
         }
@@ -773,7 +773,7 @@ class Parse
         $emailAddress['original_address'] = rtrim($emailAddress['original_address']);
         $name = $emailAddress['name_quoted'] ? "\"{$emailAddress['name_parsed']}\"" : $emailAddress['name_parsed'];
         $localPart = $emailAddress['local_part_quoted'] ? "\"{$emailAddress['local_part_parsed']}\"" : $emailAddress['local_part_parsed'];
-        $domainPart = $emailAddress['ip'] ?  '[' . $emailAddress['ip'] . ']' : $emailAddress['domain'];
+        $domainPart = $emailAddress['ip'] ? '['.$emailAddress['ip'].']' : $emailAddress['domain'];
 
         if (!$emailAddress['invalid']) {
             if (mb_strlen($domainPart, $encoding) == 0) {
