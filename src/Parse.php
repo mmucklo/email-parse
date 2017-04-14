@@ -570,7 +570,7 @@ class Parse
 
             // if there's a $emailAddress['original_address'] and the state is set to STATE_END_ADDRESS
             if ($state == self::STATE_END_ADDRESS && strlen($emailAddress['original_address']) > 0) {
-                $invalid = $this->_addAddress(
+                $invalid = $this->addAddress(
                     $emailAddresses,
                     $emailAddress,
                     $encoding,
@@ -629,13 +629,13 @@ class Parse
             if (!$multiple) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'No email address found';
-                $this->_addAddress(
+                $this->addAddress(
                   $emailAddresses,
                   $emailAddress,
                   $encoding, $i);
             }
         } elseif ($emailAddress['original_address']) {
-            $invalid = $this->_addAddress(
+            $invalid = $this->addAddress(
                       $emailAddresses,
                       $emailAddress,
                       $encoding, $i);
@@ -704,7 +704,7 @@ class Parse
      * @param $i
      * @return mixed
      */
-    private function _addAddress(
+    private function addAddress(
                         &$emailAddresses,
                         &$emailAddress,
                         $encoding,
@@ -714,12 +714,12 @@ class Parse
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = "Incomplete address";
-                $this->log('error', "Email\\Parse->_addAddress - corruption during parsing - leftovers:\n\$i: ${i}\n\$emailAddress['address_temp'] : {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\n");
+                $this->log('error', "Email\\Parse->addAddress - corruption during parsing - leftovers:\n\$i: ${i}\n\$emailAddress['address_temp'] : {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\n");
             } elseif ($emailAddress['ip'] && $emailAddress['domain']) {
                 // Error - this should never occur
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = "Confusion during parsing";
-                $this->log('error', "Email\\Parse->_addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
+                $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip'] || ($emailAddress['domain'] && preg_match('/\d+\.\d+\.\d+\.\d+/', $emailAddress['domain']))) {
                 // also test if the current domain looks like an IP address
 
