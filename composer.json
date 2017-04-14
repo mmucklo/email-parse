@@ -11,8 +11,8 @@
     }
   ],
   "require-dev": {
-    "phpunit/phpunit": "4.7.*",
-    "fabpot/php-cs-fixer": "dev-master",
+    "phpunit/phpunit": "^5.7.0",
+    "friendsofphp/php-cs-fixer": "dev-master",
     "symfony/yaml": ">=2.7,<=2.9"
   },
   "require": {
@@ -25,6 +25,9 @@
     "psr-4": {
 	    "Email\\": "src/"
     }
+  },
+  "config": {
+    "bin-dir": "bin"
   },
   "autoload-dev": {
     "psr-4": {

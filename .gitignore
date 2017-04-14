@@ -1,8 +1,21 @@
-.php_cs.cache
+# standard
 composer.phar
-composer.lock
+
+# emacs
 *~
 \#*#
 .\#*
+
+# composer
 vendor/*
+
+# phpstorm
 .idea
+
+# bin
+bin/php-cs-fixer
+bin/phpunit
+
+# Other
+.php_cs.cache
+.coverage

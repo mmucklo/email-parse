@@ -655,7 +655,8 @@ class Parse
         }
     }
 
-    private function handleQuote(&$emailAddress) {
+    private function handleQuote(&$emailAddress)
+    {
         if ($emailAddress['quote_temp']) {
             $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
             $emailAddress['name_quoted'] = true;
