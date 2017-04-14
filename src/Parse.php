@@ -329,23 +329,7 @@ class Parse
                             $emailAddress['invalid_reason'] = 'Email address contains whitespace';
                         } else {
                             // If the previous section was a quoted string, then use that for the name
-
-
-                            if ($emailAddress['quote_temp']) {
-                                $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
-                                $emailAddress['name_quoted'] = true;
-                                $emailAddress['quote_temp'] = '';
-                            } elseif ($emailAddress['address_temp']) {
-                                // Otherwise use the last section for the name
-                                $emailAddress['name_parsed'] .= $emailAddress['address_temp'];
-                                $emailAddress['name_quoted'] = $emailAddress['address_temp_quoted'];
-                                $emailAddress['address_temp_quoted'] = false;
-                                $emailAddress['address_temp'] = '';
-                                if ($emailAddress['address_temp_period'] > 0) {
-                                    $emailAddress['invalid'] = true;
-                                    $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
-                                }
-                            }
+			    $this->handleQuote($emailAddress);
                             $emailAddress['name_parsed'] .= $curChar;
                         }
                     }
@@ -357,20 +341,7 @@ class Parse
                     } else {
                         // Here should be the start of the local part for sure everything else then is part of the name
                         $subState = self::STATE_LOCAL_PART;
-                        if ($emailAddress['quote_temp']) {
-                            $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
-                            $emailAddress['name_quoted'] = true;
-                            $emailAddress['quote_temp'] = '';
-                        } elseif ($emailAddress['address_temp']) {
-                            $emailAddress['name_parsed'] .= $emailAddress['address_temp'];
-                            $emailAddress['name_quoted'] = $emailAddress['address_temp_quoted'];
-                            $emailAddress['address_temp_quoted'] = false;
-                            $emailAddress['address_temp'] = '';
-                            if ($emailAddress['address_temp_period'] > 0) {
-                                $emailAddress['invalid'] = true;
-                                $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
-                            }
-                        }
+    			$this->handleQuote($emailAddress);
                     }
                 } elseif ($curChar == '>') {
                     // should be end of domain part
