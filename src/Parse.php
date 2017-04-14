@@ -232,22 +232,22 @@ class Parse
             $prevChar = $curChar; // Previous Charater
             $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
             switch ($state) {
-            case self::STATE_SKIP_AHEAD:
-                // Skip ahead is set when a bad email address is encountered
-                //  It's supposed to skip to the next delimiter and continue parsing from there
-                if ($multiple &&
-                    ($curChar == ' ' ||
-                    $curChar == "\r" ||
-                    $curChar == "\n" ||
-                    $curChar == "\t" ||
-                     $curChar == ',')) {
-                    $state = self::STATE_END_ADDRESS;
-                } else {
-                    $emailAddress['original_address'] .= $curChar;
-                }
+                case self::STATE_SKIP_AHEAD:
+                    // Skip ahead is set when a bad email address is encountered
+                    //  It's supposed to skip to the next delimiter and continue parsing from there
+                    if ($multiple &&
+                        ($curChar == ' ' ||
+                        $curChar == "\r" ||
+                        $curChar == "\n" ||
+                        $curChar == "\t" ||
+                         $curChar == ',')) {
+                        $state = self::STATE_END_ADDRESS;
+                    } else {
+                        $emailAddress['original_address'] .= $curChar;
+                    }
 
-                break;
-                /** @noinspection PhpMissingBreakStatementInspection */
+                    break;
+                    /** @noinspection PhpMissingBreakStatementInspection */
                 case self::STATE_TRIM:
                 if ($curChar == ' ' ||
                     $curChar == "\r" ||
@@ -268,75 +268,100 @@ class Parse
                     // Fall through to next case self::STATE_ADDRESS on purpose here
                 }
                 // Fall through
-            case self::STATE_ADDRESS:
-                if ($curChar != ',' || !$multiple) {
-                    $emailAddress['original_address'] .= $curChar;
-                }
-
-                if ($curChar == '(') {
-                    // Handle comment
-                    $state = self::STATE_COMMENT;
-                    $commentNestLevel = 1;
-                    break;
-                } elseif ($curChar == ',') {
-                    // Handle Comma
-                    if ($multiple && ($subState == self::STATE_DOMAIN || $subState == self::STATE_AFTER_DOMAIN)) {
-                        // If we're already in the domain part, this should be the end of the address
-                        $state = self::STATE_END_ADDRESS;
-                        break;
-                    } else {
-                        $emailAddress['invalid'] = true;
-                        if ($multiple || ($i + 5) >= $len) {
-                            $emailAddress['invalid_reason'] = 'Misplaced Comma or missing "@" symbol';
-                        } else {
-                            $emailAddress['invalid_reason'] = 'Comma not permitted - only one email address allowed';
-                        }
+                case self::STATE_ADDRESS:
+                    if ($curChar != ',' || !$multiple) {
+                        $emailAddress['original_address'] .= $curChar;
                     }
-                } elseif ($curChar == ' ' ||
-                      $curChar == "\t" || $curChar == "\r" ||
-                      $curChar == "\n") {
-                    // Handle Whitespace
 
-                    // Look ahead for comments after the address
-                    $foundComment = false;
-                    for ($j = ($i + 1); $j < $len; $j++) {
-                        $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
-                        if ($lookAheadChar == '(') {
-                            $foundComment = true;
-                            break;
-                        } elseif ($lookAheadChar != ' ' &&
-                            $lookAheadChar != "\t" &&
-                            $lookAheadChar != "\r" &&
-                            $lookAheadChar != "\n") {
-                            break;
-                        }
-                    }
-                    // Check if there's a comment found ahead
-                    if ($foundComment) {
-                        if ($subState == self::STATE_DOMAIN) {
-                            $subState = self::STATE_AFTER_DOMAIN;
-                        } elseif ($subState == self::STATE_LOCAL_PART) {
-                            $emailAddress['invalid'] = true;
-                            $emailAddress['invalid_reason'] = 'Email Address contains whitespace';
-                        }
-                    } elseif ($subState == self::STATE_DOMAIN || $subState == self::STATE_AFTER_DOMAIN) {
-                        // If we're already in the domain part, this should be the end of the whole address
-                        $state = self::STATE_END_ADDRESS;
+                    if ($curChar == '(') {
+                        // Handle comment
+                        $state = self::STATE_COMMENT;
+                        $commentNestLevel = 1;
                         break;
-                    } else {
-                        if ($subState == self::STATE_LOCAL_PART) {
-                            $emailAddress['invalid'] = true;
-                            $emailAddress['invalid_reason'] = 'Email address contains whitespace';
+                    } elseif ($curChar == ',') {
+                        // Handle Comma
+                        if ($multiple && ($subState == self::STATE_DOMAIN || $subState == self::STATE_AFTER_DOMAIN)) {
+                            // If we're already in the domain part, this should be the end of the address
+                            $state = self::STATE_END_ADDRESS;
+                            break;
                         } else {
-                            // If the previous section was a quoted string, then use that for the name
+                            $emailAddress['invalid'] = true;
+                            if ($multiple || ($i + 5) >= $len) {
+                                $emailAddress['invalid_reason'] = 'Misplaced Comma or missing "@" symbol';
+                            } else {
+                                $emailAddress['invalid_reason'] = 'Comma not permitted - only one email address allowed';
+                            }
+                        }
+                    } elseif ($curChar == ' ' ||
+                          $curChar == "\t" || $curChar == "\r" ||
+                          $curChar == "\n") {
+                        // Handle Whitespace
+
+                        // Look ahead for comments after the address
+                        $foundComment = false;
+                        for ($j = ($i + 1); $j < $len; $j++) {
+                            $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
+                            if ($lookAheadChar == '(') {
+                                $foundComment = true;
+                                break;
+                            } elseif ($lookAheadChar != ' ' &&
+                                $lookAheadChar != "\t" &&
+                                $lookAheadChar != "\r" &&
+                                $lookAheadChar != "\n") {
+                                break;
+                            }
+                        }
+                        // Check if there's a comment found ahead
+                        if ($foundComment) {
+                            if ($subState == self::STATE_DOMAIN) {
+                                $subState = self::STATE_AFTER_DOMAIN;
+                            } elseif ($subState == self::STATE_LOCAL_PART) {
+                                $emailAddress['invalid'] = true;
+                                $emailAddress['invalid_reason'] = 'Email Address contains whitespace';
+                            }
+                        } elseif ($subState == self::STATE_DOMAIN || $subState == self::STATE_AFTER_DOMAIN) {
+                            // If we're already in the domain part, this should be the end of the whole address
+                            $state = self::STATE_END_ADDRESS;
+                            break;
+                        } else {
+                            if ($subState == self::STATE_LOCAL_PART) {
+                                $emailAddress['invalid'] = true;
+                                $emailAddress['invalid_reason'] = 'Email address contains whitespace';
+                            } else {
+                                // If the previous section was a quoted string, then use that for the name
 
 
+                                if ($emailAddress['quote_temp']) {
+                                    $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
+                                    $emailAddress['name_quoted'] = true;
+                                    $emailAddress['quote_temp'] = '';
+                                } elseif ($emailAddress['address_temp']) {
+                                    // Otherwise use the last section for the name
+                                    $emailAddress['name_parsed'] .= $emailAddress['address_temp'];
+                                    $emailAddress['name_quoted'] = $emailAddress['address_temp_quoted'];
+                                    $emailAddress['address_temp_quoted'] = false;
+                                    $emailAddress['address_temp'] = '';
+                                    if ($emailAddress['address_temp_period'] > 0) {
+                                        $emailAddress['invalid'] = true;
+                                        $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
+                                    }
+                                }
+                                $emailAddress['name_parsed'] .= $curChar;
+                            }
+                        }
+                    } elseif ($curChar == '<') {
+                        // Start of the local part
+                        if ($subState == self::STATE_LOCAL_PART || $subState == self::STATE_DOMAIN) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = 'Email address contains multiple opening "<" (either a typo or multiple emails that need to be separated by a comma or space)';
+                        } else {
+                            // Here should be the start of the local part for sure everything else then is part of the name
+                            $subState = self::STATE_LOCAL_PART;
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
                                 $emailAddress['name_quoted'] = true;
                                 $emailAddress['quote_temp'] = '';
                             } elseif ($emailAddress['address_temp']) {
-                                // Otherwise use the last section for the name
                                 $emailAddress['name_parsed'] .= $emailAddress['address_temp'];
                                 $emailAddress['name_quoted'] = $emailAddress['address_temp_quoted'];
                                 $emailAddress['address_temp_quoted'] = false;
@@ -346,62 +371,37 @@ class Parse
                                     $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
                                 }
                             }
-                            $emailAddress['name_parsed'] .= $curChar;
                         }
-                    }
-                } elseif ($curChar == '<') {
-                    // Start of the local part
-                    if ($subState == self::STATE_LOCAL_PART || $subState == self::STATE_DOMAIN) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'Email address contains multiple opening "<" (either a typo or multiple emails that need to be separated by a comma or space)';
-                    } else {
-                        // Here should be the start of the local part for sure everything else then is part of the name
-                        $subState = self::STATE_LOCAL_PART;
-                        if ($emailAddress['quote_temp']) {
-                            $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
-                            $emailAddress['name_quoted'] = true;
-                            $emailAddress['quote_temp'] = '';
-                        } elseif ($emailAddress['address_temp']) {
-                            $emailAddress['name_parsed'] .= $emailAddress['address_temp'];
-                            $emailAddress['name_quoted'] = $emailAddress['address_temp_quoted'];
-                            $emailAddress['address_temp_quoted'] = false;
-                            $emailAddress['address_temp'] = '';
-                            if ($emailAddress['address_temp_period'] > 0) {
-                                $emailAddress['invalid'] = true;
-                                $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
-                            }
-                        }
-                    }
-                } elseif ($curChar == '>') {
-                    // should be end of domain part
-                    if ($subState != self::STATE_DOMAIN) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Did not find domain name before a closing '>'";
-                    } else {
-                        $subState = self::STATE_AFTER_DOMAIN;
-                    }
-                } elseif ($curChar == '"') {
-                    // If we hit a quote - change to the quote state, unless it's in the domain, in which case it's error
-                    if ($subState == self::STATE_DOMAIN || $subState == self::STATE_AFTER_DOMAIN) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'Quote \'"\' found where it shouldn\'t be';
-                    } else {
-                        $state = self::STATE_QUOTE;
-                    }
-                } elseif ($curChar == '@') {
-                    // Handle '@' sign
-                    if ($subState == self::STATE_DOMAIN) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Multiple at '@' symbols in email address";
-                    } elseif ($subState == self::STATE_AFTER_DOMAIN) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Stray at '@' symbol found after domain name";
-                    } else {
-                        $subState = self::STATE_DOMAIN;
-                        if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
+                    } elseif ($curChar == '>') {
+                        // should be end of domain part
+                        if ($subState != self::STATE_DOMAIN) {
                             $emailAddress['invalid'] = true;
-                            $emailAddress['invalid_reason'] = 'Something went wrong during parsing.';
-                            $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: ${i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: ${emails}\n\$curChar: ${curChar}");
+                            $emailAddress['invalid_reason'] = "Did not find domain name before a closing '>'";
+                        } else {
+                            $subState = self::STATE_AFTER_DOMAIN;
+                        }
+                    } elseif ($curChar == '"') {
+                        // If we hit a quote - change to the quote state, unless it's in the domain, in which case it's error
+                        if ($subState == self::STATE_DOMAIN || $subState == self::STATE_AFTER_DOMAIN) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = 'Quote \'"\' found where it shouldn\'t be';
+                        } else {
+                            $state = self::STATE_QUOTE;
+                        }
+                    } elseif ($curChar == '@') {
+                        // Handle '@' sign
+                        if ($subState == self::STATE_DOMAIN) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = "Multiple at '@' symbols in email address";
+                        } elseif ($subState == self::STATE_AFTER_DOMAIN) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = "Stray at '@' symbol found after domain name";
+                        } else {
+                            $subState = self::STATE_DOMAIN;
+                            if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
+                                $emailAddress['invalid'] = true;
+                                $emailAddress['invalid_reason'] = 'Something went wrong during parsing.';
+                                $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: ${i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: ${emails}\n\$curChar: ${curChar}");
                         } elseif ($emailAddress['quote_temp']) {
                             $emailAddress['local_part_parsed'] = $emailAddress['quote_temp'];
                             $emailAddress['quote_temp'] = '';
