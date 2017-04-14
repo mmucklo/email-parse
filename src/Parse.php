@@ -228,7 +228,6 @@ class Parse
             $reason = 'No emails passed in';
         }
         $curChar = null;
-        $prevChar = null;
         for ($i = 0; $i < $len ; $i++) {
             $prevChar = $curChar; // Previous Charater
             $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
