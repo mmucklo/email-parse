@@ -1288,3 +1288,19 @@
         ip: ''
         invalid: false
         invalid_reason: null
+-
+    emails: '"Supports (E-mail)" <support@example.org>'
+    multiple: false
+    result:
+        address: '"Supports (E-mail)" <support@example.org>'
+        simple_address: 'support@example.org'
+        original_address: '"Supports (E-mail)" <support@example.org>'
+        name: '"Supports (E-mail)"'
+        name_parsed: 'Supports (E-mail)'
+        local_part: 'support'
+        local_part_parsed: 'support'
+        domain_part: 'example.org'
+        domain: 'example.org'
+        ip: ''
+        invalid: false
+        invalid_reason: ~
