@@ -27,7 +27,7 @@ $result = Parse::getInstance()->parse("a@aaa.com b@bbb.com");
 
 Notes:
 ======
-This should be RFC 2822 compliant, although it will let a few obsolete RFC 822 addresses through such as test"test"test@xyz.com (note the quoted string in the middle of the address, which may be obsolete as of RFC 2822).  However it wont allow escaping outside of quotes such as test\@test@xyz.com.  This would have to be written as "test\@test"@xyz.com
+This should be RFC 2822 compliant, although it will let a few obsolete RFC 822 addresses through such as `test"test"test@xyz.com` (note the quoted string in the middle of the address, which may be obsolete as of RFC 2822).  However it wont allow escaping outside of quotes such as `test@test@xyz.com`.  This would have to be written as `"test@test"@xyz.com`
 
 Here are a few other examples:
 
@@ -38,7 +38,8 @@ how-about-an-ip@[10.0.10.2]
 how-about-comments(this is a comment!!)@xyz.com
 ```
 
-####Function Spec####
+#### Function Spec ####
+
 ```php
 /**
  * function parse($emails, $multiple = true, $encoding = 'UTF-8')
