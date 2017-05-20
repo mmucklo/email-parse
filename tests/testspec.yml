@@ -1272,3 +1272,19 @@
         ip: 80.67.66.65
         invalid: false
         invalid_reason: null
+-
+    emails: testing_underscore@somedomain.com
+    multiple: false
+    result:
+        address: 'testing_underscore@somedomain.com'
+        simple_address: 'testing_underscore@somedomain.com'
+        original_address: testing_underscore@somedomain.com
+        name: ''
+        name_parsed: ''
+        local_part: testing_underscore
+        local_part_parsed: testing_underscore
+        domain_part: somedomain.com
+        domain: somedomain.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
