@@ -40,27 +40,28 @@ class Parse
     protected $punycode;
 
     /**
-     * Allow Parse to be instantiated as a singleton
+     * Allow Parse to be instantiated as a singleton.
+     *
      * @return Parse The instance
      */
     public static function getInstance()
     {
         if (!self::$instance) {
-            return(self::$instance = new Parse());
+            return self::$instance = new self();
         }
 
         return self::$instance;
     }
 
     /**
-     * Constructor
+     * Constructor.
+     *
      * @param null|LoggerInterface $logger (optional) Psr-compliant logger
      */
     public function __construct(LoggerInterface $logger = null)
     {
         $this->logger = $logger;
     }
-
 
     /**
      * @return Punycode
@@ -74,9 +75,9 @@ class Parse
         return $this->punycode;
     }
 
-
     /**
-     * Allows for post-construct injection of a logger
+     * Allows for post-construct injection of a logger.
+     *
      * @param LoggerInterface $logger (optional) Psr-compliant logger
      */
     public function setLogger(LoggerInterface $logger)
@@ -85,8 +86,9 @@ class Parse
     }
 
     /**
-     * Abstraction to prevent logging when there's no logger
-     * @param mixed $level
+     * Abstraction to prevent logging when there's no logger.
+     *
+     * @param mixed  $level
      * @param string $message
      */
     protected function log($level, $message)
@@ -97,7 +99,7 @@ class Parse
     }
 
     /**
-     * Parses a list of 1 to n email addresses separated by space or comma
+     * Parses a list of 1 to n email addresses separated by space or comma.
      *
      *  This should be RFC 2822 compliant, although it will let a few obsolete
      *  RFC 822 addresses through such as test"test"test@xyz.com (note
@@ -113,36 +115,37 @@ class Parse
      *  how-about-an-ip@[10.0.10.2]
      *  how-about-comments(this is a comment!!)@xyz.com
      *
-     * @param string $emails List of Email addresses separated by comma or space if multiple
-     * @param bool $multiple (optional, default: true) Whether to parse for multiple email addresses or not
+     * @param string $emails   List of Email addresses separated by comma or space if multiple
+     * @param bool   $multiple (optional, default: true) Whether to parse for multiple email addresses or not
      * @param string $encoding (optional, default: 'UTF-8') The encoding if not 'UTF-8'
+     *
      * @return array if ($multiple):
-     *         array('success' => boolean, // whether totally successful or not
+     *               array('success' => boolean, // whether totally successful or not
      *               'reason' => string, // if unsuccessful, the reason why
      *               'email_addresses' =>
-     *                    array('address' => string, // the full address (not including comments)
-     *                        'original_address' => string, // the full address including comments
-     *                        'simple_address' => string, // simply local_part@domain_part (e.g. someone@somewhere.com)
-     *                         'name' => string, // the name on the email if given (e.g.: John Q. Public), including any quotes
-     *                         'name_parsed' => string, // the name on the email if given (e.g.: John Q. Public), excluding any quotes
-     *                        'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
-     *                        'local_part_parsed' => string, // the local part (before the '@' sign - e.g. johnpublic), excluding any quotes
-     *                        'domain' => string, // the domain after the '@' if given
-     *                         'ip' => string, // the IP after the '@' if given
-     *                         'domain_part' => string, // either domain or IP depending on what given
-     *                        'invalid' => boolean, // if the email is valid or not
-     *                        'invalid_reason' => string), // if the email is invalid, the reason why
-     *                    array( .... ) // the next email address matched
-     *        )
-     *          else:
-     *        array('address' => string, // the full address including comments
-     *            'name' => string, // the name on the email if given (e.g.: John Q. Public)
-     *            'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
-     *            'domain' => string, // the domain after the '@' if given
-     *            'ip' => string, // the IP after the '@' if given
-     *            'invalid' => boolean, // if the email is valid or not
-     *            'invalid_reason' => string) // if the email is invalid, the reason why
-     *        endif;
+     *               array('address' => string, // the full address (not including comments)
+     *               'original_address' => string, // the full address including comments
+     *               'simple_address' => string, // simply local_part@domain_part (e.g. someone@somewhere.com)
+     *               'name' => string, // the name on the email if given (e.g.: John Q. Public), including any quotes
+     *               'name_parsed' => string, // the name on the email if given (e.g.: John Q. Public), excluding any quotes
+     *               'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
+     *               'local_part_parsed' => string, // the local part (before the '@' sign - e.g. johnpublic), excluding any quotes
+     *               'domain' => string, // the domain after the '@' if given
+     *               'ip' => string, // the IP after the '@' if given
+     *               'domain_part' => string, // either domain or IP depending on what given
+     *               'invalid' => boolean, // if the email is valid or not
+     *               'invalid_reason' => string), // if the email is invalid, the reason why
+     *               array( .... ) // the next email address matched
+     *               )
+     *               else:
+     *               array('address' => string, // the full address including comments
+     *               'name' => string, // the name on the email if given (e.g.: John Q. Public)
+     *               'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
+     *               'domain' => string, // the domain after the '@' if given
+     *               'ip' => string, // the IP after the '@' if given
+     *               'invalid' => boolean, // if the email is valid or not
+     *               'invalid_reason' => string) // if the email is invalid, the reason why
+     *               endif;
      *
      *
      * EXAMPLES:
@@ -206,7 +209,6 @@ class Parse
      *                    'invalid_reason' => '')
      *                )
      *            );
-     *
      */
     public function parse($emails, $multiple = true, $encoding = 'UTF-8')
     {
@@ -231,7 +233,7 @@ class Parse
             $reason = 'No emails passed in';
         }
         $curChar = null;
-        for ($i = 0; $i < $len; $i++) {
+        for ($i = 0; $i < $len; ++$i) {
             $prevChar = $curChar; // Previous Charater
             $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
             switch ($state) {
@@ -250,7 +252,7 @@ class Parse
                     }
 
                     break;
-                    /** @noinspection PhpMissingBreakStatementInspection */
+                    /* @noinspection PhpMissingBreakStatementInspection */
                 case self::STATE_TRIM:
                 if ($curChar == ' ' ||
                     $curChar == "\r" ||
@@ -302,7 +304,7 @@ class Parse
 
                         // Look ahead for comments after the address
                         $foundComment = false;
-                        for ($j = ($i + 1); $j < $len; $j++) {
+                        for ($j = ($i + 1); $j < $len; ++$j) {
                             $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
                             if ($lookAheadChar == '(') {
                                 $foundComment = true;
@@ -344,7 +346,7 @@ class Parse
                         } else {
                             // Here should be the start of the local part for sure everything else then is part of the name
                             $subState = self::STATE_LOCAL_PART;
-                    $this->handleQuote($emailAddress);
+                            $this->handleQuote($emailAddress);
                         }
                     } elseif ($curChar == '>') {
                         // should be end of domain part
@@ -376,27 +378,27 @@ class Parse
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Something went wrong during parsing.';
                                 $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: ${i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: ${emails}\n\$curChar: ${curChar}");
-                        } elseif ($emailAddress['quote_temp']) {
-                            $emailAddress['local_part_parsed'] = $emailAddress['quote_temp'];
-                            $emailAddress['quote_temp'] = '';
-                            $emailAddress['local_part_quoted'] = true;
-                        } elseif ($emailAddress['address_temp']) {
-                            $emailAddress['local_part_parsed'] = $emailAddress['address_temp'];
-                            $emailAddress['address_temp'] = '';
-                            $emailAddress['local_part_quoted'] = $emailAddress['address_temp_quoted'];
-                            $emailAddress['address_temp_quoted'] = false;
-                            $emailAddress['address_temp_period'] = 0;
+                            } elseif ($emailAddress['quote_temp']) {
+                                $emailAddress['local_part_parsed'] = $emailAddress['quote_temp'];
+                                $emailAddress['quote_temp'] = '';
+                                $emailAddress['local_part_quoted'] = true;
+                            } elseif ($emailAddress['address_temp']) {
+                                $emailAddress['local_part_parsed'] = $emailAddress['address_temp'];
+                                $emailAddress['address_temp'] = '';
+                                $emailAddress['local_part_quoted'] = $emailAddress['address_temp_quoted'];
+                                $emailAddress['address_temp_quoted'] = false;
+                                $emailAddress['address_temp_period'] = 0;
+                            }
                         }
-                    }
-                } elseif ($curChar == '[') {
-                    // Setup square bracket special handling if appropriate
+                    } elseif ($curChar == '[') {
+                        // Setup square bracket special handling if appropriate
                     if ($subState != self::STATE_DOMAIN) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = "Invalid character '[' in email address";
                     }
-                    $state = self::STATE_SQUARE_BRACKET;
-                } elseif ($curChar == '.') {
-                    // Handle periods specially
+                        $state = self::STATE_SQUARE_BRACKET;
+                    } elseif ($curChar == '.') {
+                        // Handle periods specially
                     if ($prevChar == '.') {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = "Email address should not contain two dots '.' in a row";
@@ -419,14 +421,14 @@ class Parse
                             $emailAddress['quote_temp'] = '';
                         }
                         $emailAddress['address_temp'] .= $curChar;
-                        $emailAddress['address_temp_period']++;
+                        ++$emailAddress['address_temp_period'];
                     } else {
                         // Strict RFC 2822 - require all periods to be quoted in other parts of the string
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'Stray period found in email address.  If the period is part of a person\'s name, it must appear in double quotes - e.g. "John Q. Public". Otherwise, an email address shouldn\'t begin with a period.';
                     }
-                } elseif (preg_match('/[A-Za-z0-9\_\-\!\#\$\%\&\'\*\+\/\=\?\^\`\{\|\}\~]/', $curChar)) {
-                    // see RFC 2822
+                    } elseif (preg_match('/[A-Za-z0-9\_\-\!\#\$\%\&\'\*\+\/\=\?\^\`\{\|\}\~]/', $curChar)) {
+                        // see RFC 2822
 
                     // Note: check for Exim-banned characters
                     //  See Bug #18749 - Unhandled Exception: 550 Restricted characters in address
@@ -463,28 +465,28 @@ class Parse
                         }
                         $emailAddress['address_temp'] .= $curChar;
                     }
-                } else {
-                    if ($subState == self::STATE_DOMAIN) {
-                        try {
-                            // Test by trying to encode the current character into Punycode
+                    } else {
+                        if ($subState == self::STATE_DOMAIN) {
+                            try {
+                                // Test by trying to encode the current character into Punycode
                             // Punycode should match the traditional domain name subset of characters
                             if (preg_match('/[a-z0-9\-]/', $this->getPunycode()->encode($curChar))) {
                                 $emailAddress['domain'] .= $curChar;
                             } else {
                                 $emailAddress['invalid'] = true;
                             }
-                        } catch (\Exception $e) {
-                            $this->log('warning', "Email\\Parse->parse - exception trying to convert character '${curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: ${emails}");
+                            } catch (\Exception $e) {
+                                $this->log('warning', "Email\\Parse->parse - exception trying to convert character '${curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: ${emails}");
+                                $emailAddress['invalid'] = true;
+                            }
+                            if ($emailAddress['invalid']) {
+                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '${curChar}'";
+                            }
+                        } else {
                             $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '${curChar}'";
                         }
-                        if ($emailAddress['invalid']) {
-                            $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '${curChar}'";
-                        }
-                    } else {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '${curChar}'";
                     }
-                }
                 break;
             case self::STATE_SQUARE_BRACKET:
                 // Handle square bracketed IP addresses such as [10.0.10.2]
@@ -504,9 +506,9 @@ class Parse
                 $emailAddress['original_address'] .= $curChar;
                 if ($curChar == '"') {
                     $backslashCount = 0;
-                    for ($j = $i; $j >= 0; $j--) {
+                    for ($j = $i; $j >= 0; --$j) {
                         if (mb_substr($emails, $j, 1, $encoding) == '\\') {
-                            $backslashCount++;
+                            ++$backslashCount;
                         } else {
                             break;
                         }
@@ -525,12 +527,12 @@ class Parse
                 // Handle comments and nesting thereof
                 $emailAddress['original_address'] .= $curChar;
                 if ($curChar == ')') {
-                    $commentNestLevel--;
+                    --$commentNestLevel;
                     if ($commentNestLevel <= 0) {
                         $state = self::STATE_ADDRESS;
                     }
                 } elseif ($curChar == '(') {
-                    $commentNestLevel++;
+                    ++$commentNestLevel;
                 }
                 break;
             default:
@@ -587,7 +589,7 @@ class Parse
         if (!$emailAddress['invalid'] && $emailAddress['address_temp'] || $emailAddress['quote_temp']) {
             $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: ${i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: ${emails}");
             $emailAddress['invalid'] = true;
-            $emailAddress['invalid_reason'] = "Incomplete address";
+            $emailAddress['invalid_reason'] = 'Incomplete address';
             if (!$success) {
                 $reason = 'Invalid email addresses';
             } else {
@@ -623,14 +625,14 @@ class Parse
             }
         }
         if ($multiple) {
-            return (['success' => $success, 'reason' => $reason, 'email_addresses' => $emailAddresses]);
+            return ['success' => $success, 'reason' => $reason, 'email_addresses' => $emailAddresses];
         } else {
             return $emailAddresses[0];
         }
     }
 
     /**
-     * Handles the case of a quoted name
+     * Handles the case of a quoted name.
      *
      * @param array $emailAddress
      */
@@ -653,7 +655,7 @@ class Parse
     }
 
     /**
-     * Helper function for creating a blank email address array used by Email\Parse->parse
+     * Helper function for creating a blank email address array used by Email\Parse->parse.
      */
     private function buildEmailAddressArray()
     {
@@ -669,18 +671,21 @@ class Parse
                         'address_temp_quoted' => false,
                         'quote_temp' => '',
                         'address_temp' => '',
-                        'address_temp_period' => 0
+                        'address_temp_period' => 0,
                         ];
+
         return $emailAddress;
     }
 
     /**
      * Does a bunch of additional validation on the email address parts contained in $emailAddress
      *  Then adds it to $emailAdddresses.
+     *
      * @param $emailAddresses
      * @param $emailAddress
      * @param $encoding
      * @param $i
+     *
      * @return mixed
      */
     private function addAddress(
@@ -692,12 +697,12 @@ class Parse
         if (!$emailAddress['invalid']) {
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = "Incomplete address";
+                $emailAddress['invalid_reason'] = 'Incomplete address';
                 $this->log('error', "Email\\Parse->addAddress - corruption during parsing - leftovers:\n\$i: ${i}\n\$emailAddress['address_temp'] : {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\n");
             } elseif ($emailAddress['ip'] && $emailAddress['domain']) {
                 // Error - this should never occur
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = "Confusion during parsing";
+                $emailAddress['invalid_reason'] = 'Confusion during parsing';
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip'] || ($emailAddress['domain'] && preg_match('/\d+\.\d+\.\d+\.\d+/', $emailAddress['domain']))) {
                 // also test if the current domain looks like an IP address
@@ -779,9 +784,7 @@ class Parse
                         'domain' => $emailAddress['domain'],
                         'ip' => $emailAddress['ip'],
                         'invalid' => $emailAddress['invalid'],
-                        'invalid_reason' => $emailAddress['invalid_reason']];
-
-
+                        'invalid_reason' => $emailAddress['invalid_reason'], ];
 
         // Build the proper address by hand (has comments stripped out and should have quotes in the proper places)
         if (!$emailAddrDef['invalid']) {
@@ -791,13 +794,16 @@ class Parse
         }
 
         $emailAddresses[] = $emailAddrDef;
+
         return $emailAddrDef['invalid'];
     }
 
     /**
-     * Determines whether the domain name is valid
-     * @param string $domain The domain name to validate
+     * Determines whether the domain name is valid.
+     *
+     * @param string $domain   The domain name to validate
      * @param string $encoding The encoding of the string (if not UTF-8)
+     *
      * @return array array('valid' => boolean: whether valid or not,
      *               'reason' => string: if not valid, the reason why);
      */
