@@ -1,16 +1,8 @@
 # standard
-composer.phar
-
-# emacs
-*~
-\#*#
-.\#*
+composer.lock
 
 # composer
 vendor/*
-
-# phpstorm
-.idea
 
 # bin
 bin/php-cs-fixer
