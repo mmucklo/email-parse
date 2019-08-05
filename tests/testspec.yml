@@ -1289,22 +1289,6 @@
         invalid: false
         invalid_reason: null
 -
-    emails: testingexclaimation!@somedomain.com
-    multiple: false
-    result:
-        address: 'testingexclaimation!@somedomain.com'
-        simple_address: 'testingexclaimation!@somedomain.com'
-        original_address: testingexclaimation!@somedomain.com
-        name: ''
-        name_parsed: ''
-        local_part: testingexclaimation!
-        local_part_parsed: testingexclaimation!
-        domain_part: somedomain.com
-        domain: somedomain.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
     emails: '"Supports (E-mail)" <support@example.org>'
     multiple: false
     result:
