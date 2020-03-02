@@ -2,7 +2,7 @@
 
 namespace Email;
 
-use Zend\Validator\Ip;
+use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
 use TrueBV\Punycode;
 
