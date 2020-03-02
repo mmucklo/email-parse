@@ -27,8 +27,7 @@
     "php": ">=7.1",
     "true/punycode": "~2.0",
     "psr/log": "~1.0",
-    "laminas/laminas-validator": ">=2.0,<=3.0",
-    "laminas/laminas-dependency-plugin": "^1.0"
+    "laminas/laminas-validator": "^2.13"
   },
   "autoload": {
     "psr-4": {
