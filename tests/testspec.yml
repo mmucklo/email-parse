@@ -1304,3 +1304,83 @@
         ip: ''
         invalid: false
         invalid_reason: ~
+-
+    emails: 'Étienne Cloître <e.cloitre@domain.tld>'
+    multiple: false
+    result:
+        address: 'Étienne Cloître <e.cloitre@domain.tld>'
+        simple_address: 'e.cloitre@domain.tld'
+        original_address: 'Étienne Cloître <e.cloitre@domain.tld>'
+        name: 'Étienne Cloître'
+        name_parsed: 'Étienne Cloître'
+        local_part: 'e.cloitre'
+        local_part_parsed: 'e.cloitre'
+        domain_part: 'domain.tld'
+        domain: 'domain.tld'
+        ip: ''
+        invalid: false
+        invalid_reason: ~
+-
+    emails: 'Étienne Cloître <é.cloître@domain.tld>'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'Étienne Cloître <é.cloître@domain.tld>'
+        name: 'Étienne Cloître'
+        name_parsed: 'Étienne Cloître'
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: "Invalid character found in email address (please put in quotes if needed): 'é'"
+-
+    emails: 'é.cloître@domain.tld'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'é.cloître@domain.tld'
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: "Invalid character found in email address local part: 'î'"
+-
+    emails: 'bob@i18ène.fr'
+    multiple: false
+    result:
+        address: 'bob@xn--i18ne-6ra.fr'
+        simple_address: 'bob@xn--i18ne-6ra.fr'
+        original_address: 'bob@i18ène.fr'
+        name: ''
+        name_parsed: ''
+        local_part: 'bob'
+        local_part_parsed: 'bob'
+        domain_part: 'xn--i18ne-6ra.fr'
+        domain: 'xn--i18ne-6ra.fr'
+        ip: ''
+        invalid: false
+        invalid_reason: ~
+-
+    emails: "I'm Bobé <bob@i18ène.fr>"
+    multiple: false
+    result:
+        address: "I'm Bobé <bob@xn--i18ne-6ra.fr>"
+        simple_address: 'bob@xn--i18ne-6ra.fr'
+        original_address: "I'm Bobé <bob@i18ène.fr>"
+        name: "I'm Bobé"
+        name_parsed: "I'm Bobé"
+        local_part: 'bob'
+        local_part_parsed: 'bob'
+        domain_part: 'xn--i18ne-6ra.fr'
+        domain: 'xn--i18ne-6ra.fr'
+        ip: ''
+        invalid: false
+        invalid_reason: ~
