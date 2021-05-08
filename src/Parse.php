@@ -347,6 +347,7 @@ class Parse
                         } else {
                             // Here should be the start of the local part for sure everything else then is part of the name
                             $subState = self::STATE_LOCAL_PART;
+                            $emailAddress['special_char_in_substate'] = null;
                             $this->handleQuote($emailAddress);
                         }
                     } elseif ('>' == $curChar) {
@@ -373,6 +374,9 @@ class Parse
                         } elseif (self::STATE_AFTER_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Stray at '@' symbol found after domain name";
+                        } elseif ($emailAddress['special_char_in_substate'] !== null) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '${emailAddress['special_char_in_substate']}'";
                         } else {
                             $subState = self::STATE_DOMAIN;
                             if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
@@ -483,6 +487,22 @@ class Parse
                             if ($emailAddress['invalid']) {
                                 $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '${curChar}'";
                             }
+                        } elseif ($subState === self::STATE_START) {
+                            if ($emailAddress['quote_temp']) {
+                                $emailAddress['address_temp'] .= $emailAddress['quote_temp'];
+                                $emailAddress['address_temp_quoted'] = true;
+                                $emailAddress['quote_temp'] = '';
+                            }
+                            $emailAddress['special_char_in_substate'] = $curChar;
+                            $emailAddress['address_temp'] .= $curChar;
+                        } elseif ($subState === self::STATE_NAME) {
+                            if ($emailAddress['quote_temp']) {
+                                $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
+                                $emailAddress['quote_temp'] = '';
+                                $emailAddress['name_quoted'] = true;
+                            }
+                            $emailAddress['special_char_in_substate'] = $curChar;
+                            $emailAddress['name_parsed'] .= $curChar;
                         } else {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '${curChar}'";
@@ -678,6 +698,7 @@ class Parse
                         'quote_temp' => '',
                         'address_temp' => '',
                         'address_temp_period' => 0,
+                        'special_char_in_substate' => null,
                         ];
 
         return $emailAddress;
