@@ -27,7 +27,8 @@
     "php": ">=7.1",
     "true/punycode": "~2.0",
     "psr/log": "~1.0",
-    "laminas/laminas-validator": "^2.13"
+    "laminas/laminas-validator": "^2.13",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "psr-4": {

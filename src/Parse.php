@@ -9,18 +9,18 @@ use TrueBV\Punycode;
 class Parse
 {
     // Constants for the state-machine of the parser
-    const STATE_TRIM = 0;
-    const STATE_QUOTE = 1;
-    const STATE_ADDRESS = 2;
-    const STATE_COMMENT = 3;
-    const STATE_NAME = 4;
-    const STATE_LOCAL_PART = 5;
-    const STATE_DOMAIN = 6;
-    const STATE_AFTER_DOMAIN = 7;
-    const STATE_SQUARE_BRACKET = 8;
-    const STATE_SKIP_AHEAD = 9;
-    const STATE_END_ADDRESS = 10;
-    const STATE_START = 11;
+    private const STATE_TRIM = 0;
+    private const STATE_QUOTE = 1;
+    private const STATE_ADDRESS = 2;
+    private const STATE_COMMENT = 3;
+    private const STATE_NAME = 4;
+    private const STATE_LOCAL_PART = 5;
+    private const STATE_DOMAIN = 6;
+    private const STATE_AFTER_DOMAIN = 7;
+    private const STATE_SQUARE_BRACKET = 8;
+    private const STATE_SKIP_AHEAD = 9;
+    private const STATE_END_ADDRESS = 10;
+    private const STATE_START = 11;
 
     /**
      * @var Parse
@@ -146,7 +146,6 @@ class Parse
      *               'invalid' => boolean, // if the email is valid or not
      *               'invalid_reason' => string) // if the email is invalid, the reason why
      *               endif;
-     *
      *
      * EXAMPLES:
      * $email = "\"J Doe\" <johndoe@xyz.com>";
@@ -374,7 +373,7 @@ class Parse
                         } elseif (self::STATE_AFTER_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Stray at '@' symbol found after domain name";
-                        } elseif ($emailAddress['special_char_in_substate'] !== null) {
+                        } elseif (null !== $emailAddress['special_char_in_substate']) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '${emailAddress['special_char_in_substate']}'";
                         } else {
@@ -432,7 +431,7 @@ class Parse
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'Stray period found in email address.  If the period is part of a person\'s name, it must appear in double quotes - e.g. "John Q. Public". Otherwise, an email address shouldn\'t begin with a period.';
                         }
-                    } elseif (preg_match('/[A-Za-z0-9\_\-\!\#\$\%\&\'\*\+\/\=\?\^\`\{\|\}\~]/', $curChar)) {
+                    } elseif (preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
                         // see RFC 2822
 
                         // Note: check for Exim-banned characters
@@ -487,7 +486,7 @@ class Parse
                             if ($emailAddress['invalid']) {
                                 $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '${curChar}'";
                             }
-                        } elseif ($subState === self::STATE_START) {
+                        } elseif (self::STATE_START === $subState) {
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['address_temp'] .= $emailAddress['quote_temp'];
                                 $emailAddress['address_temp_quoted'] = true;
@@ -495,7 +494,7 @@ class Parse
                             }
                             $emailAddress['special_char_in_substate'] = $curChar;
                             $emailAddress['address_temp'] .= $curChar;
-                        } elseif ($subState === self::STATE_NAME) {
+                        } elseif (self::STATE_NAME === $subState) {
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
                                 $emailAddress['quote_temp'] = '';
@@ -659,8 +658,6 @@ class Parse
 
     /**
      * Handles the case of a quoted name.
-     *
-     * @param array $emailAddress
      */
     private function handleQuote(array &$emailAddress)
     {

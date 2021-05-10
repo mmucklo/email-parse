@@ -7,7 +7,4 @@ vendor/*
 # bin
 bin/php-cs-fixer
 bin/phpunit
-
-# Other
-.php_cs.cache
-.coverage
+bin/yaml-lint
