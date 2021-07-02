@@ -3,10 +3,12 @@
 namespace Email;
 
 class ParseOptions {
-    private $bannedChars;
+    private $bannedChars = [];
 
     public function __construct(array $bannedChars = []) {
-        $this->setBannedChars($bannedChars);
+        if ($bannedChars) {
+            $this->setBannedChars($bannedChars);
+        }
     }
 
     public function setBannedChars(array $bannedChars) {

@@ -41,7 +41,11 @@ class Parse
     protected $logger = null;
 
     protected $punycode;
-    protected $bannedChars = ['!' =>  true, '%' => true];
+
+    /**
+     * @var ParseOptions
+     */
+    protected $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
@@ -67,9 +71,7 @@ class Parse
                                 ParseOptions $options = null)
     {
         $this->logger = $logger;
-        if ($options) {
-            $this->bannedChars = $options->getBannedChars();
-        }
+        $this->options = $options ?: new ParseOptions(['%', '!']);
     }
 
     /**
@@ -92,6 +94,20 @@ class Parse
     public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+    }
+
+    /**
+     * @param ParseOptions $options
+     */
+    public function setOptions(ParseOptions $options) {
+        $this->options = $options;
+    }
+
+    /**
+     * @return ParseOptions
+     */
+    public function getOptions() {
+        return $this->options;
     }
 
     /**
@@ -443,7 +459,7 @@ class Parse
                     } elseif (preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
                         // see RFC 2822
 
-                        if (isset($this->bannedChars[$curChar])) {
+                        if (isset($this->options->getBannedChars()[$curChar])) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '${curChar}'";
                         } elseif (('/' == $curChar || '|' == $curChar) &&
