@@ -6,6 +6,9 @@ use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
 use TrueBV\Punycode;
 
+/**
+ * Class Parse.
+ */
 class Parse
 {
     // Constants for the state-machine of the parser
@@ -38,6 +41,7 @@ class Parse
     protected $logger = null;
 
     protected $punycode;
+    protected $bannedChars = ['!' =>  true, '%' => true];
 
     /**
      * Allow Parse to be instantiated as a singleton.
@@ -56,11 +60,16 @@ class Parse
     /**
      * Constructor.
      *
-     * @param LoggerInterface|null $logger (optional) Psr-compliant logger
+     * @param LoggerInterface|null $logger  (optional) Psr-compliant logger
+     * @param array                $options array (hash) of options
      */
-    public function __construct(LoggerInterface $logger = null)
+    public function __construct(LoggerInterface $logger = null,
+                                ParseOptions $options = null)
     {
         $this->logger = $logger;
+        if ($options) {
+            $this->bannedChars = $options->getBannedChars();
+        }
     }
 
     /**
@@ -434,9 +443,7 @@ class Parse
                     } elseif (preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
                         // see RFC 2822
 
-                        // Note: check for Exim-banned characters
-                        //  See Bug #18749 - Unhandled Exception: 550 Restricted characters in address
-                        if ('%' == $curChar || '!' == $curChar) {
+                        if (isset($this->bannedChars[$curChar])) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '${curChar}'";
                         } elseif (('/' == $curChar || '|' == $curChar) &&
