@@ -1093,6 +1093,38 @@
         invalid: true
         invalid_reason: 'IP address invalid (private): 192.168.0.1'
 -
+    emails: testing@10.0.0.1
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: testing@10.0.0.1
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[10.0.0.1]'
+        domain: null
+        ip: 10.0.0.1
+        invalid: true
+        invalid_reason: 'IP address invalid (private): 10.0.0.1'
+-
+    emails: testing@169.254.2.1
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: testing@169.254.2.1
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[169.254.2.1]'
+        domain: null
+        ip: 169.254.2.1
+        invalid: true
+        invalid_reason: 'IP address invalid (APIPA): 169.254.2.1'
+-
     emails: testing@256.26.52.5
     multiple: true
     result:

@@ -2,7 +2,6 @@
 
 namespace Email;
 
-use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
 use TrueBV\Punycode;
 
@@ -29,11 +28,6 @@ class Parse
      * @var Parse
      */
     protected static $instance;
-
-    /**
-     * @var Ip
-     */
-    protected $ipValidator = null;
 
     /**
      * @var LoggerInterface
@@ -760,19 +754,14 @@ class Parse
                     $emailAddress['ip'] = $emailAddress['domain'];
                     $emailAddress['domain'] = null;
                 }
-                if (!$this->ipValidator) {
-                    $this->ipValidator = new Ip();
-                }
                 try {
-                    if (!$this->ipValidator->isValid($emailAddress['ip'])) {
+                    if (!filter_var($emailAddress['ip'], FILTER_VALIDATE_IP)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \''.$emailAddress['ip'].'\' does not appear to be a valid IP address';
-                    } elseif (preg_match('/192\.168\.\d+\.\d+/', $emailAddress['ip']) ||
-                        preg_match('/172\.(1[6-9]|2[0-9]|3[0-2])\.\d+\.\d+/', $emailAddress['ip']) ||
-                        preg_match('/10\.\d+\.\d+\.\d+/', $emailAddress['ip'])) {
+                    } elseif (!filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid (private): '.$emailAddress['ip'];
-                    } elseif (preg_match('/169\.254\.\d+\.\d+/', $emailAddress['ip'])) {
+                    } elseif (!filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_NO_RES_RANGE)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid (APIPA): '.$emailAddress['ip'];
                     }
