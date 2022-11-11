@@ -4,7 +4,6 @@ namespace Email;
 
 use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
-use TrueBV\Punycode;
 
 /**
  * Class Parse.
@@ -40,8 +39,6 @@ class Parse
      */
     protected $logger = null;
 
-    protected $punycode;
-
     /**
      * @var ParseOptions
      */
@@ -72,18 +69,6 @@ class Parse
     {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
-    }
-
-    /**
-     * @return Punycode
-     */
-    public function getPunycode()
-    {
-        if (!$this->punycode) {
-            $this->punycode = new Punycode();
-        }
-
-        return $this->punycode;
     }
 
     /**
@@ -497,7 +482,7 @@ class Parse
                             try {
                                 // Test by trying to encode the current character into Punycode
                                 // Punycode should match the traditional domain name subset of characters
-                                if (preg_match('/[a-z0-9\-]/', $this->getPunycode()->encode($curChar))) {
+                                if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
                                     $emailAddress['domain'] .= $curChar;
                                 } else {
                                     $emailAddress['invalid'] = true;
@@ -784,7 +769,7 @@ class Parse
                 // Check for IDNA
                 if (max(array_keys(count_chars($emailAddress['domain'], 1))) > 127) {
                     try {
-                        $emailAddress['domain'] = $this->getPunycode()->encode($emailAddress['domain']);
+                        $emailAddress['domain'] = idn_to_ascii($emailAddress['domain']);
                     } catch (\Exception $e) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
