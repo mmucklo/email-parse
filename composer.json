@@ -25,7 +25,6 @@
   },
   "require": {
     "php": ">=7.1|^8.0",
-    "true/punycode": "~2.0",
     "psr/log": "~1.0|~2.0|~3.0",
     "laminas/laminas-validator": "^2.13",
     "ext-mbstring": "*",
