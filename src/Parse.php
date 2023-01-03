@@ -96,17 +96,16 @@ class Parse
         $this->logger = $logger;
     }
 
-    /**
-     * @param ParseOptions $options
-     */
-    public function setOptions(ParseOptions $options) {
+    public function setOptions(ParseOptions $options)
+    {
         $this->options = $options;
     }
 
     /**
      * @return ParseOptions
      */
-    public function getOptions() {
+    public function getOptions()
+    {
         return $this->options;
     }
 
@@ -278,26 +277,26 @@ class Parse
                     break;
                     /* @noinspection PhpMissingBreakStatementInspection */
                 case self::STATE_TRIM:
-                if (' ' == $curChar ||
-                    "\r" == $curChar ||
-                    "\n" == $curChar ||
-                    "\t" == $curChar) {
-                    break;
-                } else {
-                    $state = self::STATE_ADDRESS;
-                    if ('"' == $curChar) {
-                        $emailAddress['original_address'] .= $curChar;
-                        $state = self::STATE_QUOTE;
+                    if (' ' == $curChar ||
+                        "\r" == $curChar ||
+                        "\n" == $curChar ||
+                        "\t" == $curChar) {
                         break;
-                    } elseif ('(' == $curChar) {
-                        $emailAddress['original_address'] .= $curChar;
-                        $state = self::STATE_COMMENT;
-                        break;
+                    } else {
+                        $state = self::STATE_ADDRESS;
+                        if ('"' == $curChar) {
+                            $emailAddress['original_address'] .= $curChar;
+                            $state = self::STATE_QUOTE;
+                            break;
+                        } elseif ('(' == $curChar) {
+                            $emailAddress['original_address'] .= $curChar;
+                            $state = self::STATE_COMMENT;
+                            break;
+                        }
+                        // Fall through to next case self::STATE_ADDRESS on purpose here
                     }
-                    // Fall through to next case self::STATE_ADDRESS on purpose here
-                }
-                // Fall through
-                // no break
+                    // Fall through
+                    // no break
                 case self::STATE_ADDRESS:
                     if (',' != $curChar || !$multiple) {
                         $emailAddress['original_address'] .= $curChar;
@@ -530,61 +529,61 @@ class Parse
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
                         }
                     }
-                break;
-            case self::STATE_SQUARE_BRACKET:
-                // Handle square bracketed IP addresses such as [10.0.10.2]
-                $emailAddress['original_address'] .= $curChar;
-                if (']' == $curChar) {
-                    $subState = self::STATE_AFTER_DOMAIN;
-                    $state = self::STATE_ADDRESS;
-                } elseif (preg_match('/[0-9\.]/', $curChar)) {
-                    $emailAddress['ip'] .= $curChar;
-                } else {
-                    $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = "Invalid Character '{$curChar}' in what seemed to be an IP Address";
-                }
-                break;
-            case self::STATE_QUOTE:
-                // Handle quoted strings
-                $emailAddress['original_address'] .= $curChar;
-                if ('"' == $curChar) {
-                    $backslashCount = 0;
-                    for ($j = $i; $j >= 0; --$j) {
-                        if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
-                            ++$backslashCount;
-                        } else {
-                            break;
-                        }
-                    }
-                    if ($backslashCount && 1 == $backslashCount % 2) {
-                        // This is a quoted quote
-                        $emailAddress['quote_temp'] .= $curChar;
+                    break;
+                case self::STATE_SQUARE_BRACKET:
+                    // Handle square bracketed IP addresses such as [10.0.10.2]
+                    $emailAddress['original_address'] .= $curChar;
+                    if (']' == $curChar) {
+                        $subState = self::STATE_AFTER_DOMAIN;
+                        $state = self::STATE_ADDRESS;
+                    } elseif (preg_match('/[0-9\.]/', $curChar)) {
+                        $emailAddress['ip'] .= $curChar;
                     } else {
-                        $state = self::STATE_ADDRESS;
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = "Invalid Character '{$curChar}' in what seemed to be an IP Address";
                     }
-                } else {
-                    $emailAddress['quote_temp'] .= $curChar;
-                }
-                break;
-            case self::STATE_COMMENT:
-                // Handle comments and nesting thereof
-                $emailAddress['original_address'] .= $curChar;
-                if (')' == $curChar) {
-                    --$commentNestLevel;
-                    if ($commentNestLevel <= 0) {
-                        $state = self::STATE_ADDRESS;
+                    break;
+                case self::STATE_QUOTE:
+                    // Handle quoted strings
+                    $emailAddress['original_address'] .= $curChar;
+                    if ('"' == $curChar) {
+                        $backslashCount = 0;
+                        for ($j = $i; $j >= 0; --$j) {
+                            if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
+                                ++$backslashCount;
+                            } else {
+                                break;
+                            }
+                        }
+                        if ($backslashCount && 1 == $backslashCount % 2) {
+                            // This is a quoted quote
+                            $emailAddress['quote_temp'] .= $curChar;
+                        } else {
+                            $state = self::STATE_ADDRESS;
+                        }
+                    } else {
+                        $emailAddress['quote_temp'] .= $curChar;
                     }
-                } elseif ('(' == $curChar) {
-                    ++$commentNestLevel;
-                }
-                break;
-            default:
-                // Shouldn't ever get here - what is $state?
-                $emailAddress['original_address'] .= $curChar;
-                $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Error during parsing';
-                $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$state}\n\$subState: {$subState}\$i: {$i}\n\$curChar: {$curChar}");
-                break;
+                    break;
+                case self::STATE_COMMENT:
+                    // Handle comments and nesting thereof
+                    $emailAddress['original_address'] .= $curChar;
+                    if (')' == $curChar) {
+                        --$commentNestLevel;
+                        if ($commentNestLevel <= 0) {
+                            $state = self::STATE_ADDRESS;
+                        }
+                    } elseif ('(' == $curChar) {
+                        ++$commentNestLevel;
+                    }
+                    break;
+                default:
+                    // Shouldn't ever get here - what is $state?
+                    $emailAddress['original_address'] .= $curChar;
+                    $emailAddress['invalid'] = true;
+                    $emailAddress['invalid_reason'] = 'Error during parsing';
+                    $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$state}\n\$subState: {$subState}\$i: {$i}\n\$curChar: {$curChar}");
+                    break;
             }
 
             // if there's a $emailAddress['original_address'] and the state is set to STATE_END_ADDRESS
@@ -727,11 +726,6 @@ class Parse
     /**
      * Does a bunch of additional validation on the email address parts contained in $emailAddress
      *  Then adds it to $emailAdddresses.
-     *
-     * @param $emailAddresses
-     * @param $emailAddress
-     * @param $encoding
-     * @param $i
      *
      * @return mixed
      */
