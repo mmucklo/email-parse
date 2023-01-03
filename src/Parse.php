@@ -4,7 +4,6 @@ namespace Email;
 
 use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
-use TrueBV\Punycode;
 
 /**
  * Class Parse.
@@ -40,8 +39,6 @@ class Parse
      */
     protected $logger = null;
 
-    protected $punycode;
-
     /**
      * @var ParseOptions
      */
@@ -72,18 +69,6 @@ class Parse
     {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
-    }
-
-    /**
-     * @return Punycode
-     */
-    public function getPunycode()
-    {
-        if (!$this->punycode) {
-            $this->punycode = new Punycode();
-        }
-
-        return $this->punycode;
     }
 
     /**
