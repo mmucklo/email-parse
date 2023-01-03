@@ -5,6 +5,4 @@ composer.lock
 vendor/*
 
 # bin
-bin/php-cs-fixer
-bin/phpunit
-bin/yaml-lint
+bin/*

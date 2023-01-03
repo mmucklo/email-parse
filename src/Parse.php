@@ -3,7 +3,6 @@
 namespace Email;
 
 use Psr\Log\LoggerInterface;
-use TrueBV\Punycode;
 
 /**
  * Class Parse.
@@ -33,8 +32,6 @@ class Parse
      * @var LoggerInterface
      */
     protected $logger = null;
-
-    protected $punycode;
 
     /**
      * @var ParseOptions
@@ -69,18 +66,6 @@ class Parse
     }
 
     /**
-     * @return Punycode
-     */
-    public function getPunycode()
-    {
-        if (!$this->punycode) {
-            $this->punycode = new Punycode();
-        }
-
-        return $this->punycode;
-    }
-
-    /**
      * Allows for post-construct injection of a logger.
      *
      * @param LoggerInterface $logger (optional) Psr-compliant logger
@@ -90,17 +75,16 @@ class Parse
         $this->logger = $logger;
     }
 
-    /**
-     * @param ParseOptions $options
-     */
-    public function setOptions(ParseOptions $options) {
+    public function setOptions(ParseOptions $options)
+    {
         $this->options = $options;
     }
 
     /**
      * @return ParseOptions
      */
-    public function getOptions() {
+    public function getOptions()
+    {
         return $this->options;
     }
 
@@ -272,26 +256,26 @@ class Parse
                     break;
                     /* @noinspection PhpMissingBreakStatementInspection */
                 case self::STATE_TRIM:
-                if (' ' == $curChar ||
-                    "\r" == $curChar ||
-                    "\n" == $curChar ||
-                    "\t" == $curChar) {
-                    break;
-                } else {
-                    $state = self::STATE_ADDRESS;
-                    if ('"' == $curChar) {
-                        $emailAddress['original_address'] .= $curChar;
-                        $state = self::STATE_QUOTE;
+                    if (' ' == $curChar ||
+                        "\r" == $curChar ||
+                        "\n" == $curChar ||
+                        "\t" == $curChar) {
                         break;
-                    } elseif ('(' == $curChar) {
-                        $emailAddress['original_address'] .= $curChar;
-                        $state = self::STATE_COMMENT;
-                        break;
+                    } else {
+                        $state = self::STATE_ADDRESS;
+                        if ('"' == $curChar) {
+                            $emailAddress['original_address'] .= $curChar;
+                            $state = self::STATE_QUOTE;
+                            break;
+                        } elseif ('(' == $curChar) {
+                            $emailAddress['original_address'] .= $curChar;
+                            $state = self::STATE_COMMENT;
+                            break;
+                        }
+                        // Fall through to next case self::STATE_ADDRESS on purpose here
                     }
-                    // Fall through to next case self::STATE_ADDRESS on purpose here
-                }
-                // Fall through
-                // no break
+                    // Fall through
+                    // no break
                 case self::STATE_ADDRESS:
                     if (',' != $curChar || !$multiple) {
                         $emailAddress['original_address'] .= $curChar;
@@ -400,7 +384,7 @@ class Parse
                             if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Something went wrong during parsing.';
-                                $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: ${i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: ${emails}\n\$curChar: ${curChar}");
+                                $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}\n\$curChar: {$curChar}");
                             } elseif ($emailAddress['quote_temp']) {
                                 $emailAddress['local_part_parsed'] = $emailAddress['quote_temp'];
                                 $emailAddress['quote_temp'] = '';
@@ -455,11 +439,11 @@ class Parse
 
                         if (isset($this->options->getBannedChars()[$curChar])) {
                             $emailAddress['invalid'] = true;
-                            $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '${curChar}'";
+                            $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
                         } elseif (('/' == $curChar || '|' == $curChar) &&
                         !$emailAddress['local_part_parsed'] && !$emailAddress['address_temp'] && !$emailAddress['quote_temp']) {
                             $emailAddress['invalid'] = true;
-                            $emailAddress['invalid_reason'] = "This character is not allowed in the beginning of an email addresses (please put in quotes if needed): '${curChar}'";
+                            $emailAddress['invalid_reason'] = "This character is not allowed in the beginning of an email addresses (please put in quotes if needed): '{$curChar}'";
                         } elseif (self::STATE_LOCAL_PART == $subState) {
                             // Legitimate character - Determine where to append based on the current 'substate'
 
@@ -491,17 +475,17 @@ class Parse
                             try {
                                 // Test by trying to encode the current character into Punycode
                                 // Punycode should match the traditional domain name subset of characters
-                                if (preg_match('/[a-z0-9\-]/', $this->getPunycode()->encode($curChar))) {
+                                if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
                                     $emailAddress['domain'] .= $curChar;
                                 } else {
                                     $emailAddress['invalid'] = true;
                                 }
                             } catch (\Exception $e) {
-                                $this->log('warning', "Email\\Parse->parse - exception trying to convert character '${curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: ${emails}");
+                                $this->log('warning', "Email\\Parse->parse - exception trying to convert character '{$curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: {$emails}");
                                 $emailAddress['invalid'] = true;
                             }
                             if ($emailAddress['invalid']) {
-                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '${curChar}'";
+                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
                             }
                         } elseif (self::STATE_START === $subState) {
                             if ($emailAddress['quote_temp']) {
@@ -521,64 +505,64 @@ class Parse
                             $emailAddress['name_parsed'] .= $curChar;
                         } else {
                             $emailAddress['invalid'] = true;
-                            $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '${curChar}'";
+                            $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
                         }
                     }
-                break;
-            case self::STATE_SQUARE_BRACKET:
-                // Handle square bracketed IP addresses such as [10.0.10.2]
-                $emailAddress['original_address'] .= $curChar;
-                if (']' == $curChar) {
-                    $subState = self::STATE_AFTER_DOMAIN;
-                    $state = self::STATE_ADDRESS;
-                } elseif (preg_match('/[0-9\.]/', $curChar)) {
-                    $emailAddress['ip'] .= $curChar;
-                } else {
-                    $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = "Invalid Character '${curChar}' in what seemed to be an IP Address";
-                }
-                break;
-            case self::STATE_QUOTE:
-                // Handle quoted strings
-                $emailAddress['original_address'] .= $curChar;
-                if ('"' == $curChar) {
-                    $backslashCount = 0;
-                    for ($j = $i; $j >= 0; --$j) {
-                        if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
-                            ++$backslashCount;
-                        } else {
-                            break;
-                        }
-                    }
-                    if ($backslashCount && 1 == $backslashCount % 2) {
-                        // This is a quoted quote
-                        $emailAddress['quote_temp'] .= $curChar;
+                    break;
+                case self::STATE_SQUARE_BRACKET:
+                    // Handle square bracketed IP addresses such as [10.0.10.2]
+                    $emailAddress['original_address'] .= $curChar;
+                    if (']' == $curChar) {
+                        $subState = self::STATE_AFTER_DOMAIN;
+                        $state = self::STATE_ADDRESS;
+                    } elseif (preg_match('/[0-9\.]/', $curChar)) {
+                        $emailAddress['ip'] .= $curChar;
                     } else {
-                        $state = self::STATE_ADDRESS;
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = "Invalid Character '{$curChar}' in what seemed to be an IP Address";
                     }
-                } else {
-                    $emailAddress['quote_temp'] .= $curChar;
-                }
-                break;
-            case self::STATE_COMMENT:
-                // Handle comments and nesting thereof
-                $emailAddress['original_address'] .= $curChar;
-                if (')' == $curChar) {
-                    --$commentNestLevel;
-                    if ($commentNestLevel <= 0) {
-                        $state = self::STATE_ADDRESS;
+                    break;
+                case self::STATE_QUOTE:
+                    // Handle quoted strings
+                    $emailAddress['original_address'] .= $curChar;
+                    if ('"' == $curChar) {
+                        $backslashCount = 0;
+                        for ($j = $i; $j >= 0; --$j) {
+                            if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
+                                ++$backslashCount;
+                            } else {
+                                break;
+                            }
+                        }
+                        if ($backslashCount && 1 == $backslashCount % 2) {
+                            // This is a quoted quote
+                            $emailAddress['quote_temp'] .= $curChar;
+                        } else {
+                            $state = self::STATE_ADDRESS;
+                        }
+                    } else {
+                        $emailAddress['quote_temp'] .= $curChar;
                     }
-                } elseif ('(' == $curChar) {
-                    ++$commentNestLevel;
-                }
-                break;
-            default:
-                // Shouldn't ever get here - what is $state?
-                $emailAddress['original_address'] .= $curChar;
-                $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Error during parsing';
-                $this->log('error', "Email\\Parse->parse - error during parsing - \$state: ${state}\n\$subState: ${subState}\$i: ${i}\n\$curChar: ${curChar}");
-                break;
+                    break;
+                case self::STATE_COMMENT:
+                    // Handle comments and nesting thereof
+                    $emailAddress['original_address'] .= $curChar;
+                    if (')' == $curChar) {
+                        --$commentNestLevel;
+                        if ($commentNestLevel <= 0) {
+                            $state = self::STATE_ADDRESS;
+                        }
+                    } elseif ('(' == $curChar) {
+                        ++$commentNestLevel;
+                    }
+                    break;
+                default:
+                    // Shouldn't ever get here - what is $state?
+                    $emailAddress['original_address'] .= $curChar;
+                    $emailAddress['invalid'] = true;
+                    $emailAddress['invalid_reason'] = 'Error during parsing';
+                    $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$state}\n\$subState: {$subState}\$i: {$i}\n\$curChar: {$curChar}");
+                    break;
             }
 
             // if there's a $emailAddress['original_address'] and the state is set to STATE_END_ADDRESS
@@ -606,7 +590,7 @@ class Parse
             }
 
             if ($emailAddress['invalid']) {
-                $this->log('debug', "Email\\Parse->parse - invalid - {$emailAddress['invalid_reason']}\n\$emailAddress['original_address'] {$emailAddress['original_address']}\n\$emails: ${emails}");
+                $this->log('debug', "Email\\Parse->parse - invalid - {$emailAddress['invalid_reason']}\n\$emailAddress['original_address'] {$emailAddress['original_address']}\n\$emails: {$emails}");
                 $state = self::STATE_SKIP_AHEAD;
             }
         }
@@ -625,7 +609,7 @@ class Parse
             $emailAddress['invalid_reason'] = 'No closing square bracket: \']\'';
         }
         if (!$emailAddress['invalid'] && $emailAddress['address_temp'] || $emailAddress['quote_temp']) {
-            $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: ${i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: ${emails}");
+            $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}");
             $emailAddress['invalid'] = true;
             $emailAddress['invalid_reason'] = 'Incomplete address';
             if (!$success) {
@@ -722,11 +706,6 @@ class Parse
      * Does a bunch of additional validation on the email address parts contained in $emailAddress
      *  Then adds it to $emailAdddresses.
      *
-     * @param $emailAddresses
-     * @param $emailAddress
-     * @param $encoding
-     * @param $i
-     *
      * @return mixed
      */
     private function addAddress(
@@ -739,7 +718,7 @@ class Parse
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Incomplete address';
-                $this->log('error', "Email\\Parse->addAddress - corruption during parsing - leftovers:\n\$i: ${i}\n\$emailAddress['address_temp'] : {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\n");
+                $this->log('error', "Email\\Parse->addAddress - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp'] : {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\n");
             } elseif ($emailAddress['ip'] && $emailAddress['domain']) {
                 // Error - this should never occur
                 $emailAddress['invalid'] = true;
@@ -773,7 +752,7 @@ class Parse
                 // Check for IDNA
                 if (max(array_keys(count_chars($emailAddress['domain'], 1))) > 127) {
                     try {
-                        $emailAddress['domain'] = $this->getPunycode()->encode($emailAddress['domain']);
+                        $emailAddress['domain'] = idn_to_ascii($emailAddress['domain']);
                     } catch (\Exception $e) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
@@ -854,13 +833,13 @@ class Parse
             mb_regex_encoding($origEncoding);
             foreach ($parts as $part) {
                 if (mb_strlen($part, $encoding) > 63) {
-                    return ['valid' => false, 'reason' => "Domain name part '${part}' too long"];
+                    return ['valid' => false, 'reason' => "Domain name part '{$part}' too long"];
                 }
                 if (!preg_match('/^[a-zA-Z0-9\-]+$/', $part)) {
-                    return ['valid' => false, 'reason' => "Domain name '${domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '${part}' contains characters outside of that range."];
+                    return ['valid' => false, 'reason' => "Domain name '{$domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '{$part}' contains characters outside of that range."];
                 }
                 if ('-' == mb_substr($part, 0, 1, $encoding) || '-' == mb_substr($part, mb_strlen($part) - 1, 1, $encoding)) {
-                    return ['valid' => false, 'reason' => "Parts of the domain name '${domain}' can not start or end with '-'.  This part does: ${part}"];
+                    return ['valid' => false, 'reason' => "Parts of the domain name '{$domain}' can not start or end with '-'.  This part does: {$part}"];
                 }
             }
         }
