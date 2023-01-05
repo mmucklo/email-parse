@@ -5,6 +5,9 @@ checks:
         code_rating: true
         duplication: true
 build:
+    environment:
+        php:
+            version: 8.2.0
     tests:
         override:
             -
