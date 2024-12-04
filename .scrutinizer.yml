@@ -5,7 +5,7 @@ checks:
         code_rating: true
         duplication: true
 build:
-    image: default-focal
+    image: default-jammy
     environment:
         php: 8.3
     tests:
