@@ -5,7 +5,7 @@ checks:
         code_rating: true
         duplication: true
 build:
-    image: default-bionic
+    image: default-focal
     environment:
         php: 8.3
     tests:
