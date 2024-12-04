@@ -6,8 +6,6 @@ checks:
         duplication: true
 build:
     image: default-jammy
-    environment:
-        php: 8.3
     tests:
         override:
             -
