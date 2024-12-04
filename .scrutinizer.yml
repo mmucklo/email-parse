@@ -5,6 +5,9 @@ checks:
         code_rating: true
         duplication: true
 build:
+    image: default-bionic
+    environment:
+        php: 8.3
     tests:
         override:
             -
