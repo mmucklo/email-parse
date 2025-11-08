@@ -7,7 +7,7 @@ require_once __DIR__.'/../src/Parse.php';
 
 use Email\Parse;
 
-class InflectTest extends \PHPUnit\Framework\TestCase
+class ParseTest extends \PHPUnit\Framework\TestCase
 {
     public function testParseEmailAddresses()
     {

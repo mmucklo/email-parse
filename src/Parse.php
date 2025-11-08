@@ -25,31 +25,31 @@ class Parse
     private const STATE_START = 11;
 
     /**
-     * @var Parse
+     * @var ?Parse
      */
-    protected static $instance;
+    protected static ?Parse $instance = null;
 
     /**
-     * @var Ip
+     * @var ?Ip
      */
-    protected $ipValidator = null;
+    protected ?Ip $ipValidator = null;
 
     /**
-     * @var LoggerInterface
+     * @var ?LoggerInterface
      */
-    protected $logger = null;
+    protected ?LoggerInterface $logger = null;
 
     /**
-     * @var ParseOptions
+     * @var ?ParseOptions
      */
-    protected $options;
+    protected ?ParseOptions $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
      *
      * @return Parse The instance
      */
-    public static function getInstance()
+    public static function getInstance(): Parse
     {
         if (!self::$instance) {
             return self::$instance = new self();
@@ -62,10 +62,10 @@ class Parse
      * Constructor.
      *
      * @param LoggerInterface|null $logger  (optional) Psr-compliant logger
-     * @param array                $options array (hash) of options
+     * @param ParseOptions|null    $options options
      */
-    public function __construct(LoggerInterface $logger = null,
-                                ParseOptions $options = null)
+    public function __construct(?LoggerInterface $logger = null,
+                                ?ParseOptions $options = null)
     {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
@@ -76,20 +76,22 @@ class Parse
      *
      * @param LoggerInterface $logger (optional) Psr-compliant logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): Parse
     {
         $this->logger = $logger;
+        return $this;
     }
 
-    public function setOptions(ParseOptions $options)
+    public function setOptions(ParseOptions $options): Parse
     {
         $this->options = $options;
+        return $this;
     }
 
     /**
-     * @return ParseOptions
+     * @return ?ParseOptions
      */
-    public function getOptions()
+    public function getOptions(): ?ParseOptions
     {
         return $this->options;
     }
@@ -100,11 +102,9 @@ class Parse
      * @param mixed  $level
      * @param string $message
      */
-    protected function log($level, $message)
+    protected function log(mixed $level, string $message): void
     {
-        if ($this->logger) {
-            $this->logger->log($level, $message);
-        }
+        $this->logger?->log($level, $message);
     }
 
     /**
@@ -218,7 +218,7 @@ class Parse
      *                )
      *            );
      */
-    public function parse($emails, $multiple = true, $encoding = 'UTF-8')
+    public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
         $emailAddresses = [];
 
@@ -666,7 +666,7 @@ class Parse
     /**
      * Handles the case of a quoted name.
      */
-    private function handleQuote(array &$emailAddress)
+    private function handleQuote(array &$emailAddress): void
     {
         if ($emailAddress['quote_temp']) {
             $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
@@ -686,8 +686,9 @@ class Parse
 
     /**
      * Helper function for creating a blank email address array used by Email\Parse->parse.
+     * @return array
      */
-    private function buildEmailAddressArray()
+    private function buildEmailAddressArray(): array
     {
         $emailAddress = ['original_address' => '',
                         'name_parsed' => '',
@@ -712,14 +713,14 @@ class Parse
      * Does a bunch of additional validation on the email address parts contained in $emailAddress
      *  Then adds it to $emailAdddresses.
      *
-     * @return mixed
+     * @return bool
      */
     private function addAddress(
         &$emailAddresses,
         &$emailAddress,
         $encoding,
         $i
-    ) {
+    ): bool {
         if (!$emailAddress['invalid']) {
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
@@ -833,7 +834,7 @@ class Parse
      * @return array array('valid' => boolean: whether valid or not,
      *               'reason' => string: if not valid, the reason why);
      */
-    protected function validateDomainName($domain, $encoding = 'UTF-8')
+    protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
     {
         if (mb_strlen($domain, $encoding) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long'];
