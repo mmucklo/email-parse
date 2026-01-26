@@ -26,7 +26,6 @@
   "require": {
     "php": "^8.2",
     "ext-mbstring": "*",
-    "laminas/laminas-validator": "^3.0",
     "psr/log": "^3.0",
     "symfony/polyfill-intl-idn": "^1.31"
   },
