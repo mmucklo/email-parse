@@ -2,7 +2,6 @@
 
 namespace Email;
 
-use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -28,11 +27,6 @@ class Parse
      * @var ?Parse
      */
     protected static ?Parse $instance = null;
-
-    /**
-     * @var ?Ip
-     */
-    protected ?Ip $ipValidator = null;
 
     /**
      * @var ?LoggerInterface
@@ -521,11 +515,8 @@ class Parse
                     if (']' == $curChar) {
                         $subState = self::STATE_AFTER_DOMAIN;
                         $state = self::STATE_ADDRESS;
-                    } elseif (preg_match('/[0-9\.]/', $curChar)) {
-                        $emailAddress['ip'] .= $curChar;
                     } else {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Invalid Character '{$curChar}' in what seemed to be an IP Address";
+                        $emailAddress['ip'] .= $curChar;
                     }
                     break;
                 case self::STATE_QUOTE:
@@ -722,6 +713,13 @@ class Parse
         $i
     ): bool {
         if (!$emailAddress['invalid']) {
+            if (isset($emailAddress['domain']) &&
+                filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
+                str_starts_with($emailAddress['domain'], 'IPv6:') ||
+                preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain'])) {
+                $emailAddress['ip'] = $emailAddress['domain'];
+                $emailAddress['domain'] = null;
+            }
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Incomplete address';
@@ -731,34 +729,26 @@ class Parse
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Confusion during parsing';
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
-            } elseif ($emailAddress['ip'] || ($emailAddress['domain'] && preg_match('/\d+\.\d+\.\d+\.\d+/', $emailAddress['domain']))) {
-                // also test if the current domain looks like an IP address
-
-                if ($emailAddress['domain']) {
-                    // Likely an IP address if we get here
-
-                    $emailAddress['ip'] = $emailAddress['domain'];
-                    $emailAddress['domain'] = null;
-                }
-                if (!$this->ipValidator) {
-                    $this->ipValidator = new Ip();
-                }
-                try {
-                    if (!$this->ipValidator->isValid($emailAddress['ip'])) {
+            } elseif ($emailAddress['ip']) {
+                if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+                    if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_GLOBAL_RANGE) === false) {
                         $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid: \''.$emailAddress['ip'].'\' does not appear to be a valid IP address';
-                    } elseif (preg_match('/192\.168\.\d+\.\d+/', $emailAddress['ip']) ||
-                        preg_match('/172\.(1[6-9]|2[0-9]|3[0-2])\.\d+\.\d+/', $emailAddress['ip']) ||
-                        preg_match('/10\.\d+\.\d+\.\d+/', $emailAddress['ip'])) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid (private): '.$emailAddress['ip'];
-                    } elseif (preg_match('/169\.254\.\d+\.\d+/', $emailAddress['ip'])) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid (APIPA): '.$emailAddress['ip'];
+                        $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
-                } catch (\Exception $e) {
+                } else if (str_starts_with($emailAddress['ip'], 'IPv6:')) {
+                    $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
+                    if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+                        if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_GLOBAL_RANGE) === false) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
+                        }
+                    } else {
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
+                    }
+                } else {
                     $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = 'IP address invalid: '.$emailAddress['ip'];
+                    $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
                 }
             } elseif ($emailAddress['domain']) {
                 // Check for IDNA
