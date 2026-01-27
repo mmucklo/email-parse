@@ -5,14 +5,30 @@ checks:
         code_rating: true
         duplication: true
 build:
-    environment:
-        php:
-            version: 8.2.0
-    image: default-jammy
-    tests:
-        override:
-            -
-                command: 'XDEBUG_MODE=coverage bin/phpunit --coverage-clover=.coverage'
-                coverage:
-                    file: '.coverage'
-                    format: 'clover'
+    nodes:
+        analysis:
+            project_setup:
+                override:
+                    - 'true'
+            tests:
+                override:
+                    - php-scrutinizer-run
+        php82:
+            environment:
+                php:
+                    version: 8.2.0
+            tests:
+                override:
+                    -
+                        command: 'XDEBUG_MODE=coverage bin/phpunit --coverage-clover=.coverage'
+                        coverage:
+                            file: '.coverage'
+                            format: 'clover'
+        php83:
+            environment:
+                php:
+                    version: 8.3.0
+            tests:
+                override:
+                    -
+                        command: 'bin/phpunit'
