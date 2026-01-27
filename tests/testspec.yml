@@ -1865,3 +1865,55 @@
         ip: 255.255.255.255
         invalid: true
         invalid_reason: 'IP address invalid: ''255.255.255.255'' does not appear to be a valid IP address in the global range'
+-
+    emails: 'Example | Example <example@example.com>'
+    multiple: false
+    result:
+        address: 'Example | Example <example@example.com>'
+        simple_address: example@example.com
+        original_address: 'Example | Example <example@example.com>'
+        name: 'Example | Example'
+        name_parsed: 'Example | Example'
+        local_part: example
+        local_part_parsed: example
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'Example | Example <example@example.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'Example | Example <example@example.com>'
+                simple_address: example@example.com
+                original_address: 'Example | Example <example@example.com>'
+                name: 'Example | Example'
+                name_parsed: 'Example | Example'
+                local_part: example
+                local_part_parsed: example
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'John / Jane Doe <test@example.com>'
+    multiple: false
+    result:
+        address: 'John / Jane Doe <test@example.com>'
+        simple_address: test@example.com
+        original_address: 'John / Jane Doe <test@example.com>'
+        name: 'John / Jane Doe'
+        name_parsed: 'John / Jane Doe'
+        local_part: test
+        local_part_parsed: test
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
