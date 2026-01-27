@@ -2,9 +2,7 @@
 
 namespace Email;
 
-use Laminas\Validator\Ip;
 use Psr\Log\LoggerInterface;
-use TrueBV\Punycode;
 
 /**
  * Class Parse.
@@ -26,33 +24,26 @@ class Parse
     private const STATE_START = 11;
 
     /**
-     * @var Parse
+     * @var ?Parse
      */
-    protected static $instance;
+    protected static ?Parse $instance = null;
 
     /**
-     * @var Ip
+     * @var ?LoggerInterface
      */
-    protected $ipValidator = null;
+    protected ?LoggerInterface $logger = null;
 
     /**
-     * @var LoggerInterface
+     * @var ?ParseOptions
      */
-    protected $logger = null;
-
-    protected $punycode;
-
-    /**
-     * @var ParseOptions
-     */
-    protected $options;
+    protected ?ParseOptions $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
      *
      * @return Parse The instance
      */
-    public static function getInstance()
+    public static function getInstance(): Parse
     {
         if (!self::$instance) {
             return self::$instance = new self();
@@ -65,25 +56,13 @@ class Parse
      * Constructor.
      *
      * @param LoggerInterface|null $logger  (optional) Psr-compliant logger
-     * @param array                $options array (hash) of options
+     * @param ParseOptions|null    $options options
      */
-    public function __construct(LoggerInterface $logger = null,
-                                ParseOptions $options = null)
+    public function __construct(?LoggerInterface $logger = null,
+                                ?ParseOptions $options = null)
     {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
-    }
-
-    /**
-     * @return Punycode
-     */
-    public function getPunycode()
-    {
-        if (!$this->punycode) {
-            $this->punycode = new Punycode();
-        }
-
-        return $this->punycode;
     }
 
     /**
@@ -91,20 +70,22 @@ class Parse
      *
      * @param LoggerInterface $logger (optional) Psr-compliant logger
      */
-    public function setLogger(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger): Parse
     {
         $this->logger = $logger;
+        return $this;
     }
 
-    public function setOptions(ParseOptions $options)
+    public function setOptions(ParseOptions $options): Parse
     {
         $this->options = $options;
+        return $this;
     }
 
     /**
-     * @return ParseOptions
+     * @return ?ParseOptions
      */
-    public function getOptions()
+    public function getOptions(): ?ParseOptions
     {
         return $this->options;
     }
@@ -115,11 +96,9 @@ class Parse
      * @param mixed  $level
      * @param string $message
      */
-    protected function log($level, $message)
+    protected function log(mixed $level, string $message): void
     {
-        if ($this->logger) {
-            $this->logger->log($level, $message);
-        }
+        $this->logger?->log($level, $message);
     }
 
     /**
@@ -233,7 +212,7 @@ class Parse
      *                )
      *            );
      */
-    public function parse($emails, $multiple = true, $encoding = 'UTF-8')
+    public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
         $emailAddresses = [];
 
@@ -462,7 +441,7 @@ class Parse
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
                         } elseif (('/' == $curChar || '|' == $curChar) &&
-                        !$emailAddress['local_part_parsed'] && !$emailAddress['address_temp'] && !$emailAddress['quote_temp']) {
+                        !$emailAddress['local_part_parsed'] && !$emailAddress['address_temp'] && !$emailAddress['quote_temp'] && !$emailAddress['name_parsed']) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in the beginning of an email addresses (please put in quotes if needed): '{$curChar}'";
                         } elseif (self::STATE_LOCAL_PART == $subState) {
@@ -536,11 +515,8 @@ class Parse
                     if (']' == $curChar) {
                         $subState = self::STATE_AFTER_DOMAIN;
                         $state = self::STATE_ADDRESS;
-                    } elseif (preg_match('/[0-9\.]/', $curChar)) {
-                        $emailAddress['ip'] .= $curChar;
                     } else {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Invalid Character '{$curChar}' in what seemed to be an IP Address";
+                        $emailAddress['ip'] .= $curChar;
                     }
                     break;
                 case self::STATE_QUOTE:
@@ -681,7 +657,7 @@ class Parse
     /**
      * Handles the case of a quoted name.
      */
-    private function handleQuote(array &$emailAddress)
+    private function handleQuote(array &$emailAddress): void
     {
         if ($emailAddress['quote_temp']) {
             $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
@@ -701,8 +677,9 @@ class Parse
 
     /**
      * Helper function for creating a blank email address array used by Email\Parse->parse.
+     * @return array
      */
-    private function buildEmailAddressArray()
+    private function buildEmailAddressArray(): array
     {
         $emailAddress = ['original_address' => '',
                         'name_parsed' => '',
@@ -727,15 +704,22 @@ class Parse
      * Does a bunch of additional validation on the email address parts contained in $emailAddress
      *  Then adds it to $emailAdddresses.
      *
-     * @return mixed
+     * @return bool
      */
     private function addAddress(
         &$emailAddresses,
         &$emailAddress,
         $encoding,
         $i
-    ) {
+    ): bool {
         if (!$emailAddress['invalid']) {
+            if (isset($emailAddress['domain']) &&
+                filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
+                str_starts_with($emailAddress['domain'], 'IPv6:') ||
+                preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain'])) {
+                $emailAddress['ip'] = $emailAddress['domain'];
+                $emailAddress['domain'] = null;
+            }
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Incomplete address';
@@ -745,34 +729,26 @@ class Parse
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Confusion during parsing';
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
-            } elseif ($emailAddress['ip'] || ($emailAddress['domain'] && preg_match('/\d+\.\d+\.\d+\.\d+/', $emailAddress['domain']))) {
-                // also test if the current domain looks like an IP address
-
-                if ($emailAddress['domain']) {
-                    // Likely an IP address if we get here
-
-                    $emailAddress['ip'] = $emailAddress['domain'];
-                    $emailAddress['domain'] = null;
-                }
-                if (!$this->ipValidator) {
-                    $this->ipValidator = new Ip();
-                }
-                try {
-                    if (!$this->ipValidator->isValid($emailAddress['ip'])) {
+            } elseif ($emailAddress['ip']) {
+                if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+                    if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_GLOBAL_RANGE) === false) {
                         $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid: \''.$emailAddress['ip'].'\' does not appear to be a valid IP address';
-                    } elseif (preg_match('/192\.168\.\d+\.\d+/', $emailAddress['ip']) ||
-                        preg_match('/172\.(1[6-9]|2[0-9]|3[0-2])\.\d+\.\d+/', $emailAddress['ip']) ||
-                        preg_match('/10\.\d+\.\d+\.\d+/', $emailAddress['ip'])) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid (private): '.$emailAddress['ip'];
-                    } elseif (preg_match('/169\.254\.\d+\.\d+/', $emailAddress['ip'])) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = 'IP address invalid (APIPA): '.$emailAddress['ip'];
+                        $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
-                } catch (\Exception $e) {
+                } else if (str_starts_with($emailAddress['ip'], 'IPv6:')) {
+                    $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
+                    if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
+                        if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_GLOBAL_RANGE) === false) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
+                        }
+                    } else {
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
+                    }
+                } else {
                     $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = 'IP address invalid: '.$emailAddress['ip'];
+                    $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
                 }
             } elseif ($emailAddress['domain']) {
                 // Check for IDNA
@@ -848,7 +824,7 @@ class Parse
      * @return array array('valid' => boolean: whether valid or not,
      *               'reason' => string: if not valid, the reason why);
      */
-    protected function validateDomainName($domain, $encoding = 'UTF-8')
+    protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
     {
         if (mb_strlen($domain, $encoding) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long'];
