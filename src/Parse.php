@@ -605,7 +605,7 @@ class Parse
             $emailAddress['invalid'] = true;
             $emailAddress['invalid_reason'] = 'No closing square bracket: \']\'';
         }
-        if (!$emailAddress['invalid'] && $emailAddress['address_temp'] || $emailAddress['quote_temp']) {
+        if (!$emailAddress['invalid'] && ($emailAddress['address_temp'] || $emailAddress['quote_temp'])) {
             $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}");
             $emailAddress['invalid'] = true;
             $emailAddress['invalid_reason'] = 'Incomplete address';
@@ -714,9 +714,9 @@ class Parse
     ): bool {
         if (!$emailAddress['invalid']) {
             if (isset($emailAddress['domain']) &&
-                filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
+                (filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
                 str_starts_with($emailAddress['domain'], 'IPv6:') ||
-                preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain'])) {
+                preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain']))) {
                 $emailAddress['ip'] = $emailAddress['domain'];
                 $emailAddress['domain'] = null;
             }
@@ -735,7 +735,7 @@ class Parse
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
-                } else if (str_starts_with($emailAddress['ip'], 'IPv6:')) {
+                } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
                         if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_GLOBAL_RANGE) === false) {

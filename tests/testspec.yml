@@ -1917,3 +1917,247 @@
         ip: ''
         invalid: false
         invalid_reason: null
+# Operator Precedence Tests - Line 608 fix (incomplete address detection)
+-
+    emails: '"John Doe <john@example.com>'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: '"John Doe <john@example.com>'
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'No ending quote: ''"'''
+-
+    emails: '"John Doe" <john@example.com>'
+    multiple: false
+    result:
+        address: '"John Doe" <john@example.com>'
+        simple_address: john@example.com
+        original_address: '"John Doe" <john@example.com>'
+        name: '"John Doe"'
+        name_parsed: 'John Doe'
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: '"Test.User" <test.user@example.com>'
+    multiple: false
+    result:
+        address: '"Test.User" <test.user@example.com>'
+        simple_address: test.user@example.com
+        original_address: '"Test.User" <test.user@example.com>'
+        name: '"Test.User"'
+        name_parsed: 'Test.User'
+        local_part: test.user
+        local_part_parsed: test.user
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: '"Valid Name" <test@example.com>'
+    multiple: false
+    result:
+        address: '"Valid Name" <test@example.com>'
+        simple_address: test@example.com
+        original_address: '"Valid Name" <test@example.com>'
+        name: '"Valid Name"'
+        name_parsed: 'Valid Name'
+        local_part: test
+        local_part_parsed: test
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+# Operator Precedence Tests - Line 717 fix (IP address detection)
+-
+    emails: 'test@192.168.1.1'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: test@192.168.1.1
+        name: ''
+        name_parsed: ''
+        local_part: test
+        local_part_parsed: test
+        domain_part: '[192.168.1.1]'
+        domain: null
+        ip: '192.168.1.1'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''192.168.1.1'' does not appear to be a valid IP address in the global range'
+-
+    emails: 'test@[IPv6:2001:db8::1]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'test@[IPv6:2001:db8::1]'
+        name: ''
+        name_parsed: ''
+        local_part: test
+        local_part_parsed: test
+        domain_part: '[IPv6:2001:db8::1]'
+        domain: ''
+        ip: 'IPv6:2001:db8::1'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''IPv6:2001:db8::1'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'test@256.256.256.256'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: test@256.256.256.256
+        name: ''
+        name_parsed: ''
+        local_part: test
+        local_part_parsed: test
+        domain_part: '[256.256.256.256]'
+        domain: null
+        ip: '256.256.256.256'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''256.256.256.256'' does not appear to be a valid IP address'
+-
+    emails: 'test@10.0.0.1'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: test@10.0.0.1
+        name: ''
+        name_parsed: ''
+        local_part: test
+        local_part_parsed: test
+        domain_part: '[10.0.0.1]'
+        domain: null
+        ip: '10.0.0.1'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''10.0.0.1'' does not appear to be a valid IP address in the global range'
+-
+    emails: 'user1@[80.67.66.65], user2@example.com'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'user1@[80.67.66.65]'
+                simple_address: 'user1@[80.67.66.65]'
+                original_address: 'user1@[80.67.66.65]'
+                name: ''
+                name_parsed: ''
+                local_part: user1
+                local_part_parsed: user1
+                domain_part: '[80.67.66.65]'
+                domain: ''
+                ip: '80.67.66.65'
+                invalid: false
+                invalid_reason: null
+            -
+                address: user2@example.com
+                simple_address: user2@example.com
+                original_address: user2@example.com
+                name: ''
+                name_parsed: ''
+                local_part: user2
+                local_part_parsed: user2
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '"user.name"@example.com'
+    multiple: false
+    result:
+        address: '"user.name"@example.com'
+        simple_address: '"user.name"@example.com'
+        original_address: '"user.name"@example.com'
+        name: ''
+        name_parsed: ''
+        local_part: '"user.name"'
+        local_part_parsed: 'user.name'
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+# Edge cases for operator precedence
+-
+    emails: ''
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: ''
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'No email address found'
+-
+    emails: '   '
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: ''
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'No email address found'
+-
+    emails: 'test@example.com'
+    multiple: false
+    result:
+        address: test@example.com
+        simple_address: test@example.com
+        original_address: test@example.com
+        name: ''
+        name_parsed: ''
+        local_part: test
+        local_part_parsed: test
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+-
+    emails: 'test@server123.example.com'
+    multiple: false
+    result:
+        address: test@server123.example.com
+        simple_address: test@server123.example.com
+        original_address: test@server123.example.com
+        name: ''
+        name_parsed: ''
+        local_part: test
+        local_part_parsed: test
+        domain_part: server123.example.com
+        domain: server123.example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
