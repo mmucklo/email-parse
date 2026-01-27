@@ -441,7 +441,7 @@ class Parse
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
                         } elseif (('/' == $curChar || '|' == $curChar) &&
-                        !$emailAddress['local_part_parsed'] && !$emailAddress['address_temp'] && !$emailAddress['quote_temp']) {
+                        !$emailAddress['local_part_parsed'] && !$emailAddress['address_temp'] && !$emailAddress['quote_temp'] && !$emailAddress['name_parsed']) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in the beginning of an email addresses (please put in quotes if needed): '{$curChar}'";
                         } elseif (self::STATE_LOCAL_PART == $subState) {
