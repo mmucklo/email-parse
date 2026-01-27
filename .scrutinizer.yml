@@ -4,6 +4,7 @@ checks:
     php:
         code_rating: true
         duplication: true
+
 build:
     nodes:
         analysis:
@@ -13,10 +14,13 @@ build:
             tests:
                 override:
                     - php-scrutinizer-run
-        php82:
+
+        tests-php82:
             environment:
-                php:
-                    version: 8.2
+                php: '8.2'
+            dependencies:
+                override:
+                    - composer install --no-interaction --prefer-dist
             tests:
                 override:
                     -
@@ -24,11 +28,13 @@ build:
                         coverage:
                             file: '.coverage'
                             format: 'clover'
-        php83:
+
+        tests-php83:
             environment:
-                php:
-                    version: 8.3
+                php: '8.3'
+            dependencies:
+                override:
+                    - composer install --no-interaction --prefer-dist
             tests:
                 override:
-                    -
-                        command: 'vendor/bin/phpunit'
+                    - vendor/bin/phpunit
