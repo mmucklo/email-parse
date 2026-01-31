@@ -22,7 +22,7 @@
     "friendsofphp/php-cs-fixer": "^3.65",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^9.6",
-    "symfony/yaml": "^7.2"
+    "symfony/yaml": "^6.4|^7.2"
   },
   "require": {
     "php": "^8.1",
