@@ -9,6 +9,9 @@ use Psr\Log\LoggerInterface;
  */
 class Parse
 {
+    // Polyfill for FILTER_FLAG_GLOBAL_RANGE (introduced in PHP 8.2)
+    private const FILTER_FLAG_GLOBAL_RANGE = 268435456;
+
     // Constants for the state-machine of the parser
     private const STATE_TRIM = 0;
     private const STATE_QUOTE = 1;
@@ -745,14 +748,14 @@ class Parse
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip']) {
                 if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
-                    if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_GLOBAL_RANGE) === false) {
+                    if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | self::FILTER_FLAG_GLOBAL_RANGE) === false) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
                 } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
-                        if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_GLOBAL_RANGE) === false) {
+                        if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | self::FILTER_FLAG_GLOBAL_RANGE) === false) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
                         }
