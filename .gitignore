@@ -7,4 +7,11 @@ vendor/*
 # bin
 bin/*
 
+# cache files
 *.cache
+.phpunit.result.cache
+
+# coverage reports
+coverage/
+coverage.xml
+.phpunit.cache/

@@ -58,9 +58,10 @@ class Parse
      * @param LoggerInterface|null $logger  (optional) Psr-compliant logger
      * @param ParseOptions|null    $options options
      */
-    public function __construct(?LoggerInterface $logger = null,
-                                ?ParseOptions $options = null)
-    {
+    public function __construct(
+        ?LoggerInterface $logger = null,
+        ?ParseOptions $options = null
+    ) {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
     }
@@ -73,12 +74,14 @@ class Parse
     public function setLogger(LoggerInterface $logger): Parse
     {
         $this->logger = $logger;
+
         return $this;
     }
 
     public function setOptions(ParseOptions $options): Parse
     {
         $this->options = $options;
+
         return $this;
     }
 
@@ -266,10 +269,12 @@ class Parse
                         if ('"' == $curChar) {
                             $emailAddress['original_address'] .= $curChar;
                             $state = self::STATE_QUOTE;
+
                             break;
                         } elseif ('(' == $curChar) {
                             $emailAddress['original_address'] .= $curChar;
                             $state = self::STATE_COMMENT;
+
                             break;
                         }
                         // Fall through to next case self::STATE_ADDRESS on purpose here
@@ -285,12 +290,14 @@ class Parse
                         // Handle comment
                         $state = self::STATE_COMMENT;
                         $commentNestLevel = 1;
+
                         break;
                     } elseif (',' == $curChar) {
                         // Handle Comma
                         if ($multiple && (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
                             // If we're already in the domain part, this should be the end of the address
                             $state = self::STATE_END_ADDRESS;
+
                             break;
                         } else {
                             $emailAddress['invalid'] = true;
@@ -311,6 +318,7 @@ class Parse
                             $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
                             if ('(' == $lookAheadChar) {
                                 $foundComment = true;
+
                                 break;
                             } elseif (' ' != $lookAheadChar &&
                                 "\t" != $lookAheadChar &&
@@ -330,6 +338,7 @@ class Parse
                         } elseif (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState) {
                             // If we're already in the domain part, this should be the end of the whole address
                             $state = self::STATE_END_ADDRESS;
+
                             break;
                         } else {
                             if (self::STATE_LOCAL_PART == $subState) {
@@ -508,6 +517,7 @@ class Parse
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
                         }
                     }
+
                     break;
                 case self::STATE_SQUARE_BRACKET:
                     // Handle square bracketed IP addresses such as [10.0.10.2]
@@ -518,6 +528,7 @@ class Parse
                     } else {
                         $emailAddress['ip'] .= $curChar;
                     }
+
                     break;
                 case self::STATE_QUOTE:
                     // Handle quoted strings
@@ -540,6 +551,7 @@ class Parse
                     } else {
                         $emailAddress['quote_temp'] .= $curChar;
                     }
+
                     break;
                 case self::STATE_COMMENT:
                     // Handle comments and nesting thereof
@@ -552,6 +564,7 @@ class Parse
                     } elseif ('(' == $curChar) {
                         ++$commentNestLevel;
                     }
+
                     break;
                 default:
                     // Shouldn't ever get here - what is $state?
@@ -559,6 +572,7 @@ class Parse
                     $emailAddress['invalid'] = true;
                     $emailAddress['invalid_reason'] = 'Error during parsing';
                     $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$state}\n\$subState: {$subState}\$i: {$i}\n\$curChar: {$curChar}");
+
                     break;
             }
 
@@ -735,7 +749,7 @@ class Parse
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
-                } else if (str_starts_with($emailAddress['ip'], 'IPv6:')) {
+                } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
                         if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_GLOBAL_RANGE) === false) {
