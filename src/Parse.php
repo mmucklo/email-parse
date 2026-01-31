@@ -619,7 +619,7 @@ class Parse
             $emailAddress['invalid'] = true;
             $emailAddress['invalid_reason'] = 'No closing square bracket: \']\'';
         }
-        if (!$emailAddress['invalid'] && $emailAddress['address_temp'] || $emailAddress['quote_temp']) {
+        if (!$emailAddress['invalid'] && ($emailAddress['address_temp'] || $emailAddress['quote_temp'])) {
             $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}");
             $emailAddress['invalid'] = true;
             $emailAddress['invalid_reason'] = 'Incomplete address';
