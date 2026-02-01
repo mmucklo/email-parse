@@ -9,9 +9,6 @@ use Psr\Log\LoggerInterface;
  */
 class Parse
 {
-    // Polyfill for FILTER_FLAG_GLOBAL_RANGE (introduced in PHP 8.2)
-    private const FILTER_FLAG_GLOBAL_RANGE = 268435456;
-
     // Constants for the state-machine of the parser
     private const STATE_TRIM = 0;
     private const STATE_QUOTE = 1;
@@ -105,6 +102,38 @@ class Parse
     protected function log(mixed $level, string $message): void
     {
         $this->logger?->log($level, $message);
+    }
+
+    /**
+     * Validates IP address with global range check.
+     *
+     * For PHP 8.2+, uses FILTER_FLAG_GLOBAL_RANGE constant.
+     * For PHP 8.1, manually checks if IP is in global range.
+     *
+     * @param string $ip The IP address to validate
+     * @param int $ipType FILTER_FLAG_IPV4 or FILTER_FLAG_IPV6
+     * @return bool True if IP is valid and in global range, false otherwise
+     */
+    private function validateIpGlobalRange(string $ip, int $ipType): bool
+    {
+        // First verify it's a valid IP of the correct type
+        if (filter_var($ip, FILTER_VALIDATE_IP, $ipType) === false) {
+            return false;
+        }
+
+        // PHP 8.2+ has FILTER_FLAG_GLOBAL_RANGE constant
+        if (defined('FILTER_FLAG_GLOBAL_RANGE')) {
+            return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_GLOBAL_RANGE) !== false;
+        }
+
+        // PHP 8.1: Manually check for private/reserved ranges
+        if ($ipType === FILTER_FLAG_IPV4) {
+            // Check if it's NOT in private or reserved ranges
+            return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+        } else {
+            // For IPv6
+            return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+        }
     }
 
     /**
@@ -748,14 +777,14 @@ class Parse
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip']) {
                 if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
-                    if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | self::FILTER_FLAG_GLOBAL_RANGE) === false) {
+                    if (!$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
                 } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
-                        if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | self::FILTER_FLAG_GLOBAL_RANGE) === false) {
+                        if (!$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
                         }
