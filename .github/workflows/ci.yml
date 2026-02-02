@@ -50,7 +50,9 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --ignore-platform-req=php+
+        run: |
+          composer remove --dev phpstan/phpstan friendsofphp/php-cs-fixer --no-update
+          composer install --prefer-dist --no-progress
 
       - name: Run test suite
         run: bin/phpunit
