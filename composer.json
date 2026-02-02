@@ -20,11 +20,12 @@
   ],
   "require-dev": {
     "friendsofphp/php-cs-fixer": "^3.65",
+    "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^9.6",
-    "symfony/yaml": "^7.2"
+    "symfony/yaml": "^6.4|^7.2"
   },
   "require": {
-    "php": "^8.2",
+    "php": "^8.1",
     "ext-mbstring": "*",
     "psr/log": "^3.0",
     "symfony/polyfill-intl-idn": "^1.31"
@@ -41,5 +42,17 @@
     "psr-4": {
       "Email\\Tests\\": "tests/"
     }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "test:coverage": "phpunit --coverage-html coverage",
+    "cs:check": "php-cs-fixer fix --dry-run --diff",
+    "cs:fix": "php-cs-fixer fix",
+    "stan": "phpstan analyse",
+    "ci": [
+      "@cs:check",
+      "@stan",
+      "@test"
+    ]
   }
 }

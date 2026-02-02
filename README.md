@@ -1,5 +1,13 @@
-email-parse [![Build Status](https://travis-ci.org/mmucklo/email-parse.svg?branch=master)](https://travis-ci.org/mmucklo/email-parse)
+email-parse
 ===========
+
+[![CI](https://github.com/mmucklo/email-parse/workflows/CI/badge.svg)](https://github.com/mmucklo/email-parse/actions)
+[![codecov](https://codecov.io/gh/mmucklo/email-parse/branch/master/graph/badge.svg)](https://codecov.io/gh/mmucklo/email-parse)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mmucklo/email-parse/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mmucklo/email-parse/?branch=master)
+[![Latest Stable Version](https://img.shields.io/packagist/v/mmucklo/email-parse.svg)](https://packagist.org/packages/mmucklo/email-parse)
+[![Total Downloads](https://img.shields.io/packagist/dt/mmucklo/email-parse.svg)](https://packagist.org/packages/mmucklo/email-parse)
+[![PHP Version](https://img.shields.io/badge/php-%5E8.1-blue)](https://www.php.net)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 Email\Parse is a multiple (and single) batch email address parser that is reasonably RFC822 / RFC2822 compliant.
 

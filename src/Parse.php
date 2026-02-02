@@ -58,9 +58,10 @@ class Parse
      * @param LoggerInterface|null $logger  (optional) Psr-compliant logger
      * @param ParseOptions|null    $options options
      */
-    public function __construct(?LoggerInterface $logger = null,
-                                ?ParseOptions $options = null)
-    {
+    public function __construct(
+        ?LoggerInterface $logger = null,
+        ?ParseOptions $options = null
+    ) {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
     }
@@ -73,12 +74,14 @@ class Parse
     public function setLogger(LoggerInterface $logger): Parse
     {
         $this->logger = $logger;
+
         return $this;
     }
 
     public function setOptions(ParseOptions $options): Parse
     {
         $this->options = $options;
+
         return $this;
     }
 
@@ -99,6 +102,37 @@ class Parse
     protected function log(mixed $level, string $message): void
     {
         $this->logger?->log($level, $message);
+    }
+
+    /**
+     * Validates IP address with global range check.
+     *
+     * For PHP 8.2+, uses FILTER_FLAG_GLOBAL_RANGE constant.
+     * For PHP 8.1, manually checks if IP is in global range.
+     *
+     * @param string $ip The IP address to validate
+     * @param int $ipType FILTER_FLAG_IPV4 or FILTER_FLAG_IPV6
+     * @return bool True if IP is valid and in global range, false otherwise
+     */
+    private function validateIpGlobalRange(string $ip, int $ipType): bool
+    {
+        // PHP 8.2+ has FILTER_FLAG_GLOBAL_RANGE constant
+        if (defined('FILTER_FLAG_GLOBAL_RANGE')) {
+            return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_GLOBAL_RANGE) !== false;
+        }
+
+        // PHP 8.1: Manually check for private/reserved ranges
+        if (preg_match("/^::ffff:(\d+\.\d+.\d+.\d+)$/i", $ip, $matches)) {
+            $ip = $matches[1];
+            // Special case handling for newer IETF Protocol Assignments RFC 5736 and TEST NETs RFC 5737
+            if (str_starts_with($ip, "192.0.0.") || str_starts_with($ip, "192.0.2.") || str_starts_with($ip, "198.51.100.") || str_starts_with($ip, "203.0.113.")) {
+                return false;
+            }
+            $ipType = FILTER_FLAG_IPV4;
+        }
+
+        // Check if it's NOT in private or reserved ranges
+        return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
     }
 
     /**
@@ -266,10 +300,12 @@ class Parse
                         if ('"' == $curChar) {
                             $emailAddress['original_address'] .= $curChar;
                             $state = self::STATE_QUOTE;
+
                             break;
                         } elseif ('(' == $curChar) {
                             $emailAddress['original_address'] .= $curChar;
                             $state = self::STATE_COMMENT;
+
                             break;
                         }
                         // Fall through to next case self::STATE_ADDRESS on purpose here
@@ -285,12 +321,14 @@ class Parse
                         // Handle comment
                         $state = self::STATE_COMMENT;
                         $commentNestLevel = 1;
+
                         break;
                     } elseif (',' == $curChar) {
                         // Handle Comma
                         if ($multiple && (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
                             // If we're already in the domain part, this should be the end of the address
                             $state = self::STATE_END_ADDRESS;
+
                             break;
                         } else {
                             $emailAddress['invalid'] = true;
@@ -311,6 +349,7 @@ class Parse
                             $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
                             if ('(' == $lookAheadChar) {
                                 $foundComment = true;
+
                                 break;
                             } elseif (' ' != $lookAheadChar &&
                                 "\t" != $lookAheadChar &&
@@ -330,6 +369,7 @@ class Parse
                         } elseif (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState) {
                             // If we're already in the domain part, this should be the end of the whole address
                             $state = self::STATE_END_ADDRESS;
+
                             break;
                         } else {
                             if (self::STATE_LOCAL_PART == $subState) {
@@ -508,6 +548,7 @@ class Parse
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
                         }
                     }
+
                     break;
                 case self::STATE_SQUARE_BRACKET:
                     // Handle square bracketed IP addresses such as [10.0.10.2]
@@ -518,6 +559,7 @@ class Parse
                     } else {
                         $emailAddress['ip'] .= $curChar;
                     }
+
                     break;
                 case self::STATE_QUOTE:
                     // Handle quoted strings
@@ -540,6 +582,7 @@ class Parse
                     } else {
                         $emailAddress['quote_temp'] .= $curChar;
                     }
+
                     break;
                 case self::STATE_COMMENT:
                     // Handle comments and nesting thereof
@@ -552,6 +595,7 @@ class Parse
                     } elseif ('(' == $curChar) {
                         ++$commentNestLevel;
                     }
+
                     break;
                 default:
                     // Shouldn't ever get here - what is $state?
@@ -559,6 +603,7 @@ class Parse
                     $emailAddress['invalid'] = true;
                     $emailAddress['invalid_reason'] = 'Error during parsing';
                     $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$state}\n\$subState: {$subState}\$i: {$i}\n\$curChar: {$curChar}");
+
                     break;
             }
 
@@ -731,14 +776,14 @@ class Parse
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip']) {
                 if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
-                    if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_GLOBAL_RANGE) === false) {
+                    if (!$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
                 } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
-                        if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_GLOBAL_RANGE) === false) {
+                        if (!$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
                         }
