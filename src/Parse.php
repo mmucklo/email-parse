@@ -759,9 +759,9 @@ class Parse
     ): bool {
         if (!$emailAddress['invalid']) {
             if (isset($emailAddress['domain']) &&
-                filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
+                (filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
                 str_starts_with($emailAddress['domain'], 'IPv6:') ||
-                preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain'])) {
+                preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain']))) {
                 $emailAddress['ip'] = $emailAddress['domain'];
                 $emailAddress['domain'] = null;
             }
