@@ -70,6 +70,7 @@ class Parse
      * Allows for post-construct injection of a logger.
      *
      * @param LoggerInterface $logger (optional) Psr-compliant logger
+     * @return $this
      */
     public function setLogger(LoggerInterface $logger)
     {
@@ -78,6 +79,10 @@ class Parse
         return $this;
     }
 
+    /**
+     * @param ParseOptions $options
+     * @return $this
+     */
     public function setOptions(ParseOptions $options)
     {
         $this->options = $options;
@@ -95,9 +100,10 @@ class Parse
 
     /**
      * Abstraction to prevent logging when there's no logger.
-     /**
+     *
      * @param mixed  $level
      * @param string $message
+     * @return void
      */
     protected function log($level, $message)
     {
@@ -703,6 +709,9 @@ class Parse
 
     /**
      * Handles the case of a quoted name.
+     *
+     * @param array $emailAddress
+     * @return void
      */
     private function handleQuote(array &$emailAddress)
     {

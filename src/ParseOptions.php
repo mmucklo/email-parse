@@ -16,6 +16,10 @@ class ParseOptions
         }
     }
 
+    /**
+     * @param array $bannedChars
+     * @return void
+     */
     public function setBannedChars(array $bannedChars)
     {
         $this->bannedChars = [];
