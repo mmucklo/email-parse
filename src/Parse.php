@@ -129,20 +129,20 @@ class Parse
             return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_GLOBAL_RANGE) !== false;
         }
 
-        // Older PHP: Manually check for private/reserved ranges
+        // Older PHP (< 8.2): Manually check for private/reserved ranges
         if (preg_match("/^::ffff:(\d+\.\d+.\d+.\d+)$/i", $ip, $matches)) {
             $ip = $matches[1];
             // Special case handling for newer IETF Protocol Assignments RFC 5736 and TEST NETs RFC 5737
-            if (substr($ip, 0, 8) === "192.0.0." || substr($ip, 0, 8) === "192.0.2." || substr($ip, 0, 11) === "198.51.100." || substr($ip, 0, 11) === "203.0.113.") {
+            if (str_starts_with($ip, "192.0.0.") || str_starts_with($ip, "192.0.2.") || str_starts_with($ip, "198.51.100.") || str_starts_with($ip, "203.0.113.")) {
                 return false;
             }
             $ipType = FILTER_FLAG_IPV4;
         }
 
-        // For IPv6, check for documentation/test ranges that filter_var might miss
+        // For IPv6, check for documentation/test ranges that filter_var might miss on PHP < 8.2
         if ($ipType === FILTER_FLAG_IPV6) {
             // 2001:db8::/32 is reserved for documentation (RFC 3849)
-            if (preg_match('/^2001:0?db8:/i', $ip) || preg_match('/^2001:0?DB8:/i', $ip)) {
+            if (preg_match('/^2001:0?db8:/i', $ip)) {
                 return false;
             }
         }
