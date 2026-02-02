@@ -50,7 +50,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress --ignore-platform-reqs
 
       - name: Run test suite
         run: bin/phpunit
@@ -71,7 +71,7 @@ jobs:
           coverage: xdebug
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
 
       - name: Run test suite with coverage
         run: bin/phpunit --coverage-clover=coverage.xml --coverage-text
@@ -99,7 +99,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
 
       - name: Run PHP CS Fixer
         run: bin/php-cs-fixer fix --dry-run --diff --verbose
@@ -120,7 +120,7 @@ jobs:
           coverage: none
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress
 
       - name: Run PHPStan
         run: bin/phpstan analyse --error-format=github
