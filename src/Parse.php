@@ -130,7 +130,6 @@ class Parse
             }
             $ipType = FILTER_FLAG_IPV4;
         }
-        var_dump($ip);
 
         // Check if it's NOT in private or reserved ranges
         return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
