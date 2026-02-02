@@ -116,24 +116,24 @@ class Parse
      */
     private function validateIpGlobalRange(string $ip, int $ipType): bool
     {
-        // First verify it's a valid IP of the correct type
-        if (filter_var($ip, FILTER_VALIDATE_IP, $ipType) === false) {
-            return false;
-        }
-
         // PHP 8.2+ has FILTER_FLAG_GLOBAL_RANGE constant
         if (defined('FILTER_FLAG_GLOBAL_RANGE')) {
             return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_GLOBAL_RANGE) !== false;
         }
 
         // PHP 8.1: Manually check for private/reserved ranges
-        if ($ipType === FILTER_FLAG_IPV4) {
-            // Check if it's NOT in private or reserved ranges
-            return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
-        } else {
-            // For IPv6
-            return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+        if (preg_match("/^::ffff:(\d+\.\d+.\d+.\d+)$/i", $ip, $matches)) {
+            $ip = $matches[1];
+            // Special case handling for newer IETF Protocol Assignments RFC 5736 and TEST NETs RFC 5737
+            if (str_starts_with($ip, "192.0.0.") || str_starts_with($ip, "192.0.2.") || str_starts_with($ip, "198.51.100.") || str_starts_with($ip, "203.0.113.")) {
+                return false;
+            }
+            $ipType = FILTER_FLAG_IPV4;
         }
+        var_dump($ip);
+
+        // Check if it's NOT in private or reserved ranges
+        return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
     }
 
     /**
