@@ -116,7 +116,7 @@ class Parse
      * Validates IP address with global range check.
      *
      * For PHP 8.2+, uses FILTER_FLAG_GLOBAL_RANGE constant.
-     * For PHP 8.1, manually checks if IP is in global range.
+     * For older PHP versions, manually checks if IP is in global range.
      *
      * @param string $ip The IP address to validate
      * @param int $ipType FILTER_FLAG_IPV4 or FILTER_FLAG_IPV6
@@ -129,14 +129,22 @@ class Parse
             return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_GLOBAL_RANGE) !== false;
         }
 
-        // PHP 8.1: Manually check for private/reserved ranges
+        // Older PHP: Manually check for private/reserved ranges
         if (preg_match("/^::ffff:(\d+\.\d+.\d+.\d+)$/i", $ip, $matches)) {
             $ip = $matches[1];
             // Special case handling for newer IETF Protocol Assignments RFC 5736 and TEST NETs RFC 5737
-            if (str_starts_with($ip, "192.0.0.") || str_starts_with($ip, "192.0.2.") || str_starts_with($ip, "198.51.100.") || str_starts_with($ip, "203.0.113.")) {
+            if (substr($ip, 0, 8) === "192.0.0." || substr($ip, 0, 8) === "192.0.2." || substr($ip, 0, 11) === "198.51.100." || substr($ip, 0, 11) === "203.0.113.") {
                 return false;
             }
             $ipType = FILTER_FLAG_IPV4;
+        }
+
+        // For IPv6, check for documentation/test ranges that filter_var might miss
+        if ($ipType === FILTER_FLAG_IPV6) {
+            // 2001:db8::/32 is reserved for documentation (RFC 3849)
+            if (preg_match('/^2001:0?db8:/i', $ip) || preg_match('/^2001:0?DB8:/i', $ip)) {
+                return false;
+            }
         }
 
         // Check if it's NOT in private or reserved ranges
