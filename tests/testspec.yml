@@ -1917,3 +1917,147 @@
         ip: ''
         invalid: false
         invalid_reason: null
+-
+    emails: 'testing@[IPv6:::ffff:192.0.0.1]'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'testing@[IPv6:::ffff:192.0.0.1]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[IPv6:::ffff:192.0.0.1]'
+                domain: ''
+                ip: 'IPv6:::ffff:192.0.0.1'
+                invalid: true
+                invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.0.1'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:192.0.0.1]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'testing@[IPv6:::ffff:192.0.0.1]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[IPv6:::ffff:192.0.0.1]'
+        domain: ''
+        ip: 'IPv6:::ffff:192.0.0.1'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.0.1'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:192.0.2.100]'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'testing@[IPv6:::ffff:192.0.2.100]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[IPv6:::ffff:192.0.2.100]'
+                domain: ''
+                ip: 'IPv6:::ffff:192.0.2.100'
+                invalid: true
+                invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.2.100'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:192.0.2.100]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'testing@[IPv6:::ffff:192.0.2.100]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[IPv6:::ffff:192.0.2.100]'
+        domain: ''
+        ip: 'IPv6:::ffff:192.0.2.100'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.2.100'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:198.51.100.1]'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'testing@[IPv6:::ffff:198.51.100.1]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[IPv6:::ffff:198.51.100.1]'
+                domain: ''
+                ip: 'IPv6:::ffff:198.51.100.1'
+                invalid: true
+                invalid_reason: 'IP address invalid: ''IPv6:::ffff:198.51.100.1'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:198.51.100.1]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'testing@[IPv6:::ffff:198.51.100.1]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[IPv6:::ffff:198.51.100.1]'
+        domain: ''
+        ip: 'IPv6:::ffff:198.51.100.1'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''IPv6:::ffff:198.51.100.1'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:203.0.113.1]'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'testing@[IPv6:::ffff:203.0.113.1]'
+                name: ''
+                name_parsed: ''
+                local_part: testing
+                local_part_parsed: testing
+                domain_part: '[IPv6:::ffff:203.0.113.1]'
+                domain: ''
+                ip: 'IPv6:::ffff:203.0.113.1'
+                invalid: true
+                invalid_reason: 'IP address invalid: ''IPv6:::ffff:203.0.113.1'' does not appear to be a valid IPv6 address in the global range'
+-
+    emails: 'testing@[IPv6:::ffff:203.0.113.1]'
+    multiple: false
+    result:
+        address: ''
+        simple_address: ''
+        original_address: 'testing@[IPv6:::ffff:203.0.113.1]'
+        name: ''
+        name_parsed: ''
+        local_part: testing
+        local_part_parsed: testing
+        domain_part: '[IPv6:::ffff:203.0.113.1]'
+        domain: ''
+        ip: 'IPv6:::ffff:203.0.113.1'
+        invalid: true
+        invalid_reason: 'IP address invalid: ''IPv6:::ffff:203.0.113.1'' does not appear to be a valid IPv6 address in the global range'
