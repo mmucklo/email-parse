@@ -24,26 +24,26 @@ class Parse
     private const STATE_START = 11;
 
     /**
-     * @var ?Parse
+     * @var Parse|null
      */
-    protected static ?Parse $instance = null;
+    protected static $instance = null;
 
     /**
-     * @var ?LoggerInterface
+     * @var LoggerInterface|null
      */
-    protected ?LoggerInterface $logger = null;
+    protected $logger = null;
 
     /**
-     * @var ?ParseOptions
+     * @var ParseOptions|null
      */
-    protected ?ParseOptions $options;
+    protected $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
      *
      * @return Parse The instance
      */
-    public static function getInstance(): Parse
+    public static function getInstance()
     {
         if (!self::$instance) {
             return self::$instance = new self();
@@ -59,8 +59,8 @@ class Parse
      * @param ParseOptions|null    $options options
      */
     public function __construct(
-        ?LoggerInterface $logger = null,
-        ?ParseOptions $options = null
+        LoggerInterface $logger = null,
+        ParseOptions $options = null
     ) {
         $this->logger = $logger;
         $this->options = $options ?: new ParseOptions(['%', '!']);
@@ -71,14 +71,14 @@ class Parse
      *
      * @param LoggerInterface $logger (optional) Psr-compliant logger
      */
-    public function setLogger(LoggerInterface $logger): Parse
+    public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
 
         return $this;
     }
 
-    public function setOptions(ParseOptions $options): Parse
+    public function setOptions(ParseOptions $options)
     {
         $this->options = $options;
 
@@ -86,22 +86,24 @@ class Parse
     }
 
     /**
-     * @return ?ParseOptions
+     * @return ParseOptions|null
      */
-    public function getOptions(): ?ParseOptions
+    public function getOptions()
     {
         return $this->options;
     }
 
     /**
      * Abstraction to prevent logging when there's no logger.
-     *
+     /**
      * @param mixed  $level
      * @param string $message
      */
-    protected function log(mixed $level, string $message): void
+    protected function log($level, $message)
     {
-        $this->logger?->log($level, $message);
+        if ($this->logger !== null) {
+            $this->logger->log($level, $message);
+        }
     }
 
     /**
@@ -114,7 +116,7 @@ class Parse
      * @param int $ipType FILTER_FLAG_IPV4 or FILTER_FLAG_IPV6
      * @return bool True if IP is valid and in global range, false otherwise
      */
-    private function validateIpGlobalRange(string $ip, int $ipType): bool
+    private function validateIpGlobalRange($ip, $ipType)
     {
         // PHP 8.2+ has FILTER_FLAG_GLOBAL_RANGE constant
         if (defined('FILTER_FLAG_GLOBAL_RANGE')) {
@@ -246,7 +248,7 @@ class Parse
      *                )
      *            );
      */
-    public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
+    public function parse($emails, $multiple = true, $encoding = 'UTF-8')
     {
         $emailAddresses = [];
 
@@ -702,7 +704,7 @@ class Parse
     /**
      * Handles the case of a quoted name.
      */
-    private function handleQuote(array &$emailAddress): void
+    private function handleQuote(array &$emailAddress)
     {
         if ($emailAddress['quote_temp']) {
             $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
@@ -724,7 +726,7 @@ class Parse
      * Helper function for creating a blank email address array used by Email\Parse->parse.
      * @return array
      */
-    private function buildEmailAddressArray(): array
+    private function buildEmailAddressArray()
     {
         $emailAddress = ['original_address' => '',
                         'name_parsed' => '',
@@ -756,7 +758,7 @@ class Parse
         &$emailAddress,
         $encoding,
         $i
-    ): bool {
+    ) {
         if (!$emailAddress['invalid']) {
             if (isset($emailAddress['domain']) &&
                 (filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
@@ -869,7 +871,7 @@ class Parse
      * @return array array('valid' => boolean: whether valid or not,
      *               'reason' => string: if not valid, the reason why);
      */
-    protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
+    protected function validateDomainName($domain, $encoding = 'UTF-8')
     {
         if (mb_strlen($domain, $encoding) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long'];

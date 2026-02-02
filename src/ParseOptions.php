@@ -4,7 +4,10 @@ namespace Email;
 
 class ParseOptions
 {
-    private array $bannedChars = [];
+    /**
+     * @var array
+     */
+    private $bannedChars = [];
 
     public function __construct(array $bannedChars = [])
     {
@@ -13,7 +16,7 @@ class ParseOptions
         }
     }
 
-    public function setBannedChars(array $bannedChars): void
+    public function setBannedChars(array $bannedChars)
     {
         $this->bannedChars = [];
         foreach ($bannedChars as $bannedChar) {
@@ -24,7 +27,7 @@ class ParseOptions
     /**
      * @return array
      */
-    public function getBannedChars(): array
+    public function getBannedChars()
     {
         return $this->bannedChars;
     }
