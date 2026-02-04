@@ -11,7 +11,7 @@ email-parse
 
 Email\Parse is a multiple (and single) batch email address parser that is reasonably RFC822 / RFC2822 compliant.
 
-It parses a list of 1 to n email addresses separated by space or comma
+It parses a list of 1 to n email addresses separated by space, comma, or semicolon (configurable).
 
 Installation:
 -------------
@@ -27,11 +27,63 @@ Add this line to your composer.json "require" section:
 Usage:
 ------
 
+### Basic Usage
+
 ```php
 use Email\Parse;
 
 $result = Parse::getInstance()->parse("a@aaa.com b@bbb.com");
 ```
+
+### Advanced Usage with ParseOptions
+
+You can configure separator behavior and other parsing options using `ParseOptions`:
+
+```php
+use Email\Parse;
+use Email\ParseOptions;
+
+// Example 1: Use comma and semicolon as separators (default behavior includes whitespace)
+$options = new ParseOptions([], [',', ';']);
+$parser = new Parse(null, $options);
+$result = $parser->parse("a@aaa.com; b@bbb.com, c@ccc.com");
+
+// Example 2: Disable whitespace as separator (only comma and semicolon work)
+$options = new ParseOptions([], [',', ';'], false);
+$parser = new Parse(null, $options);
+$result = $parser->parse("a@aaa.com; b@bbb.com"); // Works - uses semicolon
+$result = $parser->parse("a@aaa.com b@bbb.com");  // Won't split - whitespace not a separator
+
+// Example 3: Names with spaces always work regardless of whitespace separator setting
+$options = new ParseOptions([], [',', ';'], false);
+$parser = new Parse(null, $options);
+$result = $parser->parse("John Doe <john@example.com>, Jane Smith <jane@example.com>");
+// Returns 2 valid emails with names preserved
+```
+
+#### ParseOptions Constructor
+
+```php
+/**
+ * @param array $bannedChars Array of characters to ban from email addresses (e.g., ['%', '!'])
+ * @param array $separators Array of separator characters (default: [','])
+ * @param bool $useWhitespaceAsSeparator Whether to treat whitespace/newlines as separators (default: true)
+ */
+public function __construct(
+    array $bannedChars = [], 
+    array $separators = [','], 
+    bool $useWhitespaceAsSeparator = true
+)
+```
+
+#### Supported Separators
+
+- **Comma (`,`)** - Configured via `$separators` parameter
+- **Semicolon (`;`)** - Configured via `$separators` parameter  
+- **Whitespace (space, tab, newlines)** - Controlled by `$useWhitespaceAsSeparator` parameter
+- **Mixed separators** - All configured separators work together seamlessly
+
+**Note:** When `useWhitespaceAsSeparator` is `false`, whitespace is still properly cleaned up and names with spaces (like "John Doe") continue to work correctly.
 
 Notes:
 ======
@@ -51,7 +103,7 @@ how-about-comments(this is a comment!!)@xyz.com
 ```php
 /**
  * function parse($emails, $multiple = true, $encoding = 'UTF-8')
- * @param string $emails List of Email addresses separated by comma or space if multiple
+ * @param string $emails List of Email addresses separated by configured separators (comma, semicolon, whitespace by default)
  * @param bool $multiple (optional, default: true) Whether to parse for multiple email addresses or not
  * @param string $encoding (optional, default: 'UTF-8')The encoding if not 'UTF-8'
  * @return: see below: */
