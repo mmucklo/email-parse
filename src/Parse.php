@@ -34,9 +34,9 @@ class Parse
     protected ?LoggerInterface $logger = null;
 
     /**
-     * @var ?ParseOptions
+     * @var ParseOptions
      */
-    protected ?ParseOptions $options;
+    protected ParseOptions $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
@@ -86,9 +86,9 @@ class Parse
     }
 
     /**
-     * @return ?ParseOptions
+     * @return ParseOptions
      */
-    public function getOptions(): ?ParseOptions
+    public function getOptions(): ParseOptions
     {
         return $this->options;
     }
