@@ -274,7 +274,7 @@
         domain: asdf.ghjkl.com
         ip: ''
         invalid: true
-        invalid_reason: 'Comma not permitted - only one email address allowed'
+        invalid_reason: 'Separator not permitted - only one email address allowed'
 -
     emails: 'tnam e@asdf.g asdfa hjkl.com, tn''''''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
     multiple: true
@@ -307,7 +307,7 @@
                 domain: ''
                 ip: ''
                 invalid: true
-                invalid_reason: 'Misplaced Comma or missing "@" symbol'
+                invalid_reason: 'Misplaced separator or missing "@" symbol'
             -
                 address: 'tn''''''ame@asdf.ghjkl.com'
                 simple_address: 'tn''''''ame@asdf.ghjkl.com'
@@ -1048,7 +1048,7 @@
         domain: ''
         ip: 'IPv6:2001:4860:4860::8888'
         invalid: true
-        invalid_reason: 'Comma not permitted - only one email address allowed'
+        invalid_reason: 'Separator not permitted - only one email address allowed'
 -
     emails: 'testing@[0.0.0.0]'
     multiple: false
@@ -1501,3 +1501,217 @@
         ip: ''
         invalid: false
         invalid_reason: null
+-
+    emails: 'test1@example.com test2@example.com'
+    multiple: true
+    use_whitespace_as_separator: false
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'test1@example.com test2@example.com'
+                name: ''
+                name_parsed: ''
+                local_part: test1
+                local_part_parsed: test1
+                domain_part: example.comtest2
+                domain: example.comtest2
+                ip: ''
+                invalid: true
+                invalid_reason: 'Multiple at ''@'' symbols in email address'
+-
+    emails: 'test1@example.com; test2@example.com'
+    multiple: true
+    use_whitespace_as_separator: false
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: test1@example.com
+                simple_address: test1@example.com
+                original_address: test1@example.com
+                name: ''
+                name_parsed: ''
+                local_part: test1
+                local_part_parsed: test1
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: test2@example.com
+                simple_address: test2@example.com
+                original_address: test2@example.com
+                name: ''
+                name_parsed: ''
+                local_part: test2
+                local_part_parsed: test2
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'John Doe <john@example.com>, Jane Smith <jane@example.com>'
+    multiple: true
+    use_whitespace_as_separator: false
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'John Doe <john@example.com>'
+                simple_address: john@example.com
+                original_address: 'John Doe <john@example.com>'
+                name: 'John Doe'
+                name_parsed: 'John Doe'
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: 'Jane Smith <jane@example.com>'
+                simple_address: jane@example.com
+                original_address: 'Jane Smith <jane@example.com>'
+                name: 'Jane Smith'
+                name_parsed: 'Jane Smith'
+                local_part: jane
+                local_part_parsed: jane
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'test1@example.com; test2@example.com; test3@example.org'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: test1@example.com
+                simple_address: test1@example.com
+                original_address: test1@example.com
+                name: ''
+                name_parsed: ''
+                local_part: test1
+                local_part_parsed: test1
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: test2@example.com
+                simple_address: test2@example.com
+                original_address: test2@example.com
+                name: ''
+                name_parsed: ''
+                local_part: test2
+                local_part_parsed: test2
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: test3@example.org
+                simple_address: test3@example.org
+                original_address: test3@example.org
+                name: ''
+                name_parsed: ''
+                local_part: test3
+                local_part_parsed: test3
+                domain_part: example.org
+                domain: example.org
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'John Doe <john@example.com>; Jane Smith <jane@example.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: 'John Doe <john@example.com>'
+                simple_address: john@example.com
+                original_address: 'John Doe <john@example.com>'
+                name: 'John Doe'
+                name_parsed: 'John Doe'
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: 'Jane Smith <jane@example.com>'
+                simple_address: jane@example.com
+                original_address: 'Jane Smith <jane@example.com>'
+                name: 'Jane Smith'
+                name_parsed: 'Jane Smith'
+                local_part: jane
+                local_part_parsed: jane
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'test1@example.com, test2@example.com; test3@example.org'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: test1@example.com
+                simple_address: test1@example.com
+                original_address: test1@example.com
+                name: ''
+                name_parsed: ''
+                local_part: test1
+                local_part_parsed: test1
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: test2@example.com
+                simple_address: test2@example.com
+                original_address: test2@example.com
+                name: ''
+                name_parsed: ''
+                local_part: test2
+                local_part_parsed: test2
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: test3@example.org
+                simple_address: test3@example.org
+                original_address: test3@example.org
+                name: ''
+                name_parsed: ''
+                local_part: test3
+                local_part_parsed: test3
+                domain_part: example.org
+                domain: example.org
+                ip: ''
+                invalid: false
+                invalid_reason: null
