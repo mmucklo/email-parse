@@ -1,6 +1,8 @@
 email-parse
 ===========
 
+[![Support on Patreon](https://img.shields.io/badge/Patreon-Support%20Me-f96854?logo=patreon)](https://www.patreon.com/cw/MatthewJMucklo)
+
 [![CI](https://github.com/mmucklo/email-parse/workflows/CI/badge.svg)](https://github.com/mmucklo/email-parse/actions)
 [![codecov](https://codecov.io/gh/mmucklo/email-parse/branch/master/graph/badge.svg)](https://codecov.io/gh/mmucklo/email-parse)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/mmucklo/email-parse/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/mmucklo/email-parse/?branch=master)
