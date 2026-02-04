@@ -18,10 +18,10 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             $emails = $test['emails'];
             $multiple = $test['multiple'];
             $result = $test['result'];
-            
+
             // Check if test specifies use_whitespace_as_separator option
             $useWhitespaceAsSeparator = $test['use_whitespace_as_separator'] ?? true;
-            
+
             // Configure Parse to support both comma and semicolon as separators
             $options = new ParseOptions(['%', '!'], [',', ';'], $useWhitespaceAsSeparator);
             $parser = new Parse(null, $options);

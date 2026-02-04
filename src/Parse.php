@@ -278,7 +278,7 @@ class Parse
                     //  It's supposed to skip to the next delimiter and continue parsing from there
                     $isWhitespaceSeparator = $this->options->getUseWhitespaceAsSeparator() &&
                         (' ' == $curChar || "\r" == $curChar || "\n" == $curChar || "\t" == $curChar);
-                    
+
                     if ($multiple && ($isWhitespaceSeparator || isset($this->options->getSeparators()[$curChar]))) {
                         $state = self::STATE_END_ADDRESS;
                     } else {
@@ -364,9 +364,9 @@ class Parse
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Email Address contains whitespace';
                             }
-                        } elseif ($this->options->getUseWhitespaceAsSeparator() && 
+                        } elseif ($this->options->getUseWhitespaceAsSeparator() &&
                                   (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
-                            // If we're already in the domain part and whitespace is a separator, 
+                            // If we're already in the domain part and whitespace is a separator,
                             // this should be the end of the whole address
                             $state = self::STATE_END_ADDRESS;
 

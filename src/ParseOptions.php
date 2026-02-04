@@ -4,10 +4,17 @@ namespace Email;
 
 class ParseOptions
 {
+    /** @var array<string, bool> */
     private array $bannedChars = [];
-    private array $separators = [','];
+    /** @var array<string, bool> */
+    private array $separators = [];
     private bool $useWhitespaceAsSeparator = true;
 
+    /**
+     * @param array<string> $bannedChars
+     * @param array<string> $separators
+     * @param bool $useWhitespaceAsSeparator
+     */
     public function __construct(array $bannedChars = [], array $separators = [','], bool $useWhitespaceAsSeparator = true)
     {
         if ($bannedChars) {
@@ -17,6 +24,9 @@ class ParseOptions
         $this->useWhitespaceAsSeparator = $useWhitespaceAsSeparator;
     }
 
+    /**
+     * @param array<string> $bannedChars
+     */
     public function setBannedChars(array $bannedChars): void
     {
         $this->bannedChars = [];
@@ -26,13 +36,16 @@ class ParseOptions
     }
 
     /**
-     * @return array
+     * @return array<string, bool>
      */
     public function getBannedChars(): array
     {
         return $this->bannedChars;
     }
 
+    /**
+     * @param array<string> $separators
+     */
     public function setSeparators(array $separators): void
     {
         $this->separators = [];
@@ -42,7 +55,7 @@ class ParseOptions
     }
 
     /**
-     * @return array
+     * @return array<string, bool>
      */
     public function getSeparators(): array
     {
