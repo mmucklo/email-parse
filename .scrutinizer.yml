@@ -1,15 +1,29 @@
 # .scrutinizer.yml
 
+filter:
+    paths:
+        - 'src/*'
+    excluded_paths:
+        - 'tests/*'
+        - 'vendor/*'
+
 checks:
     php:
         code_rating: true
         duplication: true
+
 build:
     image: default-jammy
-    tests:
-        override:
-            -
-                command: 'XDEBUG_MODE=coverage bin/phpunit --coverage-clover=.coverage'
-                coverage:
-                    file: '.coverage'
-                    format: 'clover'
+    nodes:
+        analysis:
+            tests:
+                override:
+                    - php-scrutinizer-run
+        tests:
+            tests:
+                override:
+                    -
+                        command: 'XDEBUG_MODE=coverage bin/phpunit --coverage-clover=.coverage'
+                        coverage:
+                            file: '.coverage'
+                            format: 'clover'

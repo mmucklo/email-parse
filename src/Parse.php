@@ -34,9 +34,9 @@ class Parse
     protected ?LoggerInterface $logger = null;
 
     /**
-     * @var ?ParseOptions
+     * @var ParseOptions
      */
-    protected ?ParseOptions $options;
+    protected ParseOptions $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
@@ -86,9 +86,9 @@ class Parse
     }
 
     /**
-     * @return ?ParseOptions
+     * @return ParseOptions
      */
-    public function getOptions(): ?ParseOptions
+    public function getOptions(): ParseOptions
     {
         return $this->options;
     }
@@ -276,12 +276,10 @@ class Parse
                 case self::STATE_SKIP_AHEAD:
                     // Skip ahead is set when a bad email address is encountered
                     //  It's supposed to skip to the next delimiter and continue parsing from there
-                    if ($multiple &&
-                        (' ' == $curChar ||
-                        "\r" == $curChar ||
-                        "\n" == $curChar ||
-                        "\t" == $curChar ||
-                         ',' == $curChar)) {
+                    $isWhitespaceSeparator = $this->options->getUseWhitespaceAsSeparator() &&
+                        (' ' == $curChar || "\r" == $curChar || "\n" == $curChar || "\t" == $curChar);
+
+                    if ($multiple && ($isWhitespaceSeparator || isset($this->options->getSeparators()[$curChar]))) {
                         $state = self::STATE_END_ADDRESS;
                     } else {
                         $emailAddress['original_address'] .= $curChar;
@@ -313,7 +311,7 @@ class Parse
                     // Fall through
                     // no break
                 case self::STATE_ADDRESS:
-                    if (',' != $curChar || !$multiple) {
+                    if (!isset($this->options->getSeparators()[$curChar]) || !$multiple) {
                         $emailAddress['original_address'] .= $curChar;
                     }
 
@@ -323,8 +321,8 @@ class Parse
                         $commentNestLevel = 1;
 
                         break;
-                    } elseif (',' == $curChar) {
-                        // Handle Comma
+                    } elseif (isset($this->options->getSeparators()[$curChar])) {
+                        // Handle separator (comma, semicolon, etc.)
                         if ($multiple && (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
                             // If we're already in the domain part, this should be the end of the address
                             $state = self::STATE_END_ADDRESS;
@@ -333,9 +331,9 @@ class Parse
                         } else {
                             $emailAddress['invalid'] = true;
                             if ($multiple || ($i + 5) >= $len) {
-                                $emailAddress['invalid_reason'] = 'Misplaced Comma or missing "@" symbol';
+                                $emailAddress['invalid_reason'] = 'Misplaced separator or missing "@" symbol';
                             } else {
-                                $emailAddress['invalid_reason'] = 'Comma not permitted - only one email address allowed';
+                                $emailAddress['invalid_reason'] = 'Separator not permitted - only one email address allowed';
                             }
                         }
                     } elseif (' ' == $curChar ||
@@ -366,8 +364,10 @@ class Parse
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Email Address contains whitespace';
                             }
-                        } elseif (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState) {
-                            // If we're already in the domain part, this should be the end of the whole address
+                        } elseif ($this->options->getUseWhitespaceAsSeparator() &&
+                                  (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
+                            // If we're already in the domain part and whitespace is a separator,
+                            // this should be the end of the whole address
                             $state = self::STATE_END_ADDRESS;
 
                             break;
