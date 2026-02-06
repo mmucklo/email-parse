@@ -83,7 +83,7 @@
         domain: ''
         ip: ''
         invalid: true
-        invalid_reason: 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>'
+        invalid_reason: 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322'
 -
     emails: 'test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com'
     multiple: true
