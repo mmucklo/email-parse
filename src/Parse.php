@@ -825,12 +825,12 @@ class Parse
             if (0 == mb_strlen($domainPart, $encoding)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address needs a domain after the \'@\'';
-            } elseif (mb_strlen($localPart, $encoding) > 63) {
+            } elseif (strlen($localPart) > $this->options->getMaxLocalPartLength()) {
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Email address before the \'@\' can not be greater than 63 characters';
-            } elseif ((mb_strlen($localPart, $encoding) + mb_strlen($domainPart, $encoding) + 1) > 254) {
+                $emailAddress['invalid_reason'] = 'Email address before the \'@\' can not be greater than ' . $this->options->getMaxLocalPartLength() . ' octets per RFC 5321';
+            } elseif ((strlen($localPart) + strlen($domainPart) + 1) > $this->options->getMaxTotalLength()) {
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Email addresses can not be greater than 254 characters';
+                $emailAddress['invalid_reason'] = 'Email addresses can not be greater than ' . $this->options->getMaxTotalLength() . ' octets per RFC erratum 1690';
             }
         }
 
@@ -879,7 +879,7 @@ class Parse
             $parts = mb_split('\\.', $domain);
             mb_regex_encoding($origEncoding);
             foreach ($parts as $part) {
-                if (mb_strlen($part, $encoding) > 63) {
+                if (mb_strlen($part, $encoding) > $this->options->getMaxDomainLabelLength()) {
                     return ['valid' => false, 'reason' => "Domain name part '{$part}' too long"];
                 }
                 if (!preg_match('/^[a-zA-Z0-9\-]+$/', $part)) {
