@@ -715,7 +715,7 @@ class Parse
             $emailAddress['address_temp'] = '';
             if ($emailAddress['address_temp_period'] > 0) {
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Periods within the name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com>';
+                $emailAddress['invalid_reason'] = 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322';
             }
         }
     }
