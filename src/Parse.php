@@ -825,12 +825,12 @@ class Parse
             if (0 == mb_strlen($domainPart, $encoding)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address needs a domain after the \'@\'';
-            } elseif (mb_strlen($localPart, $encoding) > 63) {
+            } elseif (strlen($localPart) > 64) {
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Email address before the \'@\' can not be greater than 63 characters';
-            } elseif ((mb_strlen($localPart, $encoding) + mb_strlen($domainPart, $encoding) + 1) > 254) {
+                $emailAddress['invalid_reason'] = 'Email address before the \'@\' can not be greater than 64 octets per RFC 5321';
+            } elseif ((strlen($localPart) + strlen($domainPart) + 1) > 254) {
                 $emailAddress['invalid'] = true;
-                $emailAddress['invalid_reason'] = 'Email addresses can not be greater than 254 characters';
+                $emailAddress['invalid_reason'] = 'Email addresses can not be greater than 254 octets per RFC erratum 1690';
             }
         }
 
