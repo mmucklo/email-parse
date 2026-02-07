@@ -25,8 +25,20 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             // Check if test specifies custom separators
             $separators = $test['separators'] ?? [',', ';'];
 
-            // Configure Parse to support configured separators
-            $options = new ParseOptions(['%', '!'], $separators, $useWhitespaceAsSeparator);
+            // Check if test specifies custom length limits
+            $maxLocalPartLength = $test['max_local_part_length'] ?? null;
+            $maxTotalLength = $test['max_total_length'] ?? null;
+            $maxDomainLabelLength = $test['max_domain_label_length'] ?? null;
+
+            // Configure Parse to support configured separators and length limits
+            $options = new ParseOptions(
+                ['%', '!'],
+                $separators,
+                $useWhitespaceAsSeparator,
+                $maxLocalPartLength,
+                $maxTotalLength,
+                $maxDomainLabelLength
+            );
             $parser = new Parse(null, $options);
 
             $this->assertSame($result, $parser->parse($emails, $multiple));
