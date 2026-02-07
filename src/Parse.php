@@ -879,8 +879,8 @@ class Parse
             $parts = mb_split('\\.', $domain);
             mb_regex_encoding($origEncoding);
             foreach ($parts as $part) {
-                if (mb_strlen($part, $encoding) > $this->options->getMaxDomainLabelLength()) {
-                    return ['valid' => false, 'reason' => "Domain name part '{$part}' too long"];
+                if (strlen($part) > $this->options->getMaxDomainLabelLength()) {
+                    return ['valid' => false, 'reason' => "Domain name part '{$part}' must be less than " . $this->options->getMaxDomainLabelLength() . " octets"];
                 }
                 if (!preg_match('/^[a-zA-Z0-9\-]+$/', $part)) {
                     return ['valid' => false, 'reason' => "Domain name '{$domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '{$part}' contains characters outside of that range."];
