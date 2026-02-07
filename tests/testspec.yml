@@ -1715,3 +1715,201 @@
                 ip: ''
                 invalid: false
                 invalid_reason: null
+-
+    emails: 'john@example.com;jane@example.com'
+    multiple: true
+    separators: [',']
+    use_whitespace_as_separator: false
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'john@example.com;jane@example.com'
+                name: ''
+                name_parsed: ''
+                local_part: john
+                local_part_parsed: john
+                domain_part: 'example.com'
+                domain: 'example.com'
+                ip: ''
+                invalid: true
+                invalid_reason: 'Invalid character found in domain of email address (please put in quotes if needed): '';'''
+-
+    emails: 'john@example.com, jane@example.com'
+    multiple: true
+    separators: [';']
+    use_whitespace_as_separator: false
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: 'john@example.com, jane@example.com'
+                name: ''
+                name_parsed: ''
+                local_part: john
+                local_part_parsed: john
+                domain_part: 'example.com'
+                domain: 'example.com'
+                ip: ''
+                invalid: true
+                invalid_reason: 'Invalid character found in domain of email address (please put in quotes if needed): '','''
+-
+    emails: 'john@example.com, jane@example.com'
+    multiple: true
+    separators: [',']
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: john@example.com
+                simple_address: john@example.com
+                original_address: john@example.com
+                name: ''
+                name_parsed: ''
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: jane@example.com
+                simple_address: jane@example.com
+                original_address: jane@example.com
+                name: ''
+                name_parsed: ''
+                local_part: jane
+                local_part_parsed: jane
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'john@example.com; jane@example.com'
+    multiple: true
+    separators: [';']
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: john@example.com
+                simple_address: john@example.com
+                original_address: john@example.com
+                name: ''
+                name_parsed: ''
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: jane@example.com
+                simple_address: jane@example.com
+                original_address: jane@example.com
+                name: ''
+                name_parsed: ''
+                local_part: jane
+                local_part_parsed: jane
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '"Smith, John" <john@example.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: '"Smith, John" <john@example.com>'
+                simple_address: john@example.com
+                original_address: '"Smith, John" <john@example.com>'
+                name: '"Smith, John"'
+                name_parsed: 'Smith, John'
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: '"Smith, John" <john@example.com>, "Doe, Jane" <jane@example.com>'
+    multiple: true
+    result:
+        success: true
+        reason: null
+        email_addresses:
+            -
+                address: '"Smith, John" <john@example.com>'
+                simple_address: john@example.com
+                original_address: '"Smith, John" <john@example.com>'
+                name: '"Smith, John"'
+                name_parsed: 'Smith, John'
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+            -
+                address: '"Doe, Jane" <jane@example.com>'
+                simple_address: jane@example.com
+                original_address: '"Doe, Jane" <jane@example.com>'
+                name: '"Doe, Jane"'
+                name_parsed: 'Doe, Jane'
+                local_part: jane
+                local_part_parsed: jane
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
+-
+    emails: 'Smith, John <john@example.com>'
+    multiple: true
+    result:
+        success: false
+        reason: 'Invalid email address'
+        email_addresses:
+            -
+                address: ''
+                simple_address: ''
+                original_address: Smith
+                name: ''
+                name_parsed: ''
+                local_part: ''
+                local_part_parsed: ''
+                domain_part: ''
+                domain: ''
+                ip: ''
+                invalid: true
+                invalid_reason: 'Misplaced separator or missing "@" symbol'
+            -
+                address: 'John <john@example.com>'
+                simple_address: john@example.com
+                original_address: 'John <john@example.com>'
+                name: John
+                name_parsed: John
+                local_part: john
+                local_part_parsed: john
+                domain_part: example.com
+                domain: example.com
+                ip: ''
+                invalid: false
+                invalid_reason: null
