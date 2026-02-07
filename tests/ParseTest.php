@@ -26,18 +26,21 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             $separators = $test['separators'] ?? [',', ';'];
 
             // Check if test specifies custom length limits
-            $maxLocalPartLength = $test['max_local_part_length'] ?? null;
-            $maxTotalLength = $test['max_total_length'] ?? null;
-            $maxDomainLabelLength = $test['max_domain_label_length'] ?? null;
+            $lengthLimits = null;
+            if (isset($test['max_local_part_length']) || isset($test['max_total_length']) || isset($test['max_domain_label_length'])) {
+                $lengthLimits = new \Email\LengthLimits(
+                    $test['max_local_part_length'] ?? 64,
+                    $test['max_total_length'] ?? 254,
+                    $test['max_domain_label_length'] ?? 63
+                );
+            }
 
             // Configure Parse to support configured separators and length limits
             $options = new ParseOptions(
                 ['%', '!'],
                 $separators,
                 $useWhitespaceAsSeparator,
-                $maxLocalPartLength,
-                $maxTotalLength,
-                $maxDomainLabelLength
+                $lengthLimits
             );
             $parser = new Parse(null, $options);
 
