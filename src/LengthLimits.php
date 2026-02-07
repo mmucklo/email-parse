@@ -4,7 +4,7 @@ namespace Email;
 
 /**
  * Email address length limits configuration
- * 
+ *
  * Contains the maximum length constraints for email addresses
  * as defined by RFC 5321, RFC 1035, and RFC erratum 1690
  */
