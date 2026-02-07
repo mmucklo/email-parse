@@ -27,7 +27,9 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
             // Check if test specifies custom length limits
             $lengthLimits = null;
-            if (isset($test['max_local_part_length']) || isset($test['max_total_length']) || isset($test['max_domain_label_length'])) {
+            if (isset($test['use_relaxed_limits']) && $test['use_relaxed_limits']) {
+                $lengthLimits = \Email\LengthLimits::createRelaxed();
+            } elseif (isset($test['max_local_part_length']) || isset($test['max_total_length']) || isset($test['max_domain_label_length'])) {
                 $lengthLimits = new \Email\LengthLimits(
                     $test['max_local_part_length'] ?? 64,
                     $test['max_total_length'] ?? 254,
