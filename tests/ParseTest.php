@@ -37,12 +37,17 @@ class ParseTest extends \PHPUnit\Framework\TestCase
                 );
             }
 
+            $rfcMode = $test['rfc_mode'] ?? \Email\RfcMode::LEGACY;
+            $allowSmtpUtf8 = $test['allow_smtputf8'] ?? true;
+
             // Configure Parse to support configured separators and length limits
             $options = new ParseOptions(
                 ['%', '!'],
                 $separators,
                 $useWhitespaceAsSeparator,
-                $lengthLimits
+                $lengthLimits,
+                $rfcMode,
+                $allowSmtpUtf8
             );
             $parser = new Parse(null, $options);
 

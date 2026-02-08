@@ -829,6 +829,7 @@
 -
   emails: 'Étienne Cloître <é.cloître@domain.tld>'
   multiple: false
+  allow_smtputf8: false
   result:
     address: ''
     simple_address: ''
@@ -841,11 +842,12 @@
     domain: ''
     ip: ''
     invalid: true
-    invalid_reason: "Invalid character found in email address (please put in quotes if needed): 'é'"
+    invalid_reason: "Invalid character found in email address local part: 'é'"
     comments: []
 -
   emails: é.cloître@domain.tld
   multiple: false
+  allow_smtputf8: false
   result:
     address: ''
     simple_address: ''

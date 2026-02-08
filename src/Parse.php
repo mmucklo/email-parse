@@ -500,7 +500,7 @@ class Parse
                                 $emailAddress['name_quoted'] = true;
                             }
                             $emailAddress['name_parsed'] .= $curChar;
-                        } elseif (self::STATE_DOMAIN == $subState) {
+                        } elseif (self::STATE_DOMAIN == $subState) {  
                             $emailAddress['domain'] .= $curChar;
                         } else {
                             if ($emailAddress['quote_temp']) {
@@ -543,6 +543,18 @@ class Parse
                             }
                             $emailAddress['special_char_in_substate'] = $curChar;
                             $emailAddress['name_parsed'] .= $curChar;
+                        } elseif (self::STATE_LOCAL_PART === $subState) {
+                            if ($emailAddress['quote_temp']) {
+                                $emailAddress['local_part_parsed'] .= $emailAddress['quote_temp'];
+                                $emailAddress['quote_temp'] = '';
+                                $emailAddress['local_part_quoted'] = true;
+                            }
+                            if ($this->options->getAllowSmtpUtf8() && $this->isUtf8Char($curChar)) {
+                                $emailAddress['local_part_parsed'] .= $curChar;
+                            } else {
+                                $emailAddress['invalid'] = true;
+                                $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
+                            }
                         } else {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
@@ -839,9 +851,16 @@ class Parse
         $domainPart = $emailAddress['ip'] ? '['.$emailAddress['ip'].']' : $emailAddress['domain'];
 
         if (!$emailAddress['invalid']) {
-            if (0 == mb_strlen($domainPart, $encoding)) {
+            if (0 == strlen($domainPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address needs a domain after the \'@\'';
+            } elseif ($this->options->getRfcMode() === \Email\RfcMode::STRICT &&
+                !$this->validateLocalPartStrict($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 5322 compliant';
+            } elseif (!$this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'SMTPUTF8 is not enabled for UTF-8 local parts';
             } elseif (strlen($localPart) > $this->options->getMaxLocalPartLength()) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address before the \'@\' can not be greater than ' . $this->options->getMaxLocalPartLength() . ' octets per RFC 5321';
@@ -887,9 +906,32 @@ class Parse
      * @return array array('valid' => boolean: whether valid or not,
      *               'reason' => string: if not valid, the reason why);
      */
+    protected function isUtf8Char(string $char): bool
+    {
+        return (bool) preg_match('//u', $char) && !preg_match('/^[\x00-\x7F]$/', $char);
+    }
+
+    protected function validateLocalPartStrict(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            return true;
+        }
+
+        $asciiPattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+)*$/";
+        $utf8Pattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+)*$/u";
+
+        if ($this->options->getAllowSmtpUtf8()) {
+            return (bool) preg_match($utf8Pattern, $localPart);
+        }
+
+        return (bool) preg_match($asciiPattern, $localPart);
+    }
+
     protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
     {
-        if (mb_strlen($domain, $encoding) > 255) {
+        // Domain length limits are in octets (RFC 5321); keep strlen
+
+        if (strlen($domain) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long'];
         } else {
             $origEncoding = mb_regex_encoding();
