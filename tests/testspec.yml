@@ -18,7 +18,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: tname@asdf.ghjkl.com
   multiple: false
@@ -35,7 +35,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Testing Name <tname@asdf.ghjkl.com>'
   multiple: false
@@ -52,7 +52,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Testing D Name <tname@asdf.ghjkl.com>'
   multiple: false
@@ -69,7 +69,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Testing D. Name  <tname@asdf.ghjkl.com>'
   multiple: false
@@ -86,7 +86,7 @@
     ip: ''
     invalid: true
     invalid_reason: 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322'
-    comments: {  }
+    comments: []
 -
   emails: 'test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com'
   multiple: true
@@ -107,7 +107,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: test.testing2@asdf.ghjkl.com
         simple_address: test.testing2@asdf.ghjkl.com
@@ -121,7 +121,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: '"Testing D. Name" <tname@asdf.ghjkl.com>'
   multiple: false
@@ -138,7 +138,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '<tname@asdf.ghjkl.com>'
   multiple: false
@@ -155,7 +155,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '<.tname@asdf.ghjkl.com>'
   multiple: false
@@ -172,7 +172,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Email address can not start with '.'"
-    comments: {  }
+    comments: []
 -
   emails: '"test .s set .set"@asdf.ghjkl.com'
   multiple: false
@@ -189,7 +189,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '<t.name@asdf.ghjkl.com>'
   multiple: false
@@ -206,7 +206,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '<t.name.@asdf.ghjkl.com>'
   multiple: false
@@ -223,7 +223,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
   multiple: true
@@ -244,7 +244,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: tname@asdf.ghjkl.com
         simple_address: tname@asdf.ghjkl.com
@@ -258,7 +258,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: tname-test1@asdf.ghjkl.com
         simple_address: tname-test1@asdf.ghjkl.com
@@ -272,7 +272,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
   multiple: false
@@ -289,7 +289,7 @@
     ip: ''
     invalid: true
     invalid_reason: 'Separator not permitted - only one email address allowed'
-    comments: {  }
+    comments: []
 -
   emails: "tnam e@asdf.g asdfa hjkl.com, tn'''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com"
   multiple: true
@@ -310,7 +310,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: ''
         simple_address: ''
@@ -324,7 +324,7 @@
         ip: ''
         invalid: true
         invalid_reason: 'Misplaced separator or missing "@" symbol'
-        comments: {  }
+        comments: []
       -
         address: "tn'''ame@asdf.ghjkl.com"
         simple_address: "tn'''ame@asdf.ghjkl.com"
@@ -338,7 +338,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: tname-test1@asdf.ghjkl.com
         simple_address: tname-test1@asdf.ghjkl.com
@@ -352,7 +352,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: "tnam e@asdf.g asdfa hjkl.com, tn'''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com"
   multiple: false
@@ -369,7 +369,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com'
   multiple: false
@@ -386,7 +386,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
   multiple: false
@@ -421,7 +421,7 @@
     ip: ''
     invalid: true
     invalid_reason: "This character is not allowed in email addresses submitted (please put in quotes if needed): '!'"
-    comments: {  }
+    comments: []
 -
   emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
   multiple: true
@@ -442,7 +442,7 @@
         ip: 10.0.10.45
         invalid: true
         invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
-        comments: {  }
+        comments: []
       -
         address: tname@asdf.ghjkl.com
         simple_address: tname@asdf.ghjkl.com
@@ -456,7 +456,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: tname-test2@asdf.ghjkl.com
         simple_address: tname-test2@asdf.ghjkl.com
@@ -470,7 +470,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
   multiple: false
@@ -487,7 +487,7 @@
     ip: 10.0.10.45
     invalid: true
     invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
   multiple: true
@@ -508,7 +508,7 @@
         ip: 10.0.10.45
         invalid: true
         invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
-        comments: {  }
+        comments: []
       -
         address: tname@asdf.ghjkl.com
         simple_address: tname@asdf.ghjkl.com
@@ -522,7 +522,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: tname-test2@asdf.ghjkl.com
         simple_address: tname-test2@asdf.ghjkl.com
@@ -536,7 +536,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
   multiple: false
@@ -553,7 +553,7 @@
     ip: 10.0.10.45
     invalid: true
     invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
   multiple: true
@@ -589,7 +589,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: tname-test2@asdf.ghjkl.com
         simple_address: tname-test2@asdf.ghjkl.com
@@ -603,7 +603,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
   multiple: false
@@ -638,7 +638,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: testing@xn--tdali-d8a8w.lv
   multiple: false
@@ -655,7 +655,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: testing@-bad-domain.com
   multiple: false
@@ -672,7 +672,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Parts of the domain name '-bad-domain.com' can not start or end with '-'.  This part does: -bad-domain"
-    comments: {  }
+    comments: []
 -
   emails: testing@192.168.0.1
   multiple: false
@@ -689,7 +689,7 @@
     ip: 192.168.0.1
     invalid: true
     invalid_reason: "IP address invalid: '192.168.0.1' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: testing@256.26.52.5
   multiple: false
@@ -706,7 +706,7 @@
     ip: 256.26.52.5
     invalid: true
     invalid_reason: "IP address invalid: '256.26.52.5' does not appear to be a valid IP address"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[256.26.52.5]'
   multiple: false
@@ -723,7 +723,7 @@
     ip: 256.26.52.5
     invalid: true
     invalid_reason: "IP address invalid: '256.26.52.5' does not appear to be a valid IP address"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[299.236.532.265]'
   multiple: false
@@ -740,7 +740,7 @@
     ip: 299.236.532.265
     invalid: true
     invalid_reason: "IP address invalid: '299.236.532.265' does not appear to be a valid IP address"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[80.67.66.65]'
   multiple: false
@@ -757,7 +757,7 @@
     ip: 80.67.66.65
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: testing@80.67.66.65
   multiple: false
@@ -774,7 +774,7 @@
     ip: 80.67.66.65
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: testing_underscore@somedomain.com
   multiple: false
@@ -791,7 +791,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '"Supports (E-mail)" <support@example.org>'
   multiple: false
@@ -808,7 +808,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Étienne Cloître <e.cloitre@domain.tld>'
   multiple: false
@@ -825,7 +825,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'Étienne Cloître <é.cloître@domain.tld>'
   multiple: false
@@ -842,7 +842,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Invalid character found in email address (please put in quotes if needed): 'é'"
-    comments: {  }
+    comments: []
 -
   emails: é.cloître@domain.tld
   multiple: false
@@ -859,7 +859,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Invalid character found in email address local part: 'î'"
-    comments: {  }
+    comments: []
 -
   emails: bob@i18ène.fr
   multiple: false
@@ -876,7 +876,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: "I'm Bobé <bob@i18ène.fr>"
   multiple: false
@@ -893,7 +893,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:2001:4860:4860::8888]'
   multiple: false
@@ -910,7 +910,7 @@
     ip: 'IPv6:2001:4860:4860::8888'
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:fe80::1]'
   multiple: false
@@ -927,7 +927,7 @@
     ip: 'IPv6:fe80::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:fe80::1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:::1]'
   multiple: false
@@ -944,7 +944,7 @@
     ip: 'IPv6:::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:fc00::1]'
   multiple: false
@@ -961,7 +961,7 @@
     ip: 'IPv6:fc00::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:fc00::1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:2606:4700:4700::1111]'
   multiple: false
@@ -978,7 +978,7 @@
     ip: 'IPv6:2606:4700:4700::1111'
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:::ffff:192.0.2.1]'
   multiple: false
@@ -995,7 +995,7 @@
     ip: 'IPv6:::ffff:192.0.2.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[172.16.0.1]'
   multiple: false
@@ -1012,7 +1012,7 @@
     ip: 172.16.0.1
     invalid: true
     invalid_reason: "IP address invalid: '172.16.0.1' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[127.0.0.1]'
   multiple: false
@@ -1029,7 +1029,7 @@
     ip: 127.0.0.1
     invalid: true
     invalid_reason: "IP address invalid: '127.0.0.1' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:gggg::1]'
   multiple: false
@@ -1046,7 +1046,7 @@
     ip: 'IPv6:gggg::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:gggg::1' does not appear to be a valid IP address"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:2001:4860:4860::8888::1]'
   multiple: false
@@ -1063,7 +1063,7 @@
     ip: 'IPv6:2001:4860:4860::8888::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:2001:4860:4860::8888::1' does not appear to be a valid IP address"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
   multiple: true
@@ -1084,7 +1084,7 @@
         ip: 'IPv6:2001:4860:4860::8888'
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: admin@example.com
         simple_address: admin@example.com
@@ -1098,7 +1098,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
   multiple: false
@@ -1115,7 +1115,7 @@
     ip: 'IPv6:2001:4860:4860::8888'
     invalid: true
     invalid_reason: 'Separator not permitted - only one email address allowed'
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[0.0.0.0]'
   multiple: false
@@ -1132,7 +1132,7 @@
     ip: 0.0.0.0
     invalid: true
     invalid_reason: "IP address invalid: '0.0.0.0' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[255.255.255.255]'
   multiple: false
@@ -1149,7 +1149,7 @@
     ip: 255.255.255.255
     invalid: true
     invalid_reason: "IP address invalid: '255.255.255.255' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'Example | Example <example@example.com>'
   multiple: false
@@ -1166,7 +1166,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'John / Jane Doe <test@example.com>'
   multiple: false
@@ -1183,7 +1183,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '"John Doe <john@example.com>'
   multiple: false
@@ -1200,7 +1200,7 @@
     ip: ''
     invalid: true
     invalid_reason: "No ending quote: '\"'"
-    comments: {  }
+    comments: []
 -
   emails: '"John Doe" <john@example.com>'
   multiple: false
@@ -1217,7 +1217,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '"Test.User" <test.user@example.com>'
   multiple: false
@@ -1234,7 +1234,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: '"Valid Name" <test@example.com>'
   multiple: false
@@ -1251,7 +1251,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: test@192.168.1.1
   multiple: false
@@ -1268,7 +1268,7 @@
     ip: 192.168.1.1
     invalid: true
     invalid_reason: "IP address invalid: '192.168.1.1' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'test@[IPv6:2001:db8::1]'
   multiple: false
@@ -1285,7 +1285,7 @@
     ip: 'IPv6:2001:db8::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:2001:db8::1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: test@256.256.256.256
   multiple: false
@@ -1302,7 +1302,7 @@
     ip: 256.256.256.256
     invalid: true
     invalid_reason: "IP address invalid: '256.256.256.256' does not appear to be a valid IP address"
-    comments: {  }
+    comments: []
 -
   emails: test@10.0.0.1
   multiple: false
@@ -1319,7 +1319,7 @@
     ip: 10.0.0.1
     invalid: true
     invalid_reason: "IP address invalid: '10.0.0.1' does not appear to be a valid IP address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'user1@[80.67.66.65], user2@example.com'
   multiple: true
@@ -1340,7 +1340,7 @@
         ip: 80.67.66.65
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: user2@example.com
         simple_address: user2@example.com
@@ -1354,7 +1354,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: '"user.name"@example.com'
   multiple: false
@@ -1371,7 +1371,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: ''
   multiple: false
@@ -1388,7 +1388,7 @@
     ip: ''
     invalid: true
     invalid_reason: 'No email address found'
-    comments: {  }
+    comments: []
 -
   emails: '   '
   multiple: false
@@ -1405,7 +1405,7 @@
     ip: ''
     invalid: true
     invalid_reason: 'No email address found'
-    comments: {  }
+    comments: []
 -
   emails: test@example.com
   multiple: false
@@ -1422,7 +1422,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:::ffff:192.0.0.1]'
   multiple: true
@@ -1443,7 +1443,7 @@
         ip: 'IPv6:::ffff:192.0.0.1'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.0.1' does not appear to be a valid IPv6 address in the global range"
-        comments: {  }
+        comments: []
 -
   emails: 'testing@[IPv6:::ffff:192.0.0.1]'
   multiple: false
@@ -1460,7 +1460,7 @@
     ip: 'IPv6:::ffff:192.0.0.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.0.1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:::ffff:192.0.2.100]'
   multiple: true
@@ -1481,7 +1481,7 @@
         ip: 'IPv6:::ffff:192.0.2.100'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.100' does not appear to be a valid IPv6 address in the global range"
-        comments: {  }
+        comments: []
 -
   emails: 'testing@[IPv6:::ffff:192.0.2.100]'
   multiple: false
@@ -1498,7 +1498,7 @@
     ip: 'IPv6:::ffff:192.0.2.100'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.100' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:::ffff:198.51.100.1]'
   multiple: true
@@ -1519,7 +1519,7 @@
         ip: 'IPv6:::ffff:198.51.100.1'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:198.51.100.1' does not appear to be a valid IPv6 address in the global range"
-        comments: {  }
+        comments: []
 -
   emails: 'testing@[IPv6:::ffff:198.51.100.1]'
   multiple: false
@@ -1536,7 +1536,7 @@
     ip: 'IPv6:::ffff:198.51.100.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:198.51.100.1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: 'testing@[IPv6:::ffff:203.0.113.1]'
   multiple: true
@@ -1557,7 +1557,7 @@
         ip: 'IPv6:::ffff:203.0.113.1'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:203.0.113.1' does not appear to be a valid IPv6 address in the global range"
-        comments: {  }
+        comments: []
 -
   emails: 'testing@[IPv6:::ffff:203.0.113.1]'
   multiple: false
@@ -1574,7 +1574,7 @@
     ip: 'IPv6:::ffff:203.0.113.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:203.0.113.1' does not appear to be a valid IPv6 address in the global range"
-    comments: {  }
+    comments: []
 -
   emails: test@server123.example.com
   multiple: false
@@ -1591,7 +1591,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: 'test1@example.com test2@example.com'
   multiple: true
@@ -1613,7 +1613,7 @@
         ip: ''
         invalid: true
         invalid_reason: "Multiple at '@' symbols in email address"
-        comments: {  }
+        comments: []
 -
   emails: 'test1@example.com; test2@example.com'
   multiple: true
@@ -1635,7 +1635,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: test2@example.com
         simple_address: test2@example.com
@@ -1649,7 +1649,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'John Doe <john@example.com>, Jane Smith <jane@example.com>'
   multiple: true
@@ -1671,7 +1671,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: 'Jane Smith <jane@example.com>'
         simple_address: jane@example.com
@@ -1685,7 +1685,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'test1@example.com; test2@example.com; test3@example.org'
   multiple: true
@@ -1706,7 +1706,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: test2@example.com
         simple_address: test2@example.com
@@ -1720,7 +1720,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: test3@example.org
         simple_address: test3@example.org
@@ -1734,7 +1734,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'John Doe <john@example.com>; Jane Smith <jane@example.com>'
   multiple: true
@@ -1755,7 +1755,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: 'Jane Smith <jane@example.com>'
         simple_address: jane@example.com
@@ -1769,7 +1769,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'test1@example.com, test2@example.com; test3@example.org'
   multiple: true
@@ -1790,7 +1790,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: test2@example.com
         simple_address: test2@example.com
@@ -1804,7 +1804,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: test3@example.org
         simple_address: test3@example.org
@@ -1818,7 +1818,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: john@example.com;jane@example.com
   multiple: true
@@ -1842,7 +1842,7 @@
         ip: ''
         invalid: true
         invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): ';'"
-        comments: {  }
+        comments: []
 -
   emails: 'john@example.com, jane@example.com'
   multiple: true
@@ -1866,7 +1866,7 @@
         ip: ''
         invalid: true
         invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): ','"
-        comments: {  }
+        comments: []
 -
   emails: 'john@example.com, jane@example.com'
   multiple: true
@@ -1889,7 +1889,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: jane@example.com
         simple_address: jane@example.com
@@ -1903,7 +1903,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'john@example.com; jane@example.com'
   multiple: true
@@ -1926,7 +1926,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: jane@example.com
         simple_address: jane@example.com
@@ -1940,7 +1940,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: '"Smith, John" <john@example.com>'
   multiple: true
@@ -1961,7 +1961,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: '"Smith, John" <john@example.com>, "Doe, Jane" <jane@example.com>'
   multiple: true
@@ -1982,7 +1982,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
       -
         address: '"Doe, Jane" <jane@example.com>'
         simple_address: jane@example.com
@@ -1996,7 +1996,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: 'Smith, John <john@example.com>'
   multiple: true
@@ -2017,7 +2017,7 @@
         ip: ''
         invalid: true
         invalid_reason: 'Misplaced separator or missing "@" symbol'
-        comments: {  }
+        comments: []
       -
         address: 'John <john@example.com>'
         simple_address: john@example.com
@@ -2031,7 +2031,7 @@
         ip: ''
         invalid: false
         invalid_reason: null
-        comments: {  }
+        comments: []
 -
   emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
   multiple: false
@@ -2048,7 +2048,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
   multiple: false
@@ -2065,7 +2065,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Email address before the '@' can not be greater than 64 octets per RFC 5321"
-    comments: {  }
+    comments: []
 -
   emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
   multiple: false
@@ -2082,7 +2082,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' must be less than 63 octets"
-    comments: {  }
+    comments: []
 -
   emails: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
   multiple: false
@@ -2099,7 +2099,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' must be less than 63 octets"
-    comments: {  }
+    comments: []
 -
   emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
   multiple: false
@@ -2117,7 +2117,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
   multiple: false
@@ -2135,7 +2135,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: aaaaaaaaaaaa@example.com
   multiple: false
@@ -2153,7 +2153,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Email address before the '@' can not be greater than 10 octets per RFC 5321"
-    comments: {  }
+    comments: []
 -
   emails: test@aaaaaaaaa.example.com
   multiple: false
@@ -2171,7 +2171,7 @@
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaa' must be less than 8 octets"
-    comments: {  }
+    comments: []
 -
   emails: test@example.com
   multiple: false
@@ -2189,7 +2189,7 @@
     ip: ''
     invalid: true
     invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
-    comments: {  }
+    comments: []
 -
   emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
   multiple: false
@@ -2207,7 +2207,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: test@example.com
   multiple: false
@@ -2225,7 +2225,7 @@
     ip: ''
     invalid: true
     invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
-    comments: {  }
+    comments: []
 -
   emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
   multiple: false
@@ -2243,7 +2243,7 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
 -
   emails: john.smith(comment)@example.com
   multiple: false
@@ -2369,4 +2369,4 @@
     ip: ''
     invalid: false
     invalid_reason: null
-    comments: {  }
+    comments: []
