@@ -1,29 +1,237 @@
-%YAML 1.2
----
 -
-    emails: t.name@asdf.ghjkl.com
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: t.name@asdf.ghjkl.com
-                simple_address: t.name@asdf.ghjkl.com
-                original_address: t.name@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: t.name
-                local_part_parsed: t.name
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
+  emails: t.name@asdf.ghjkl.com
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: t.name@asdf.ghjkl.com
+        simple_address: t.name@asdf.ghjkl.com
+        original_address: t.name@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: t.name
+        local_part_parsed: t.name
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
 -
-    emails: tname@asdf.ghjkl.com
-    multiple: false
-    result:
+  emails: tname@asdf.ghjkl.com
+  multiple: false
+  result:
+    address: tname@asdf.ghjkl.com
+    simple_address: tname@asdf.ghjkl.com
+    original_address: tname@asdf.ghjkl.com
+    name: ''
+    name_parsed: ''
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'Testing Name <tname@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: 'Testing Name <tname@asdf.ghjkl.com>'
+    simple_address: tname@asdf.ghjkl.com
+    original_address: 'Testing Name <tname@asdf.ghjkl.com>'
+    name: 'Testing Name'
+    name_parsed: 'Testing Name'
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'Testing D Name <tname@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: 'Testing D Name <tname@asdf.ghjkl.com>'
+    simple_address: tname@asdf.ghjkl.com
+    original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
+    name: 'Testing D Name'
+    name_parsed: 'Testing D Name'
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'Testing D. Name  <tname@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'Testing D. Name  <tname@asdf.ghjkl.com>'
+    name: 'Testing D.'
+    name_parsed: 'Testing D.'
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322'
+    comments: []
+-
+  emails: 'test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: test.testing@asdf.ghjkl.com
+        simple_address: test.testing@asdf.ghjkl.com
+        original_address: test.testing@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: test.testing
+        local_part_parsed: test.testing
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: test.testing2@asdf.ghjkl.com
+        simple_address: test.testing2@asdf.ghjkl.com
+        original_address: test.testing2@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: test.testing2
+        local_part_parsed: test.testing2
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+    simple_address: tname@asdf.ghjkl.com
+    original_address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
+    name: '"Testing D. Name"'
+    name_parsed: 'Testing D. Name'
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '<tname@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: tname@asdf.ghjkl.com
+    simple_address: tname@asdf.ghjkl.com
+    original_address: '<tname@asdf.ghjkl.com>'
+    name: ''
+    name_parsed: ''
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '<.tname@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '<.tname@asdf.ghjkl.com>'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address can not start with '.'"
+    comments: []
+-
+  emails: '"test .s set .set"@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: '"test .s set .set"@asdf.ghjkl.com'
+    simple_address: '"test .s set .set"@asdf.ghjkl.com'
+    original_address: '"test .s set .set"@asdf.ghjkl.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"test .s set .set"'
+    local_part_parsed: 'test .s set .set'
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '<t.name@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: t.name@asdf.ghjkl.com
+    simple_address: t.name@asdf.ghjkl.com
+    original_address: '<t.name@asdf.ghjkl.com>'
+    name: ''
+    name_parsed: ''
+    local_part: t.name
+    local_part_parsed: t.name
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '<t.name.@asdf.ghjkl.com>'
+  multiple: false
+  result:
+    address: t.name.@asdf.ghjkl.com
+    simple_address: t.name.@asdf.ghjkl.com
+    original_address: '<t.name.@asdf.ghjkl.com>'
+    name: ''
+    name_parsed: ''
+    local_part: t.name.
+    local_part_parsed: t.name.
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
         address: tname@asdf.ghjkl.com
         simple_address: tname@asdf.ghjkl.com
         original_address: tname@asdf.ghjkl.com
@@ -36,110 +244,11 @@
         ip: ''
         invalid: false
         invalid_reason: null
--
-    emails: 'Testing Name <tname@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: 'Testing Name <tname@asdf.ghjkl.com>'
-        simple_address: tname@asdf.ghjkl.com
-        original_address: 'Testing Name <tname@asdf.ghjkl.com>'
-        name: 'Testing Name'
-        name_parsed: 'Testing Name'
-        local_part: tname
-        local_part_parsed: tname
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'Testing D Name <tname@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: 'Testing D Name <tname@asdf.ghjkl.com>'
-        simple_address: tname@asdf.ghjkl.com
-        original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
-        name: 'Testing D Name'
-        name_parsed: 'Testing D Name'
-        local_part: tname
-        local_part_parsed: tname
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'Testing D. Name  <tname@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'Testing D. Name  <tname@asdf.ghjkl.com>'
-        name: 'Testing D.'
-        name_parsed: 'Testing D.'
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
-        domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322'
--
-    emails: 'test.testing@asdf.ghjkl.com test.testing2@asdf.ghjkl.com'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: test.testing@asdf.ghjkl.com
-                simple_address: test.testing@asdf.ghjkl.com
-                original_address: test.testing@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: test.testing
-                local_part_parsed: test.testing
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: test.testing2@asdf.ghjkl.com
-                simple_address: test.testing2@asdf.ghjkl.com
-                original_address: test.testing2@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: test.testing2
-                local_part_parsed: test.testing2
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: '"Testing D. Name" <tname@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
-        simple_address: tname@asdf.ghjkl.com
-        original_address: '"Testing D. Name" <tname@asdf.ghjkl.com>'
-        name: '"Testing D. Name"'
-        name_parsed: 'Testing D. Name'
-        local_part: tname
-        local_part_parsed: tname
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: '<tname@asdf.ghjkl.com>'
-    multiple: false
-    result:
+        comments: []
+      -
         address: tname@asdf.ghjkl.com
         simple_address: tname@asdf.ghjkl.com
-        original_address: '<tname@asdf.ghjkl.com>'
+        original_address: tname@asdf.ghjkl.com
         name: ''
         name_parsed: ''
         local_part: tname
@@ -149,195 +258,46 @@
         ip: ''
         invalid: false
         invalid_reason: null
--
-    emails: '<.tname@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: '<.tname@asdf.ghjkl.com>'
+        comments: []
+      -
+        address: tname-test1@asdf.ghjkl.com
+        simple_address: tname-test1@asdf.ghjkl.com
+        original_address: tname-test1@asdf.ghjkl.com
         name: ''
         name_parsed: ''
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
-        domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: 'Email address can not start with ''.'''
--
-    emails: '"test .s set .set"@asdf.ghjkl.com'
-    multiple: false
-    result:
-        address: '"test .s set .set"@asdf.ghjkl.com'
-        simple_address: '"test .s set .set"@asdf.ghjkl.com'
-        original_address: '"test .s set .set"@asdf.ghjkl.com'
-        name: ''
-        name_parsed: ''
-        local_part: '"test .s set .set"'
-        local_part_parsed: 'test .s set .set'
+        local_part: tname-test1
+        local_part_parsed: tname-test1
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
         ip: ''
         invalid: false
         invalid_reason: null
+        comments: []
 -
-    emails: '<t.name@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: t.name@asdf.ghjkl.com
-        simple_address: t.name@asdf.ghjkl.com
-        original_address: '<t.name@asdf.ghjkl.com>'
-        name: ''
-        name_parsed: ''
-        local_part: t.name
-        local_part_parsed: t.name
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
+  emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
+    name: ''
+    name_parsed: ''
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: true
+    invalid_reason: 'Separator not permitted - only one email address allowed'
+    comments: []
 -
-    emails: '<t.name.@asdf.ghjkl.com>'
-    multiple: false
-    result:
-        address: t.name.@asdf.ghjkl.com
-        simple_address: t.name.@asdf.ghjkl.com
-        original_address: '<t.name.@asdf.ghjkl.com>'
-        name: ''
-        name_parsed: ''
-        local_part: t.name.
-        local_part_parsed: t.name.
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: tname@asdf.ghjkl.com
-                simple_address: tname@asdf.ghjkl.com
-                original_address: tname@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: tname@asdf.ghjkl.com
-                simple_address: tname@asdf.ghjkl.com
-                original_address: tname@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: tname-test1@asdf.ghjkl.com
-                simple_address: tname-test1@asdf.ghjkl.com
-                original_address: tname-test1@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname-test1
-                local_part_parsed: tname-test1
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'tname@asdf.ghjkl.com, tname@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
-        name: ''
-        name_parsed: ''
-        local_part: tname
-        local_part_parsed: tname
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Separator not permitted - only one email address allowed'
--
-    emails: 'tnam e@asdf.g asdfa hjkl.com, tn''''''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: 'tnam <e@asdf.g>'
-                simple_address: e@asdf.g
-                original_address: 'tnam e@asdf.g'
-                name: tnam
-                name_parsed: tnam
-                local_part: e
-                local_part_parsed: e
-                domain_part: asdf.g
-                domain: asdf.g
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'asdfa hjkl.com'
-                name: asdfa
-                name_parsed: asdfa
-                local_part: ''
-                local_part_parsed: ''
-                domain_part: ''
-                domain: ''
-                ip: ''
-                invalid: true
-                invalid_reason: 'Misplaced separator or missing "@" symbol'
-            -
-                address: 'tn''''''ame@asdf.ghjkl.com'
-                simple_address: 'tn''''''ame@asdf.ghjkl.com'
-                original_address: 'tn''''''ame@asdf.ghjkl.com'
-                name: ''
-                name_parsed: ''
-                local_part: 'tn''''''ame'
-                local_part_parsed: 'tn''''''ame'
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: tname-test1@asdf.ghjkl.com
-                simple_address: tname-test1@asdf.ghjkl.com
-                original_address: tname-test1@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname-test1
-                local_part_parsed: tname-test1
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'tnam e@asdf.g asdfa hjkl.com, tn''''''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com'
-    multiple: false
-    result:
+  emails: "tnam e@asdf.g asdfa hjkl.com, tn'''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com"
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: 'tnam <e@asdf.g>'
         simple_address: e@asdf.g
         original_address: 'tnam e@asdf.g'
@@ -350,104 +310,126 @@
         ip: ''
         invalid: false
         invalid_reason: null
--
-    emails: 'Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com'
-    multiple: false
-    result:
-        address: 'Testing D Name <tname@asdf.ghjkl.com>'
-        simple_address: tname@asdf.ghjkl.com
-        original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
-        name: 'Testing D Name'
-        name_parsed: 'Testing D Name'
-        local_part: tname
-        local_part_parsed: tname
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
-    multiple: false
-    result:
-        address: 'Testing D Name <tname@asdf.ghjkl.com>'
-        simple_address: tname@asdf.ghjkl.com
-        original_address: 'Testing D Name <tname@asdf.ghjkl.com> (comment)'
-        name: 'Testing D Name'
-        name_parsed: 'Testing D Name'
-        local_part: tname
-        local_part_parsed: tname
-        domain_part: asdf.ghjkl.com
-        domain: asdf.ghjkl.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
-    multiple: false
-    result:
+        comments: []
+      -
         address: ''
         simple_address: ''
-        original_address: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
-        name: ''
-        name_parsed: ''
+        original_address: 'asdfa hjkl.com'
+        name: asdfa
+        name_parsed: asdfa
         local_part: ''
         local_part_parsed: ''
         domain_part: ''
         domain: ''
         ip: ''
         invalid: true
-        invalid_reason: 'This character is not allowed in email addresses submitted (please put in quotes if needed): ''!'''
+        invalid_reason: 'Misplaced separator or missing "@" symbol'
+        comments: []
+      -
+        address: "tn'''ame@asdf.ghjkl.com"
+        simple_address: "tn'''ame@asdf.ghjkl.com"
+        original_address: "tn'''ame@asdf.ghjkl.com"
+        name: ''
+        name_parsed: ''
+        local_part: "tn'''ame"
+        local_part_parsed: "tn'''ame"
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: tname-test1@asdf.ghjkl.com
+        simple_address: tname-test1@asdf.ghjkl.com
+        original_address: tname-test1@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: tname-test1
+        local_part_parsed: tname-test1
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
 -
-    emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'tname@[10.0.10.45]'
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: '[10.0.10.45]'
-                domain: ''
-                ip: 10.0.10.45
-                invalid: true
-                invalid_reason: 'IP address invalid: ''10.0.10.45'' does not appear to be a valid IP address in the global range'
-            -
-                address: tname@asdf.ghjkl.com
-                simple_address: tname@asdf.ghjkl.com
-                original_address: tname@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: tname-test2@asdf.ghjkl.com
-                simple_address: tname-test2@asdf.ghjkl.com
-                original_address: tname-test2@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname-test2
-                local_part_parsed: tname-test2
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
+  emails: "tnam e@asdf.g asdfa hjkl.com, tn'''ame@asdf.ghjkl.com, tname-test1@asdf.ghjkl.com"
+  multiple: false
+  result:
+    address: 'tnam <e@asdf.g>'
+    simple_address: e@asdf.g
+    original_address: 'tnam e@asdf.g'
+    name: tnam
+    name_parsed: tnam
+    local_part: e
+    local_part_parsed: e
+    domain_part: asdf.g
+    domain: asdf.g
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
-    multiple: false
-    result:
+  emails: 'Testing D Name <tname@asdf.ghjkl.com> tname@asdf.ghjkl.com tname-test1@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: 'Testing D Name <tname@asdf.ghjkl.com>'
+    simple_address: tname@asdf.ghjkl.com
+    original_address: 'Testing D Name <tname@asdf.ghjkl.com>'
+    name: 'Testing D Name'
+    name_parsed: 'Testing D Name'
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'Testing D Name <tname@asdf.ghjkl.com> (comment) tn(comment1)ame@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: 'Testing D Name <tname@asdf.ghjkl.com>'
+    simple_address: tname@asdf.ghjkl.com
+    original_address: 'Testing D Name <tname@asdf.ghjkl.com> (comment)'
+    name: 'Testing D Name'
+    name_parsed: 'Testing D Name'
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: asdf.ghjkl.com
+    domain: asdf.ghjkl.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - comment
+-
+  emails: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'Tes!@#$@$&*&%(*ti)ng D Name <tname@asdf.ghjkl.com> (comment) tna(m!@#($(!(^)$)#)!^%#&*%^#)mment1e@asdf.gh(comment2)jkl.com tname-test1(comment3)@asdf.ghjkl.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "This character is not allowed in email addresses submitted (please put in quotes if needed): '!'"
+    comments: []
+-
+  emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 'tname@[10.0.10.45]'
@@ -459,57 +441,61 @@
         domain: ''
         ip: 10.0.10.45
         invalid: true
-        invalid_reason: 'IP address invalid: ''10.0.10.45'' does not appear to be a valid IP address in the global range'
+        invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+        comments: []
+      -
+        address: tname@asdf.ghjkl.com
+        simple_address: tname@asdf.ghjkl.com
+        original_address: tname@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: tname-test2@asdf.ghjkl.com
+        simple_address: tname-test2@asdf.ghjkl.com
+        original_address: tname-test2@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: tname-test2
+        local_part_parsed: tname-test2
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
 -
-    emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 't"na"me@[10.0.10.45]'
-                name: ''
-                name_parsed: ''
-                local_part: '"tname"'
-                local_part_parsed: tname
-                domain_part: '[10.0.10.45]'
-                domain: ''
-                ip: 10.0.10.45
-                invalid: true
-                invalid_reason: 'IP address invalid: ''10.0.10.45'' does not appear to be a valid IP address in the global range'
-            -
-                address: tname@asdf.ghjkl.com
-                simple_address: tname@asdf.ghjkl.com
-                original_address: tname@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: tname-test2@asdf.ghjkl.com
-                simple_address: tname-test2@asdf.ghjkl.com
-                original_address: tname-test2@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname-test2
-                local_part_parsed: tname-test2
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
+  emails: 'tname@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'tname@[10.0.10.45]'
+    name: ''
+    name_parsed: ''
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: '[10.0.10.45]'
+    domain: ''
+    ip: 10.0.10.45
+    invalid: true
+    invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+    comments: []
 -
-    emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
-    multiple: false
-    result:
+  emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 't"na"me@[10.0.10.45]'
@@ -521,57 +507,61 @@
         domain: ''
         ip: 10.0.10.45
         invalid: true
-        invalid_reason: 'IP address invalid: ''10.0.10.45'' does not appear to be a valid IP address in the global range'
+        invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+        comments: []
+      -
+        address: tname@asdf.ghjkl.com
+        simple_address: tname@asdf.ghjkl.com
+        original_address: tname@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: tname-test2@asdf.ghjkl.com
+        simple_address: tname-test2@asdf.ghjkl.com
+        original_address: tname-test2@asdf.ghjkl.com
+        name: ''
+        name_parsed: ''
+        local_part: tname-test2
+        local_part_parsed: tname-test2
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
 -
-    emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 't(comment with spaces !!!)name@[10.0.10.45]'
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: '[10.0.10.45]'
-                domain: ''
-                ip: 10.0.10.45
-                invalid: true
-                invalid_reason: 'IP address invalid: ''10.0.10.45'' does not appear to be a valid IP address in the global range'
-            -
-                address: tname@asdf.ghjkl.com
-                simple_address: tname@asdf.ghjkl.com
-                original_address: tname@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname
-                local_part_parsed: tname
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: tname-test2@asdf.ghjkl.com
-                simple_address: tname-test2@asdf.ghjkl.com
-                original_address: tname-test2@asdf.ghjkl.com
-                name: ''
-                name_parsed: ''
-                local_part: tname-test2
-                local_part_parsed: tname-test2
-                domain_part: asdf.ghjkl.com
-                domain: asdf.ghjkl.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
+  emails: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 't"na"me@[10.0.10.45]'
+    name: ''
+    name_parsed: ''
+    local_part: '"tname"'
+    local_part_parsed: tname
+    domain_part: '[10.0.10.45]'
+    domain: ''
+    ip: 10.0.10.45
+    invalid: true
+    invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+    comments: []
 -
-    emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
-    multiple: false
-    result:
+  emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 't(comment with spaces !!!)name@[10.0.10.45]'
@@ -583,267 +573,505 @@
         domain: ''
         ip: 10.0.10.45
         invalid: true
-        invalid_reason: 'IP address invalid: ''10.0.10.45'' does not appear to be a valid IP address in the global range'
--
-    emails: testing@tūdaliņ.lv
-    multiple: false
-    result:
-        address: testing@xn--tdali-d8a8w.lv
-        simple_address: testing@xn--tdali-d8a8w.lv
-        original_address: testing@tūdaliņ.lv
+        invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+        comments:
+          - 'comment with spaces !!!'
+      -
+        address: tname@asdf.ghjkl.com
+        simple_address: tname@asdf.ghjkl.com
+        original_address: tname@asdf.ghjkl.com
         name: ''
         name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: xn--tdali-d8a8w.lv
-        domain: xn--tdali-d8a8w.lv
+        local_part: tname
+        local_part_parsed: tname
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
         ip: ''
         invalid: false
         invalid_reason: null
--
-    emails: testing@xn--tdali-d8a8w.lv
-    multiple: false
-    result:
-        address: testing@xn--tdali-d8a8w.lv
-        simple_address: testing@xn--tdali-d8a8w.lv
-        original_address: testing@xn--tdali-d8a8w.lv
+        comments: []
+      -
+        address: tname-test2@asdf.ghjkl.com
+        simple_address: tname-test2@asdf.ghjkl.com
+        original_address: tname-test2@asdf.ghjkl.com
         name: ''
         name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: xn--tdali-d8a8w.lv
-        domain: xn--tdali-d8a8w.lv
+        local_part: tname-test2
+        local_part_parsed: tname-test2
+        domain_part: asdf.ghjkl.com
+        domain: asdf.ghjkl.com
         ip: ''
         invalid: false
         invalid_reason: null
+        comments: []
 -
-    emails: testing@-bad-domain.com
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: testing@-bad-domain.com
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '-bad-domain.com'
-        domain: '-bad-domain.com'
-        ip: ''
-        invalid: true
-        invalid_reason: 'Domain invalid: Parts of the domain name ''-bad-domain.com'' can not start or end with ''-''.  This part does: -bad-domain'
+  emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 't(comment with spaces !!!)name@[10.0.10.45]'
+    name: ''
+    name_parsed: ''
+    local_part: tname
+    local_part_parsed: tname
+    domain_part: '[10.0.10.45]'
+    domain: ''
+    ip: 10.0.10.45
+    invalid: true
+    invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+    comments:
+      - 'comment with spaces !!!'
 -
-    emails: testing@192.168.0.1
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: testing@192.168.0.1
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[192.168.0.1]'
-        domain: null
-        ip: 192.168.0.1
-        invalid: true
-        invalid_reason: 'IP address invalid: ''192.168.0.1'' does not appear to be a valid IP address in the global range'
+  emails: testing@tūdaliņ.lv
+  multiple: false
+  result:
+    address: testing@xn--tdali-d8a8w.lv
+    simple_address: testing@xn--tdali-d8a8w.lv
+    original_address: testing@tūdaliņ.lv
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: xn--tdali-d8a8w.lv
+    domain: xn--tdali-d8a8w.lv
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: testing@256.26.52.5
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: testing@256.26.52.5
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[256.26.52.5]'
-        domain: null
-        ip: 256.26.52.5
-        invalid: true
-        invalid_reason: 'IP address invalid: ''256.26.52.5'' does not appear to be a valid IP address'
+  emails: testing@xn--tdali-d8a8w.lv
+  multiple: false
+  result:
+    address: testing@xn--tdali-d8a8w.lv
+    simple_address: testing@xn--tdali-d8a8w.lv
+    original_address: testing@xn--tdali-d8a8w.lv
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: xn--tdali-d8a8w.lv
+    domain: xn--tdali-d8a8w.lv
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'testing@[256.26.52.5]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[256.26.52.5]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[256.26.52.5]'
-        domain: ''
-        ip: 256.26.52.5
-        invalid: true
-        invalid_reason: 'IP address invalid: ''256.26.52.5'' does not appear to be a valid IP address'
+  emails: testing@-bad-domain.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: testing@-bad-domain.com
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '-bad-domain.com'
+    domain: '-bad-domain.com'
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Parts of the domain name '-bad-domain.com' can not start or end with '-'.  This part does: -bad-domain"
+    comments: []
 -
-    emails: 'testing@[299.236.532.265]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[299.236.532.265]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[299.236.532.265]'
-        domain: ''
-        ip: 299.236.532.265
-        invalid: true
-        invalid_reason: 'IP address invalid: ''299.236.532.265'' does not appear to be a valid IP address'
+  emails: testing@192.168.0.1
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: testing@192.168.0.1
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[192.168.0.1]'
+    domain: null
+    ip: 192.168.0.1
+    invalid: true
+    invalid_reason: "IP address invalid: '192.168.0.1' does not appear to be a valid IP address in the global range"
+    comments: []
 -
-    emails: 'testing@[80.67.66.65]'
-    multiple: false
-    result:
-        address: 'testing@[80.67.66.65]'
-        simple_address: 'testing@[80.67.66.65]'
-        original_address: 'testing@[80.67.66.65]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[80.67.66.65]'
-        domain: ''
-        ip: 80.67.66.65
-        invalid: false
-        invalid_reason: null
+  emails: testing@256.26.52.5
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: testing@256.26.52.5
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[256.26.52.5]'
+    domain: null
+    ip: 256.26.52.5
+    invalid: true
+    invalid_reason: "IP address invalid: '256.26.52.5' does not appear to be a valid IP address"
+    comments: []
 -
-    emails: testing@80.67.66.65
-    multiple: false
-    result:
-        address: 'testing@[80.67.66.65]'
-        simple_address: 'testing@[80.67.66.65]'
-        original_address: testing@80.67.66.65
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[80.67.66.65]'
-        domain: null
-        ip: 80.67.66.65
-        invalid: false
-        invalid_reason: null
+  emails: 'testing@[256.26.52.5]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[256.26.52.5]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[256.26.52.5]'
+    domain: ''
+    ip: 256.26.52.5
+    invalid: true
+    invalid_reason: "IP address invalid: '256.26.52.5' does not appear to be a valid IP address"
+    comments: []
 -
-    emails: testing_underscore@somedomain.com
-    multiple: false
-    result:
-        address: 'testing_underscore@somedomain.com'
-        simple_address: 'testing_underscore@somedomain.com'
-        original_address: testing_underscore@somedomain.com
-        name: ''
-        name_parsed: ''
-        local_part: testing_underscore
-        local_part_parsed: testing_underscore
-        domain_part: somedomain.com
-        domain: somedomain.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
+  emails: 'testing@[299.236.532.265]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[299.236.532.265]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[299.236.532.265]'
+    domain: ''
+    ip: 299.236.532.265
+    invalid: true
+    invalid_reason: "IP address invalid: '299.236.532.265' does not appear to be a valid IP address"
+    comments: []
 -
-    emails: '"Supports (E-mail)" <support@example.org>'
-    multiple: false
-    result:
-        address: '"Supports (E-mail)" <support@example.org>'
-        simple_address: 'support@example.org'
-        original_address: '"Supports (E-mail)" <support@example.org>'
-        name: '"Supports (E-mail)"'
-        name_parsed: 'Supports (E-mail)'
-        local_part: 'support'
-        local_part_parsed: 'support'
-        domain_part: 'example.org'
-        domain: 'example.org'
-        ip: ''
-        invalid: false
-        invalid_reason: ~
+  emails: 'testing@[80.67.66.65]'
+  multiple: false
+  result:
+    address: 'testing@[80.67.66.65]'
+    simple_address: 'testing@[80.67.66.65]'
+    original_address: 'testing@[80.67.66.65]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[80.67.66.65]'
+    domain: ''
+    ip: 80.67.66.65
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'Étienne Cloître <e.cloitre@domain.tld>'
-    multiple: false
-    result:
-        address: 'Étienne Cloître <e.cloitre@domain.tld>'
-        simple_address: 'e.cloitre@domain.tld'
-        original_address: 'Étienne Cloître <e.cloitre@domain.tld>'
-        name: 'Étienne Cloître'
-        name_parsed: 'Étienne Cloître'
-        local_part: 'e.cloitre'
-        local_part_parsed: 'e.cloitre'
-        domain_part: 'domain.tld'
-        domain: 'domain.tld'
-        ip: ''
-        invalid: false
-        invalid_reason: ~
+  emails: testing@80.67.66.65
+  multiple: false
+  result:
+    address: 'testing@[80.67.66.65]'
+    simple_address: 'testing@[80.67.66.65]'
+    original_address: testing@80.67.66.65
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[80.67.66.65]'
+    domain: null
+    ip: 80.67.66.65
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'Étienne Cloître <é.cloître@domain.tld>'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'Étienne Cloître <é.cloître@domain.tld>'
-        name: 'Étienne Cloître'
-        name_parsed: 'Étienne Cloître'
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
-        domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: "Invalid character found in email address (please put in quotes if needed): 'é'"
+  emails: testing_underscore@somedomain.com
+  multiple: false
+  result:
+    address: testing_underscore@somedomain.com
+    simple_address: testing_underscore@somedomain.com
+    original_address: testing_underscore@somedomain.com
+    name: ''
+    name_parsed: ''
+    local_part: testing_underscore
+    local_part_parsed: testing_underscore
+    domain_part: somedomain.com
+    domain: somedomain.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'é.cloître@domain.tld'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'é.cloître@domain.tld'
-        name: ''
-        name_parsed: ''
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
-        domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: "Invalid character found in email address local part: 'î'"
+  emails: '"Supports (E-mail)" <support@example.org>'
+  multiple: false
+  result:
+    address: '"Supports (E-mail)" <support@example.org>'
+    simple_address: support@example.org
+    original_address: '"Supports (E-mail)" <support@example.org>'
+    name: '"Supports (E-mail)"'
+    name_parsed: 'Supports (E-mail)'
+    local_part: support
+    local_part_parsed: support
+    domain_part: example.org
+    domain: example.org
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'bob@i18ène.fr'
-    multiple: false
-    result:
-        address: 'bob@xn--i18ne-6ra.fr'
-        simple_address: 'bob@xn--i18ne-6ra.fr'
-        original_address: 'bob@i18ène.fr'
-        name: ''
-        name_parsed: ''
-        local_part: 'bob'
-        local_part_parsed: 'bob'
-        domain_part: 'xn--i18ne-6ra.fr'
-        domain: 'xn--i18ne-6ra.fr'
-        ip: ''
-        invalid: false
-        invalid_reason: ~
+  emails: 'Étienne Cloître <e.cloitre@domain.tld>'
+  multiple: false
+  result:
+    address: 'Étienne Cloître <e.cloitre@domain.tld>'
+    simple_address: e.cloitre@domain.tld
+    original_address: 'Étienne Cloître <e.cloitre@domain.tld>'
+    name: 'Étienne Cloître'
+    name_parsed: 'Étienne Cloître'
+    local_part: e.cloitre
+    local_part_parsed: e.cloitre
+    domain_part: domain.tld
+    domain: domain.tld
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: "I'm Bobé <bob@i18ène.fr>"
-    multiple: false
-    result:
-        address: "I'm Bobé <bob@xn--i18ne-6ra.fr>"
-        simple_address: 'bob@xn--i18ne-6ra.fr'
-        original_address: "I'm Bobé <bob@i18ène.fr>"
-        name: "I'm Bobé"
-        name_parsed: "I'm Bobé"
-        local_part: 'bob'
-        local_part_parsed: 'bob'
-        domain_part: 'xn--i18ne-6ra.fr'
-        domain: 'xn--i18ne-6ra.fr'
-        ip: ''
-        invalid: false
-        invalid_reason: ~
+  emails: 'Étienne Cloître <é.cloître@domain.tld>'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'Étienne Cloître <é.cloître@domain.tld>'
+    name: 'Étienne Cloître'
+    name_parsed: 'Étienne Cloître'
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address (please put in quotes if needed): 'é'"
+    comments: []
 -
-    emails: 'testing@[IPv6:2001:4860:4860::8888]'
-    multiple: false
-    result:
+  emails: é.cloître@domain.tld
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: é.cloître@domain.tld
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: 'î'"
+    comments: []
+-
+  emails: bob@i18ène.fr
+  multiple: false
+  result:
+    address: bob@xn--i18ne-6ra.fr
+    simple_address: bob@xn--i18ne-6ra.fr
+    original_address: bob@i18ène.fr
+    name: ''
+    name_parsed: ''
+    local_part: bob
+    local_part_parsed: bob
+    domain_part: xn--i18ne-6ra.fr
+    domain: xn--i18ne-6ra.fr
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: "I'm Bobé <bob@i18ène.fr>"
+  multiple: false
+  result:
+    address: "I'm Bobé <bob@xn--i18ne-6ra.fr>"
+    simple_address: bob@xn--i18ne-6ra.fr
+    original_address: "I'm Bobé <bob@i18ène.fr>"
+    name: "I'm Bobé"
+    name_parsed: "I'm Bobé"
+    local_part: bob
+    local_part_parsed: bob
+    domain_part: xn--i18ne-6ra.fr
+    domain: xn--i18ne-6ra.fr
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'testing@[IPv6:2001:4860:4860::8888]'
+  multiple: false
+  result:
+    address: 'testing@[IPv6:2001:4860:4860::8888]'
+    simple_address: 'testing@[IPv6:2001:4860:4860::8888]'
+    original_address: 'testing@[IPv6:2001:4860:4860::8888]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:2001:4860:4860::8888]'
+    domain: ''
+    ip: 'IPv6:2001:4860:4860::8888'
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'testing@[IPv6:fe80::1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:fe80::1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:fe80::1]'
+    domain: ''
+    ip: 'IPv6:fe80::1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:fe80::1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
+-
+  emails: 'testing@[IPv6:::1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:::1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:::1]'
+    domain: ''
+    ip: 'IPv6:::1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:::1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
+-
+  emails: 'testing@[IPv6:fc00::1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:fc00::1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:fc00::1]'
+    domain: ''
+    ip: 'IPv6:fc00::1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:fc00::1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
+-
+  emails: 'testing@[IPv6:2606:4700:4700::1111]'
+  multiple: false
+  result:
+    address: 'testing@[IPv6:2606:4700:4700::1111]'
+    simple_address: 'testing@[IPv6:2606:4700:4700::1111]'
+    original_address: 'testing@[IPv6:2606:4700:4700::1111]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:2606:4700:4700::1111]'
+    domain: ''
+    ip: 'IPv6:2606:4700:4700::1111'
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'testing@[IPv6:::ffff:192.0.2.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:::ffff:192.0.2.1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:::ffff:192.0.2.1]'
+    domain: ''
+    ip: 'IPv6:::ffff:192.0.2.1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
+-
+  emails: 'testing@[172.16.0.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[172.16.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[172.16.0.1]'
+    domain: ''
+    ip: 172.16.0.1
+    invalid: true
+    invalid_reason: "IP address invalid: '172.16.0.1' does not appear to be a valid IP address in the global range"
+    comments: []
+-
+  emails: 'testing@[127.0.0.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[127.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[127.0.0.1]'
+    domain: ''
+    ip: 127.0.0.1
+    invalid: true
+    invalid_reason: "IP address invalid: '127.0.0.1' does not appear to be a valid IP address in the global range"
+    comments: []
+-
+  emails: 'testing@[IPv6:gggg::1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:gggg::1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:gggg::1]'
+    domain: ''
+    ip: 'IPv6:gggg::1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:gggg::1' does not appear to be a valid IP address"
+    comments: []
+-
+  emails: 'testing@[IPv6:2001:4860:4860::8888::1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:2001:4860:4860::8888::1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:2001:4860:4860::8888::1]'
+    domain: ''
+    ip: 'IPv6:2001:4860:4860::8888::1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:2001:4860:4860::8888::1' does not appear to be a valid IP address"
+    comments: []
+-
+  emails: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
         address: 'testing@[IPv6:2001:4860:4860::8888]'
         simple_address: 'testing@[IPv6:2001:4860:4860::8888]'
         original_address: 'testing@[IPv6:2001:4860:4860::8888]'
@@ -856,515 +1084,353 @@
         ip: 'IPv6:2001:4860:4860::8888'
         invalid: false
         invalid_reason: null
--
-    emails: 'testing@[IPv6:fe80::1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:fe80::1]'
+        comments: []
+      -
+        address: admin@example.com
+        simple_address: admin@example.com
+        original_address: admin@example.com
         name: ''
         name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:fe80::1]'
-        domain: ''
-        ip: 'IPv6:fe80::1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:fe80::1'' does not appear to be a valid IPv6 address in the global range'
--
-    emails: 'testing@[IPv6:::1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:::1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:::1]'
-        domain: ''
-        ip: 'IPv6:::1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:::1'' does not appear to be a valid IPv6 address in the global range'
--
-    emails: 'testing@[IPv6:fc00::1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:fc00::1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:fc00::1]'
-        domain: ''
-        ip: 'IPv6:fc00::1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:fc00::1'' does not appear to be a valid IPv6 address in the global range'
--
-    emails: 'testing@[IPv6:2606:4700:4700::1111]'
-    multiple: false
-    result:
-        address: 'testing@[IPv6:2606:4700:4700::1111]'
-        simple_address: 'testing@[IPv6:2606:4700:4700::1111]'
-        original_address: 'testing@[IPv6:2606:4700:4700::1111]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:2606:4700:4700::1111]'
-        domain: ''
-        ip: 'IPv6:2606:4700:4700::1111'
-        invalid: false
-        invalid_reason: null
--
-    emails: 'testing@[IPv6:::ffff:192.0.2.1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:::ffff:192.0.2.1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:::ffff:192.0.2.1]'
-        domain: ''
-        ip: 'IPv6:::ffff:192.0.2.1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.2.1'' does not appear to be a valid IPv6 address in the global range'
--
-    emails: 'testing@[172.16.0.1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[172.16.0.1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[172.16.0.1]'
-        domain: ''
-        ip: 172.16.0.1
-        invalid: true
-        invalid_reason: 'IP address invalid: ''172.16.0.1'' does not appear to be a valid IP address in the global range'
--
-    emails: 'testing@[127.0.0.1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[127.0.0.1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[127.0.0.1]'
-        domain: ''
-        ip: 127.0.0.1
-        invalid: true
-        invalid_reason: 'IP address invalid: ''127.0.0.1'' does not appear to be a valid IP address in the global range'
--
-    emails: 'testing@[IPv6:gggg::1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:gggg::1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:gggg::1]'
-        domain: ''
-        ip: 'IPv6:gggg::1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:gggg::1'' does not appear to be a valid IP address'
--
-    emails: 'testing@[IPv6:2001:4860:4860::8888::1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:2001:4860:4860::8888::1]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:2001:4860:4860::8888::1]'
-        domain: ''
-        ip: 'IPv6:2001:4860:4860::8888::1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:2001:4860:4860::8888::1'' does not appear to be a valid IP address'
--
-    emails: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: 'testing@[IPv6:2001:4860:4860::8888]'
-                simple_address: 'testing@[IPv6:2001:4860:4860::8888]'
-                original_address: 'testing@[IPv6:2001:4860:4860::8888]'
-                name: ''
-                name_parsed: ''
-                local_part: testing
-                local_part_parsed: testing
-                domain_part: '[IPv6:2001:4860:4860::8888]'
-                domain: ''
-                ip: 'IPv6:2001:4860:4860::8888'
-                invalid: false
-                invalid_reason: null
-            -
-                address: admin@example.com
-                simple_address: admin@example.com
-                original_address: admin@example.com
-                name: ''
-                name_parsed: ''
-                local_part: admin
-                local_part_parsed: admin
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[IPv6:2001:4860:4860::8888]'
-        domain: ''
-        ip: 'IPv6:2001:4860:4860::8888'
-        invalid: true
-        invalid_reason: 'Separator not permitted - only one email address allowed'
--
-    emails: 'testing@[0.0.0.0]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[0.0.0.0]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[0.0.0.0]'
-        domain: ''
-        ip: 0.0.0.0
-        invalid: true
-        invalid_reason: 'IP address invalid: ''0.0.0.0'' does not appear to be a valid IP address in the global range'
--
-    emails: 'testing@[255.255.255.255]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'testing@[255.255.255.255]'
-        name: ''
-        name_parsed: ''
-        local_part: testing
-        local_part_parsed: testing
-        domain_part: '[255.255.255.255]'
-        domain: ''
-        ip: 255.255.255.255
-        invalid: true
-        invalid_reason: 'IP address invalid: ''255.255.255.255'' does not appear to be a valid IP address in the global range'
--
-    emails: 'Example | Example <example@example.com>'
-    multiple: false
-    result:
-        address: 'Example | Example <example@example.com>'
-        simple_address: example@example.com
-        original_address: 'Example | Example <example@example.com>'
-        name: 'Example | Example'
-        name_parsed: 'Example | Example'
-        local_part: example
-        local_part_parsed: example
+        local_part: admin
+        local_part_parsed: admin
         domain_part: example.com
         domain: example.com
         ip: ''
         invalid: false
         invalid_reason: null
+        comments: []
 -
-    emails: 'John / Jane Doe <test@example.com>'
-    multiple: false
-    result:
-        address: 'John / Jane Doe <test@example.com>'
-        simple_address: test@example.com
-        original_address: 'John / Jane Doe <test@example.com>'
-        name: 'John / Jane Doe'
-        name_parsed: 'John / Jane Doe'
-        local_part: test
-        local_part_parsed: test
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
-# Operator Precedence Tests - Line 608 fix (incomplete address detection)
+  emails: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:2001:4860:4860::8888], admin@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:2001:4860:4860::8888]'
+    domain: ''
+    ip: 'IPv6:2001:4860:4860::8888'
+    invalid: true
+    invalid_reason: 'Separator not permitted - only one email address allowed'
+    comments: []
 -
-    emails: '"John Doe <john@example.com>'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: '"John Doe <john@example.com>'
+  emails: 'testing@[0.0.0.0]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[0.0.0.0]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[0.0.0.0]'
+    domain: ''
+    ip: 0.0.0.0
+    invalid: true
+    invalid_reason: "IP address invalid: '0.0.0.0' does not appear to be a valid IP address in the global range"
+    comments: []
+-
+  emails: 'testing@[255.255.255.255]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[255.255.255.255]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[255.255.255.255]'
+    domain: ''
+    ip: 255.255.255.255
+    invalid: true
+    invalid_reason: "IP address invalid: '255.255.255.255' does not appear to be a valid IP address in the global range"
+    comments: []
+-
+  emails: 'Example | Example <example@example.com>'
+  multiple: false
+  result:
+    address: 'Example | Example <example@example.com>'
+    simple_address: example@example.com
+    original_address: 'Example | Example <example@example.com>'
+    name: 'Example | Example'
+    name_parsed: 'Example | Example'
+    local_part: example
+    local_part_parsed: example
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'John / Jane Doe <test@example.com>'
+  multiple: false
+  result:
+    address: 'John / Jane Doe <test@example.com>'
+    simple_address: test@example.com
+    original_address: 'John / Jane Doe <test@example.com>'
+    name: 'John / Jane Doe'
+    name_parsed: 'John / Jane Doe'
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"John Doe <john@example.com>'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '"John Doe <john@example.com>'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "No ending quote: '\"'"
+    comments: []
+-
+  emails: '"John Doe" <john@example.com>'
+  multiple: false
+  result:
+    address: '"John Doe" <john@example.com>'
+    simple_address: john@example.com
+    original_address: '"John Doe" <john@example.com>'
+    name: '"John Doe"'
+    name_parsed: 'John Doe'
+    local_part: john
+    local_part_parsed: john
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"Test.User" <test.user@example.com>'
+  multiple: false
+  result:
+    address: '"Test.User" <test.user@example.com>'
+    simple_address: test.user@example.com
+    original_address: '"Test.User" <test.user@example.com>'
+    name: '"Test.User"'
+    name_parsed: Test.User
+    local_part: test.user
+    local_part_parsed: test.user
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"Valid Name" <test@example.com>'
+  multiple: false
+  result:
+    address: '"Valid Name" <test@example.com>'
+    simple_address: test@example.com
+    original_address: '"Valid Name" <test@example.com>'
+    name: '"Valid Name"'
+    name_parsed: 'Valid Name'
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: test@192.168.1.1
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@192.168.1.1
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[192.168.1.1]'
+    domain: null
+    ip: 192.168.1.1
+    invalid: true
+    invalid_reason: "IP address invalid: '192.168.1.1' does not appear to be a valid IP address in the global range"
+    comments: []
+-
+  emails: 'test@[IPv6:2001:db8::1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'test@[IPv6:2001:db8::1]'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[IPv6:2001:db8::1]'
+    domain: ''
+    ip: 'IPv6:2001:db8::1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:2001:db8::1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
+-
+  emails: test@256.256.256.256
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@256.256.256.256
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[256.256.256.256]'
+    domain: null
+    ip: 256.256.256.256
+    invalid: true
+    invalid_reason: "IP address invalid: '256.256.256.256' does not appear to be a valid IP address"
+    comments: []
+-
+  emails: test@10.0.0.1
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@10.0.0.1
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[10.0.0.1]'
+    domain: null
+    ip: 10.0.0.1
+    invalid: true
+    invalid_reason: "IP address invalid: '10.0.0.1' does not appear to be a valid IP address in the global range"
+    comments: []
+-
+  emails: 'user1@[80.67.66.65], user2@example.com'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: 'user1@[80.67.66.65]'
+        simple_address: 'user1@[80.67.66.65]'
+        original_address: 'user1@[80.67.66.65]'
         name: ''
         name_parsed: ''
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
+        local_part: user1
+        local_part_parsed: user1
+        domain_part: '[80.67.66.65]'
         domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: 'No ending quote: ''"'''
--
-    emails: '"John Doe" <john@example.com>'
-    multiple: false
-    result:
-        address: '"John Doe" <john@example.com>'
-        simple_address: john@example.com
-        original_address: '"John Doe" <john@example.com>'
-        name: '"John Doe"'
-        name_parsed: 'John Doe'
-        local_part: john
-        local_part_parsed: john
+        ip: 80.67.66.65
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: user2@example.com
+        simple_address: user2@example.com
+        original_address: user2@example.com
+        name: ''
+        name_parsed: ''
+        local_part: user2
+        local_part_parsed: user2
         domain_part: example.com
         domain: example.com
         ip: ''
         invalid: false
         invalid_reason: null
+        comments: []
 -
-    emails: '"Test.User" <test.user@example.com>'
-    multiple: false
-    result:
-        address: '"Test.User" <test.user@example.com>'
-        simple_address: test.user@example.com
-        original_address: '"Test.User" <test.user@example.com>'
-        name: '"Test.User"'
-        name_parsed: 'Test.User'
-        local_part: test.user
-        local_part_parsed: test.user
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
+  emails: '"user.name"@example.com'
+  multiple: false
+  result:
+    address: '"user.name"@example.com'
+    simple_address: '"user.name"@example.com'
+    original_address: '"user.name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user.name"'
+    local_part_parsed: user.name
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: '"Valid Name" <test@example.com>'
-    multiple: false
-    result:
-        address: '"Valid Name" <test@example.com>'
-        simple_address: test@example.com
-        original_address: '"Valid Name" <test@example.com>'
-        name: '"Valid Name"'
-        name_parsed: 'Valid Name'
-        local_part: test
-        local_part_parsed: test
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
-# Operator Precedence Tests - Line 717 fix (IP address detection)
+  emails: ''
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: ''
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: 'No email address found'
+    comments: []
 -
-    emails: 'test@192.168.1.1'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: test@192.168.1.1
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: '[192.168.1.1]'
-        domain: null
-        ip: '192.168.1.1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''192.168.1.1'' does not appear to be a valid IP address in the global range'
+  emails: '   '
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: ''
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: 'No email address found'
+    comments: []
 -
-    emails: 'test@[IPv6:2001:db8::1]'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'test@[IPv6:2001:db8::1]'
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: '[IPv6:2001:db8::1]'
-        domain: ''
-        ip: 'IPv6:2001:db8::1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:2001:db8::1'' does not appear to be a valid IPv6 address in the global range'
+  emails: test@example.com
+  multiple: false
+  result:
+    address: test@example.com
+    simple_address: test@example.com
+    original_address: test@example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
 -
-    emails: 'test@256.256.256.256'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: test@256.256.256.256
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: '[256.256.256.256]'
-        domain: null
-        ip: '256.256.256.256'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''256.256.256.256'' does not appear to be a valid IP address'
--
-    emails: 'test@10.0.0.1'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: test@10.0.0.1
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: '[10.0.0.1]'
-        domain: null
-        ip: '10.0.0.1'
-        invalid: true
-        invalid_reason: 'IP address invalid: ''10.0.0.1'' does not appear to be a valid IP address in the global range'
--
-    emails: 'user1@[80.67.66.65], user2@example.com'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: 'user1@[80.67.66.65]'
-                simple_address: 'user1@[80.67.66.65]'
-                original_address: 'user1@[80.67.66.65]'
-                name: ''
-                name_parsed: ''
-                local_part: user1
-                local_part_parsed: user1
-                domain_part: '[80.67.66.65]'
-                domain: ''
-                ip: '80.67.66.65'
-                invalid: false
-                invalid_reason: null
-            -
-                address: user2@example.com
-                simple_address: user2@example.com
-                original_address: user2@example.com
-                name: ''
-                name_parsed: ''
-                local_part: user2
-                local_part_parsed: user2
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: '"user.name"@example.com'
-    multiple: false
-    result:
-        address: '"user.name"@example.com'
-        simple_address: '"user.name"@example.com'
-        original_address: '"user.name"@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: '"user.name"'
-        local_part_parsed: 'user.name'
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
-# Edge cases for operator precedence
--
-    emails: ''
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: ''
-        name: ''
-        name_parsed: ''
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
-        domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: 'No email address found'
--
-    emails: '   '
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: ''
-        name: ''
-        name_parsed: ''
-        local_part: ''
-        local_part_parsed: ''
-        domain_part: ''
-        domain: ''
-        ip: ''
-        invalid: true
-        invalid_reason: 'No email address found'
--
-    emails: 'test@example.com'
-    multiple: false
-    result:
-        address: test@example.com
-        simple_address: test@example.com
-        original_address: test@example.com
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'testing@[IPv6:::ffff:192.0.0.1]'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'testing@[IPv6:::ffff:192.0.0.1]'
-                name: ''
-                name_parsed: ''
-                local_part: testing
-                local_part_parsed: testing
-                domain_part: '[IPv6:::ffff:192.0.0.1]'
-                domain: ''
-                ip: 'IPv6:::ffff:192.0.0.1'
-                invalid: true
-                invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.0.1'' does not appear to be a valid IPv6 address in the global range'
--
-    emails: 'testing@[IPv6:::ffff:192.0.0.1]'
-    multiple: false
-    result:
+  emails: 'testing@[IPv6:::ffff:192.0.0.1]'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 'testing@[IPv6:::ffff:192.0.0.1]'
@@ -1376,31 +1442,33 @@
         domain: ''
         ip: 'IPv6:::ffff:192.0.0.1'
         invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.0.1'' does not appear to be a valid IPv6 address in the global range'
+        invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.0.1' does not appear to be a valid IPv6 address in the global range"
+        comments: []
 -
-    emails: 'testing@[IPv6:::ffff:192.0.2.100]'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'testing@[IPv6:::ffff:192.0.2.100]'
-                name: ''
-                name_parsed: ''
-                local_part: testing
-                local_part_parsed: testing
-                domain_part: '[IPv6:::ffff:192.0.2.100]'
-                domain: ''
-                ip: 'IPv6:::ffff:192.0.2.100'
-                invalid: true
-                invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.2.100'' does not appear to be a valid IPv6 address in the global range'
+  emails: 'testing@[IPv6:::ffff:192.0.0.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:::ffff:192.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:::ffff:192.0.0.1]'
+    domain: ''
+    ip: 'IPv6:::ffff:192.0.0.1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.0.1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
 -
-    emails: 'testing@[IPv6:::ffff:192.0.2.100]'
-    multiple: false
-    result:
+  emails: 'testing@[IPv6:::ffff:192.0.2.100]'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 'testing@[IPv6:::ffff:192.0.2.100]'
@@ -1412,31 +1480,33 @@
         domain: ''
         ip: 'IPv6:::ffff:192.0.2.100'
         invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:::ffff:192.0.2.100'' does not appear to be a valid IPv6 address in the global range'
+        invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.100' does not appear to be a valid IPv6 address in the global range"
+        comments: []
 -
-    emails: 'testing@[IPv6:::ffff:198.51.100.1]'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'testing@[IPv6:::ffff:198.51.100.1]'
-                name: ''
-                name_parsed: ''
-                local_part: testing
-                local_part_parsed: testing
-                domain_part: '[IPv6:::ffff:198.51.100.1]'
-                domain: ''
-                ip: 'IPv6:::ffff:198.51.100.1'
-                invalid: true
-                invalid_reason: 'IP address invalid: ''IPv6:::ffff:198.51.100.1'' does not appear to be a valid IPv6 address in the global range'
+  emails: 'testing@[IPv6:::ffff:192.0.2.100]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:::ffff:192.0.2.100]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:::ffff:192.0.2.100]'
+    domain: ''
+    ip: 'IPv6:::ffff:192.0.2.100'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.100' does not appear to be a valid IPv6 address in the global range"
+    comments: []
 -
-    emails: 'testing@[IPv6:::ffff:198.51.100.1]'
-    multiple: false
-    result:
+  emails: 'testing@[IPv6:::ffff:198.51.100.1]'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 'testing@[IPv6:::ffff:198.51.100.1]'
@@ -1448,31 +1518,33 @@
         domain: ''
         ip: 'IPv6:::ffff:198.51.100.1'
         invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:::ffff:198.51.100.1'' does not appear to be a valid IPv6 address in the global range'
+        invalid_reason: "IP address invalid: 'IPv6:::ffff:198.51.100.1' does not appear to be a valid IPv6 address in the global range"
+        comments: []
 -
-    emails: 'testing@[IPv6:::ffff:203.0.113.1]'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'testing@[IPv6:::ffff:203.0.113.1]'
-                name: ''
-                name_parsed: ''
-                local_part: testing
-                local_part_parsed: testing
-                domain_part: '[IPv6:::ffff:203.0.113.1]'
-                domain: ''
-                ip: 'IPv6:::ffff:203.0.113.1'
-                invalid: true
-                invalid_reason: 'IP address invalid: ''IPv6:::ffff:203.0.113.1'' does not appear to be a valid IPv6 address in the global range'
+  emails: 'testing@[IPv6:::ffff:198.51.100.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:::ffff:198.51.100.1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:::ffff:198.51.100.1]'
+    domain: ''
+    ip: 'IPv6:::ffff:198.51.100.1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:::ffff:198.51.100.1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
 -
-    emails: 'testing@[IPv6:::ffff:203.0.113.1]'
-    multiple: false
-    result:
+  emails: 'testing@[IPv6:::ffff:203.0.113.1]'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
         address: ''
         simple_address: ''
         original_address: 'testing@[IPv6:::ffff:203.0.113.1]'
@@ -1484,632 +1556,817 @@
         domain: ''
         ip: 'IPv6:::ffff:203.0.113.1'
         invalid: true
-        invalid_reason: 'IP address invalid: ''IPv6:::ffff:203.0.113.1'' does not appear to be a valid IPv6 address in the global range'
+        invalid_reason: "IP address invalid: 'IPv6:::ffff:203.0.113.1' does not appear to be a valid IPv6 address in the global range"
+        comments: []
 -
-    emails: 'test@server123.example.com'
-    multiple: false
-    result:
-        address: test@server123.example.com
-        simple_address: test@server123.example.com
-        original_address: test@server123.example.com
+  emails: 'testing@[IPv6:::ffff:203.0.113.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'testing@[IPv6:::ffff:203.0.113.1]'
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: '[IPv6:::ffff:203.0.113.1]'
+    domain: ''
+    ip: 'IPv6:::ffff:203.0.113.1'
+    invalid: true
+    invalid_reason: "IP address invalid: 'IPv6:::ffff:203.0.113.1' does not appear to be a valid IPv6 address in the global range"
+    comments: []
+-
+  emails: test@server123.example.com
+  multiple: false
+  result:
+    address: test@server123.example.com
+    simple_address: test@server123.example.com
+    original_address: test@server123.example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: server123.example.com
+    domain: server123.example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'test1@example.com test2@example.com'
+  multiple: true
+  use_whitespace_as_separator: false
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
+        address: ''
+        simple_address: ''
+        original_address: 'test1@example.com test2@example.com'
         name: ''
         name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: server123.example.com
-        domain: server123.example.com
+        local_part: test1
+        local_part_parsed: test1
+        domain_part: example.comtest2
+        domain: example.comtest2
         ip: ''
-        invalid: false
-        invalid_reason: null
+        invalid: true
+        invalid_reason: "Multiple at '@' symbols in email address"
+        comments: []
 -
-    emails: 'test1@example.com test2@example.com'
-    multiple: true
-    use_whitespace_as_separator: false
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'test1@example.com test2@example.com'
-                name: ''
-                name_parsed: ''
-                local_part: test1
-                local_part_parsed: test1
-                domain_part: example.comtest2
-                domain: example.comtest2
-                ip: ''
-                invalid: true
-                invalid_reason: 'Multiple at ''@'' symbols in email address'
--
-    emails: 'test1@example.com; test2@example.com'
-    multiple: true
-    use_whitespace_as_separator: false
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: test1@example.com
-                simple_address: test1@example.com
-                original_address: test1@example.com
-                name: ''
-                name_parsed: ''
-                local_part: test1
-                local_part_parsed: test1
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: test2@example.com
-                simple_address: test2@example.com
-                original_address: test2@example.com
-                name: ''
-                name_parsed: ''
-                local_part: test2
-                local_part_parsed: test2
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'John Doe <john@example.com>, Jane Smith <jane@example.com>'
-    multiple: true
-    use_whitespace_as_separator: false
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: 'John Doe <john@example.com>'
-                simple_address: john@example.com
-                original_address: 'John Doe <john@example.com>'
-                name: 'John Doe'
-                name_parsed: 'John Doe'
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: 'Jane Smith <jane@example.com>'
-                simple_address: jane@example.com
-                original_address: 'Jane Smith <jane@example.com>'
-                name: 'Jane Smith'
-                name_parsed: 'Jane Smith'
-                local_part: jane
-                local_part_parsed: jane
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'test1@example.com; test2@example.com; test3@example.org'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: test1@example.com
-                simple_address: test1@example.com
-                original_address: test1@example.com
-                name: ''
-                name_parsed: ''
-                local_part: test1
-                local_part_parsed: test1
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: test2@example.com
-                simple_address: test2@example.com
-                original_address: test2@example.com
-                name: ''
-                name_parsed: ''
-                local_part: test2
-                local_part_parsed: test2
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: test3@example.org
-                simple_address: test3@example.org
-                original_address: test3@example.org
-                name: ''
-                name_parsed: ''
-                local_part: test3
-                local_part_parsed: test3
-                domain_part: example.org
-                domain: example.org
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'John Doe <john@example.com>; Jane Smith <jane@example.com>'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: 'John Doe <john@example.com>'
-                simple_address: john@example.com
-                original_address: 'John Doe <john@example.com>'
-                name: 'John Doe'
-                name_parsed: 'John Doe'
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: 'Jane Smith <jane@example.com>'
-                simple_address: jane@example.com
-                original_address: 'Jane Smith <jane@example.com>'
-                name: 'Jane Smith'
-                name_parsed: 'Jane Smith'
-                local_part: jane
-                local_part_parsed: jane
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'test1@example.com, test2@example.com; test3@example.org'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: test1@example.com
-                simple_address: test1@example.com
-                original_address: test1@example.com
-                name: ''
-                name_parsed: ''
-                local_part: test1
-                local_part_parsed: test1
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: test2@example.com
-                simple_address: test2@example.com
-                original_address: test2@example.com
-                name: ''
-                name_parsed: ''
-                local_part: test2
-                local_part_parsed: test2
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: test3@example.org
-                simple_address: test3@example.org
-                original_address: test3@example.org
-                name: ''
-                name_parsed: ''
-                local_part: test3
-                local_part_parsed: test3
-                domain_part: example.org
-                domain: example.org
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'john@example.com;jane@example.com'
-    multiple: true
-    separators: [',']
-    use_whitespace_as_separator: false
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'john@example.com;jane@example.com'
-                name: ''
-                name_parsed: ''
-                local_part: john
-                local_part_parsed: john
-                domain_part: 'example.com'
-                domain: 'example.com'
-                ip: ''
-                invalid: true
-                invalid_reason: 'Invalid character found in domain of email address (please put in quotes if needed): '';'''
--
-    emails: 'john@example.com, jane@example.com'
-    multiple: true
-    separators: [';']
-    use_whitespace_as_separator: false
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: 'john@example.com, jane@example.com'
-                name: ''
-                name_parsed: ''
-                local_part: john
-                local_part_parsed: john
-                domain_part: 'example.com'
-                domain: 'example.com'
-                ip: ''
-                invalid: true
-                invalid_reason: 'Invalid character found in domain of email address (please put in quotes if needed): '','''
--
-    emails: 'john@example.com, jane@example.com'
-    multiple: true
-    separators: [',']
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: john@example.com
-                simple_address: john@example.com
-                original_address: john@example.com
-                name: ''
-                name_parsed: ''
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: jane@example.com
-                simple_address: jane@example.com
-                original_address: jane@example.com
-                name: ''
-                name_parsed: ''
-                local_part: jane
-                local_part_parsed: jane
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'john@example.com; jane@example.com'
-    multiple: true
-    separators: [';']
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: john@example.com
-                simple_address: john@example.com
-                original_address: john@example.com
-                name: ''
-                name_parsed: ''
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: jane@example.com
-                simple_address: jane@example.com
-                original_address: jane@example.com
-                name: ''
-                name_parsed: ''
-                local_part: jane
-                local_part_parsed: jane
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: '"Smith, John" <john@example.com>'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: '"Smith, John" <john@example.com>'
-                simple_address: john@example.com
-                original_address: '"Smith, John" <john@example.com>'
-                name: '"Smith, John"'
-                name_parsed: 'Smith, John'
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: '"Smith, John" <john@example.com>, "Doe, Jane" <jane@example.com>'
-    multiple: true
-    result:
-        success: true
-        reason: null
-        email_addresses:
-            -
-                address: '"Smith, John" <john@example.com>'
-                simple_address: john@example.com
-                original_address: '"Smith, John" <john@example.com>'
-                name: '"Smith, John"'
-                name_parsed: 'Smith, John'
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
-            -
-                address: '"Doe, Jane" <jane@example.com>'
-                simple_address: jane@example.com
-                original_address: '"Doe, Jane" <jane@example.com>'
-                name: '"Doe, Jane"'
-                name_parsed: 'Doe, Jane'
-                local_part: jane
-                local_part_parsed: jane
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'Smith, John <john@example.com>'
-    multiple: true
-    result:
-        success: false
-        reason: 'Invalid email address'
-        email_addresses:
-            -
-                address: ''
-                simple_address: ''
-                original_address: Smith
-                name: ''
-                name_parsed: ''
-                local_part: ''
-                local_part_parsed: ''
-                domain_part: ''
-                domain: ''
-                ip: ''
-                invalid: true
-                invalid_reason: 'Misplaced separator or missing "@" symbol'
-            -
-                address: 'John <john@example.com>'
-                simple_address: john@example.com
-                original_address: 'John <john@example.com>'
-                name: John
-                name_parsed: John
-                local_part: john
-                local_part_parsed: john
-                domain_part: example.com
-                domain: example.com
-                ip: ''
-                invalid: false
-                invalid_reason: null
--
-    emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-    multiple: false
-    result:
-        address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        simple_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+  emails: 'test1@example.com; test2@example.com'
+  multiple: true
+  use_whitespace_as_separator: false
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: test1@example.com
+        simple_address: test1@example.com
+        original_address: test1@example.com
         name: ''
         name_parsed: ''
-        local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        local_part: test1
+        local_part_parsed: test1
         domain_part: example.com
         domain: example.com
         ip: ''
         invalid: false
         invalid_reason: null
--
-    emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+        comments: []
+      -
+        address: test2@example.com
+        simple_address: test2@example.com
+        original_address: test2@example.com
         name: ''
         name_parsed: ''
-        local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Email address before the ''@'' can not be greater than 64 octets per RFC 5321'
--
-    emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com'
-        name: ''
-        name_parsed: ''
-        local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        domain_part: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com'
-        domain: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com'
-        ip: ''
-        invalid: true
-        invalid_reason: 'Domain invalid: Domain name part ''aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'' must be less than 63 octets'
--
-    emails: 'test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com'
-    multiple: false
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com'
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
-        domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Domain invalid: Domain name part ''aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'' must be less than 63 octets'
--
-    emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-    multiple: false
-    max_local_part_length: 70
-    result:
-        address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        simple_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        local_part: test2
+        local_part_parsed: test2
         domain_part: example.com
         domain: example.com
         ip: ''
         invalid: false
         invalid_reason: null
+        comments: []
 -
-    emails: 'test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com'
-    multiple: false
-    max_domain_label_length: 70
-    result:
-        address: 'test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com'
-        simple_address: 'test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com'
-        original_address: 'test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com'
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
-        domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
-        ip: ''
-        invalid: false
-        invalid_reason: null
--
-    emails: 'aaaaaaaaaaaa@example.com'
-    multiple: false
-    max_local_part_length: 10
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'aaaaaaaaaaaa@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: aaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaa
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Email address before the ''@'' can not be greater than 10 octets per RFC 5321'
--
-    emails: 'test@aaaaaaaaa.example.com'
-    multiple: false
-    max_domain_label_length: 8
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'test@aaaaaaaaa.example.com'
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: aaaaaaaaa.example.com
-        domain: aaaaaaaaa.example.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Domain invalid: Domain name part ''aaaaaaaaa'' must be less than 8 octets'
--
-    emails: 'test@example.com'
-    multiple: false
-    max_total_length: 10
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'test@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
--
-    emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-    multiple: false
-    use_relaxed_limits: true
-    result:
-        address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        simple_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  emails: 'John Doe <john@example.com>, Jane Smith <jane@example.com>'
+  multiple: true
+  use_whitespace_as_separator: false
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: 'John Doe <john@example.com>'
+        simple_address: john@example.com
+        original_address: 'John Doe <john@example.com>'
+        name: 'John Doe'
+        name_parsed: 'John Doe'
+        local_part: john
+        local_part_parsed: john
         domain_part: example.com
         domain: example.com
         ip: ''
         invalid: false
         invalid_reason: null
--
-    emails: 'test@example.com'
-    multiple: false
-    max_total_length: 10
-    result:
-        address: ''
-        simple_address: ''
-        original_address: 'test@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: test
-        local_part_parsed: test
-        domain_part: example.com
-        domain: example.com
-        ip: ''
-        invalid: true
-        invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
--
-    emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-    multiple: false
-    use_relaxed_limits: true
-    result:
-        address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        simple_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
-        name: ''
-        name_parsed: ''
-        local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-        local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+        comments: []
+      -
+        address: 'Jane Smith <jane@example.com>'
+        simple_address: jane@example.com
+        original_address: 'Jane Smith <jane@example.com>'
+        name: 'Jane Smith'
+        name_parsed: 'Jane Smith'
+        local_part: jane
+        local_part_parsed: jane
         domain_part: example.com
         domain: example.com
         ip: ''
         invalid: false
         invalid_reason: null
+        comments: []
+-
+  emails: 'test1@example.com; test2@example.com; test3@example.org'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: test1@example.com
+        simple_address: test1@example.com
+        original_address: test1@example.com
+        name: ''
+        name_parsed: ''
+        local_part: test1
+        local_part_parsed: test1
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: test2@example.com
+        simple_address: test2@example.com
+        original_address: test2@example.com
+        name: ''
+        name_parsed: ''
+        local_part: test2
+        local_part_parsed: test2
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: test3@example.org
+        simple_address: test3@example.org
+        original_address: test3@example.org
+        name: ''
+        name_parsed: ''
+        local_part: test3
+        local_part_parsed: test3
+        domain_part: example.org
+        domain: example.org
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: 'John Doe <john@example.com>; Jane Smith <jane@example.com>'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: 'John Doe <john@example.com>'
+        simple_address: john@example.com
+        original_address: 'John Doe <john@example.com>'
+        name: 'John Doe'
+        name_parsed: 'John Doe'
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: 'Jane Smith <jane@example.com>'
+        simple_address: jane@example.com
+        original_address: 'Jane Smith <jane@example.com>'
+        name: 'Jane Smith'
+        name_parsed: 'Jane Smith'
+        local_part: jane
+        local_part_parsed: jane
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: 'test1@example.com, test2@example.com; test3@example.org'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: test1@example.com
+        simple_address: test1@example.com
+        original_address: test1@example.com
+        name: ''
+        name_parsed: ''
+        local_part: test1
+        local_part_parsed: test1
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: test2@example.com
+        simple_address: test2@example.com
+        original_address: test2@example.com
+        name: ''
+        name_parsed: ''
+        local_part: test2
+        local_part_parsed: test2
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: test3@example.org
+        simple_address: test3@example.org
+        original_address: test3@example.org
+        name: ''
+        name_parsed: ''
+        local_part: test3
+        local_part_parsed: test3
+        domain_part: example.org
+        domain: example.org
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: john@example.com;jane@example.com
+  multiple: true
+  separators:
+    - ','
+  use_whitespace_as_separator: false
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
+        address: ''
+        simple_address: ''
+        original_address: john@example.com;jane@example.com
+        name: ''
+        name_parsed: ''
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: true
+        invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): ';'"
+        comments: []
+-
+  emails: 'john@example.com, jane@example.com'
+  multiple: true
+  separators:
+    - ;
+  use_whitespace_as_separator: false
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
+        address: ''
+        simple_address: ''
+        original_address: 'john@example.com, jane@example.com'
+        name: ''
+        name_parsed: ''
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: true
+        invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): ','"
+        comments: []
+-
+  emails: 'john@example.com, jane@example.com'
+  multiple: true
+  separators:
+    - ','
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: john@example.com
+        simple_address: john@example.com
+        original_address: john@example.com
+        name: ''
+        name_parsed: ''
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: jane@example.com
+        simple_address: jane@example.com
+        original_address: jane@example.com
+        name: ''
+        name_parsed: ''
+        local_part: jane
+        local_part_parsed: jane
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: 'john@example.com; jane@example.com'
+  multiple: true
+  separators:
+    - ;
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: john@example.com
+        simple_address: john@example.com
+        original_address: john@example.com
+        name: ''
+        name_parsed: ''
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: jane@example.com
+        simple_address: jane@example.com
+        original_address: jane@example.com
+        name: ''
+        name_parsed: ''
+        local_part: jane
+        local_part_parsed: jane
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: '"Smith, John" <john@example.com>'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: '"Smith, John" <john@example.com>'
+        simple_address: john@example.com
+        original_address: '"Smith, John" <john@example.com>'
+        name: '"Smith, John"'
+        name_parsed: 'Smith, John'
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: '"Smith, John" <john@example.com>, "Doe, Jane" <jane@example.com>'
+  multiple: true
+  result:
+    success: true
+    reason: null
+    email_addresses:
+      -
+        address: '"Smith, John" <john@example.com>'
+        simple_address: john@example.com
+        original_address: '"Smith, John" <john@example.com>'
+        name: '"Smith, John"'
+        name_parsed: 'Smith, John'
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+      -
+        address: '"Doe, Jane" <jane@example.com>'
+        simple_address: jane@example.com
+        original_address: '"Doe, Jane" <jane@example.com>'
+        name: '"Doe, Jane"'
+        name_parsed: 'Doe, Jane'
+        local_part: jane
+        local_part_parsed: jane
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: 'Smith, John <john@example.com>'
+  multiple: true
+  result:
+    success: false
+    reason: 'Invalid email address'
+    email_addresses:
+      -
+        address: ''
+        simple_address: ''
+        original_address: Smith
+        name: ''
+        name_parsed: ''
+        local_part: ''
+        local_part_parsed: ''
+        domain_part: ''
+        domain: ''
+        ip: ''
+        invalid: true
+        invalid_reason: 'Misplaced separator or missing "@" symbol'
+        comments: []
+      -
+        address: 'John <john@example.com>'
+        simple_address: john@example.com
+        original_address: 'John <john@example.com>'
+        name: John
+        name_parsed: John
+        local_part: john
+        local_part_parsed: john
+        domain_part: example.com
+        domain: example.com
+        ip: ''
+        invalid: false
+        invalid_reason: null
+        comments: []
+-
+  emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+  multiple: false
+  result:
+    address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    simple_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    original_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address before the '@' can not be greater than 64 octets per RFC 5321"
+    comments: []
+-
+  emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+    domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' must be less than 63 octets"
+    comments: []
+-
+  emails: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' must be less than 63 octets"
+    comments: []
+-
+  emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+  multiple: false
+  max_local_part_length: 70
+  result:
+    address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    simple_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    original_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+  multiple: false
+  max_domain_label_length: 70
+  result:
+    address: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    simple_address: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    original_address: test@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: aaaaaaaaaaaa@example.com
+  multiple: false
+  max_local_part_length: 10
+  result:
+    address: ''
+    simple_address: ''
+    original_address: aaaaaaaaaaaa@example.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaa
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address before the '@' can not be greater than 10 octets per RFC 5321"
+    comments: []
+-
+  emails: test@aaaaaaaaa.example.com
+  multiple: false
+  max_domain_label_length: 8
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@aaaaaaaaa.example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: aaaaaaaaa.example.com
+    domain: aaaaaaaaa.example.com
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaa' must be less than 8 octets"
+    comments: []
+-
+  emails: test@example.com
+  multiple: false
+  max_total_length: 10
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: true
+    invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
+    comments: []
+-
+  emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+  multiple: false
+  use_relaxed_limits: true
+  result:
+    address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    simple_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    original_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: test@example.com
+  multiple: false
+  max_total_length: 10
+  result:
+    address: ''
+    simple_address: ''
+    original_address: test@example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: true
+    invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
+    comments: []
+-
+  emails: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+  multiple: false
+  use_relaxed_limits: true
+  result:
+    address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    simple_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    original_address: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com
+    name: ''
+    name_parsed: ''
+    local_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: john.smith(comment)@example.com
+  multiple: false
+  result:
+    address: john.smith@example.com
+    simple_address: john.smith@example.com
+    original_address: john.smith(comment)@example.com
+    name: ''
+    name_parsed: ''
+    local_part: john.smith
+    local_part_parsed: john.smith
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - comment
+-
+  emails: (comment)john.smith@example.com
+  multiple: false
+  result:
+    address: john.smith@example.com
+    simple_address: john.smith@example.com
+    original_address: (comment)john.smith@example.com
+    name: ''
+    name_parsed: ''
+    local_part: john.smith
+    local_part_parsed: john.smith
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - comment
+-
+  emails: 'John Doe (work) <john@example.com>'
+  multiple: false
+  result:
+    address: 'John Doe <john@example.com>'
+    simple_address: john@example.com
+    original_address: 'John Doe (work) <john@example.com>'
+    name: 'John Doe'
+    name_parsed: 'John Doe'
+    local_part: john
+    local_part_parsed: john
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - work
+-
+  emails: 'john@example.com (home address)'
+  multiple: false
+  result:
+    address: john@example.com
+    simple_address: john@example.com
+    original_address: 'john@example.com (home address)'
+    name: ''
+    name_parsed: ''
+    local_part: john
+    local_part_parsed: john
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - 'home address'
+-
+  emails: test(comment1)(comment2)@example.com
+  multiple: false
+  result:
+    address: test@example.com
+    simple_address: test@example.com
+    original_address: test(comment1)(comment2)@example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - comment1
+      - comment2
+-
+  emails: 'test@example.com (comment with (nested) parens)'
+  multiple: false
+  result:
+    address: test@example.com
+    simple_address: test@example.com
+    original_address: 'test@example.com (comment with (nested) parens)'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments:
+      - 'comment with (nested) parens'
+-
+  emails: test@example.com
+  multiple: false
+  result:
+    address: test@example.com
+    simple_address: test@example.com
+    original_address: test@example.com
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
