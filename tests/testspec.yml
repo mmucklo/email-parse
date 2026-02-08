@@ -2372,3 +2372,59 @@
     invalid: false
     invalid_reason: null
     comments: []
+-
+  emails: john,doe@example.com
+  multiple: false
+  rfc_mode: strict
+  separators: [';']
+  result:
+    address: ''
+    simple_address: ''
+    original_address: john,doe@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ','"
+    comments: []
+-
+  emails: 'é@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: é@example.com
+    simple_address: é@example.com
+    original_address: é@example.com
+    name: ''
+    name_parsed: ''
+    local_part: é
+    local_part_parsed: é
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'é@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: é@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: 'é'"
+    comments: []

@@ -533,8 +533,12 @@ class Parse
                                 $emailAddress['address_temp_quoted'] = true;
                                 $emailAddress['quote_temp'] = '';
                             }
-                            $emailAddress['special_char_in_substate'] = $curChar;
-                            $emailAddress['address_temp'] .= $curChar;
+                            if ($this->options->getAllowSmtpUtf8() && $this->isUtf8Char($curChar)) {
+                                $emailAddress['address_temp'] .= $curChar;
+                            } else {
+                                $emailAddress['special_char_in_substate'] = $curChar;
+                                $emailAddress['address_temp'] .= $curChar;
+                            }
                         } elseif (self::STATE_NAME === $subState) {
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
