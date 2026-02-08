@@ -590,10 +590,25 @@ class Parse
                     if (')' == $curChar) {
                         --$commentNestLevel;
                         if ($commentNestLevel <= 0) {
+                            // End of comment - save it
+                            if ($emailAddress['comment_temp']) {
+                                $emailAddress['comments'][] = $emailAddress['comment_temp'];
+                                $emailAddress['comment_temp'] = '';
+                            }
                             $state = self::STATE_ADDRESS;
+                        } else {
+                            // Nested comment closing parenthesis
+                            $emailAddress['comment_temp'] .= $curChar;
                         }
                     } elseif ('(' == $curChar) {
                         ++$commentNestLevel;
+                        if ($commentNestLevel > 1) {
+                            // Nested comment opening parenthesis
+                            $emailAddress['comment_temp'] .= $curChar;
+                        }
+                    } else {
+                        // Regular comment character
+                        $emailAddress['comment_temp'] .= $curChar;
                     }
 
                     break;
@@ -740,6 +755,8 @@ class Parse
                         'address_temp' => '',
                         'address_temp_period' => 0,
                         'special_char_in_substate' => null,
+                        'comment_temp' => '',
+                        'comments' => [],
                         ];
 
         return $emailAddress;
@@ -846,7 +863,8 @@ class Parse
                         'domain' => $emailAddress['domain'],
                         'ip' => $emailAddress['ip'],
                         'invalid' => $emailAddress['invalid'],
-                        'invalid_reason' => $emailAddress['invalid_reason'], ];
+                        'invalid_reason' => $emailAddress['invalid_reason'],
+                        'comments' => $emailAddress['comments'], ];
 
         // Build the proper address by hand (has comments stripped out and should have quotes in the proper places)
         if (!$emailAddrDef['invalid']) {
