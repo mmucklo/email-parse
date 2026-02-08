@@ -70,13 +70,45 @@ $result = $parser->parse("John Doe <john@example.com>, Jane Smith <jane@example.
  * @param array $bannedChars Array of characters to ban from email addresses (e.g., ['%', '!'])
  * @param array $separators Array of separator characters (default: [','])
  * @param bool $useWhitespaceAsSeparator Whether to treat whitespace/newlines as separators (default: true)
+ * @param LengthLimits|null $lengthLimits Email length limits. Uses RFC defaults if not provided
  */
 public function __construct(
     array $bannedChars = [], 
     array $separators = [','], 
-    bool $useWhitespaceAsSeparator = true
+    bool $useWhitespaceAsSeparator = true,
+    ?LengthLimits $lengthLimits = null
 )
 ```
+
+#### Configuring Length Limits
+
+You can customize RFC 5321 length limits using the `LengthLimits` class:
+
+```php
+use Email\Parse;
+use Email\ParseOptions;
+use Email\LengthLimits;
+
+// Use default RFC-compliant limits (64, 254, 63)
+$options = new ParseOptions([], [','], true, LengthLimits::createDefault());
+
+// Use relaxed limits for legacy systems (128, 512, 128)
+$options = new ParseOptions([], [','], true, LengthLimits::createRelaxed());
+
+// Custom limits
+$limits = new LengthLimits(
+    100,  // maxLocalPartLength (before @)
+    300,  // maxTotalLength (entire email)
+    100   // maxDomainLabelLength (each domain label)
+);
+$options = new ParseOptions([], [','], true, $limits);
+$parser = new Parse(null, $options);
+```
+
+**Default RFC Limits:**
+- Local part (before `@`): 64 octets (RFC 5321)
+- Total email length: 254 octets (RFC erratum 1690)
+- Domain label: 63 characters (RFC 1035)
 
 #### Supported Separators
 
@@ -86,6 +118,32 @@ public function __construct(
 - **Mixed separators** - All configured separators work together seamlessly
 
 **Note:** When `useWhitespaceAsSeparator` is `false`, whitespace is still properly cleaned up and names with spaces (like "John Doe") continue to work correctly.
+
+#### Comment Extraction
+
+RFC 5322 allows comments in email addresses using parentheses. The parser automatically extracts these comments and returns them in the `comments` array:
+
+```php
+use Email\Parse;
+
+// Single comment
+$result = Parse::getInstance()->parse('john@example.com (home address)', false);
+// $result['comments'] = ['home address']
+
+// Multiple comments
+$result = Parse::getInstance()->parse('test(comment1)(comment2)@example.com', false);
+// $result['comments'] = ['comment1', 'comment2']
+
+// Nested comments
+$result = Parse::getInstance()->parse('test@example.com (comment with (nested) parens)', false);
+// $result['comments'] = ['comment with (nested) parens']
+
+// No comments
+$result = Parse::getInstance()->parse('test@example.com', false);
+// $result['comments'] = []
+```
+
+Comments are stripped from the `address` field but preserved in `original_address`.
 
 Notes:
 ======
@@ -125,17 +183,24 @@ how-about-comments(this is a comment!!)@xyz.com
                          'ip' => string, // the IP after the '@' if given
                          'domain_part' => string, // either domain or IP depending on what given
                         'invalid' => boolean, // if the email is valid or not
-                        'invalid_reason' => string), // if the email is invalid, the reason why
+                        'invalid_reason' => string, // if the email is invalid, the reason why
+                        'comments' => array), // array of extracted comments (e.g. ['comment1', 'comment2'])
                     array( .... ) // the next email address matched
         )
     else:
-        array('address' => string, // the full address including comments
+        array('address' => string, // the full address (not including comments)
+            'original_address' => string, // the full address including comments
+            'simple_address' => string, // simply local_part@domain_part
             'name' => string, // the name on the email if given (e.g.: John Q. Public)
+            'name_parsed' => string, // the name excluding quotes
             'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
+            'local_part_parsed' => string, // the local part excluding quotes
             'domain' => string, // the domain after the '@' if given
             'ip' => string, // the IP after the '@' if given
+            'domain_part' => string, // either domain or IP depending on what given
             'invalid' => boolean, // if the email is valid or not
-            'invalid_reason' => string) // if the email is invalid, the reason why
+            'invalid_reason' => string, // if the email is invalid, the reason why
+            'comments' => array) // array of extracted comments (e.g. ['comment1', 'comment2'])
     endif;
 ```
 
@@ -147,6 +212,7 @@ Other Examples:
 
  $result == array('address' => '"JD" <johndoe@xyz.com>',
           'original_address' => '"JD" <johndoe@xyz.com>',
+          'simple_address' => 'johndoe@xyz.com',
           'name' => '"JD"',
           'name_parsed' => 'J Doe',
           'local_part' => 'johndoe',
@@ -155,18 +221,20 @@ Other Examples:
           'domain' => 'xyz.com',
           'ip' => '',
           'invalid' => false,
-          'invalid_reason' => '');
+          'invalid_reason' => '',
+          'comments' => []);
 
  $emails = "testing@[10.0.10.45] testing@xyz.com, testing-"test...2"@xyz.com (comment)";
  $result = Email\Parse->getInstance()->parse($emails);
  $result == array(
-            'success' => boolean true
-            'reason' => null
+            'success' => true,
+            'reason' => null,
             'email_addresses' =>
                 array(
                 array(
                     'address' => 'testing@[10.0.10.45]',
                     'original_address' => 'testing@[10.0.10.45]',
+                    'simple_address' => 'testing@[10.0.10.45]',
                     'name' => '',
                     'name_parsed' => '',
                     'local_part' => 'testing',
@@ -175,31 +243,36 @@ Other Examples:
                     'domain' => '',
                     'ip' => '10.0.10.45',
                     'invalid' => false,
-                    'invalid_reason' => ''),
+                    'invalid_reason' => '',
+                    'comments' => []),
                 array(
                     'address' => 'testing@xyz.com',
                     'original_address' => 'testing@xyz.com',
+                    'simple_address' => 'testing@xyz.com',
                     'name' => '',
                     'name_parsed' => '',
                     'local_part' => 'testing',
-                    'local_part' => 'testing',
+                    'local_part_parsed' => 'testing',
                     'domain_part' => 'xyz.com',
                     'domain' => 'xyz.com',
                     'ip' => '',
                     'invalid' => false,
-                    'invalid_reason' => '')
+                    'invalid_reason' => '',
+                    'comments' => []),
                 array(
                     'address' => '"testing-test...2"@xyz.com',
                     'original_address' => 'testing-"test...2"@xyz.com (comment)',
+                    'simple_address' => 'testing-test...2@xyz.com',
                     'name' => '',
                     'name_parsed' => '',
-                    'local_part' => '"testing-test2"',
+                    'local_part' => '"testing-test...2"',
                     'local_part_parsed' => 'testing-test...2',
                     'domain_part' => 'xyz.com',
                     'domain' => 'xyz.com',
                     'ip' => '',
                     'invalid' => false,
-                    'invalid_reason' => '')
+                    'invalid_reason' => '',
+                    'comments' => ['comment'])
                 )
             );
 ```
