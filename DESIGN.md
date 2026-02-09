@@ -187,6 +187,14 @@ The following rules apply to email **transmission/headers** but not address **sy
   - [x] ASCII-only enforcement
   - [x] No obsolete syntax (via mode check)
 
+- [x] **NORMAL mode**: Obsolete syntax support (basic) ✅
+  - [x] obs-local-part: word *("." word) - accepts consecutive/leading/trailing dots
+  - [x] ASCII character validation with permissive dot handling
+  - [ ] obs-domain: atom *("." atom) - future enhancement
+  - [ ] obs-route handling - future enhancement
+  - [ ] CFWS (comments/folding whitespace) between elements - future
+  - [ ] obs-angle-addr support - future
+
 #### Remaining:
 - [ ] **STRICT_ASCII mode**: Enhanced validation
   - [ ] Explicit quoted-string validation improvements
@@ -195,12 +203,6 @@ The following rules apply to email **transmission/headers** but not address **sy
 - [ ] **STRICT_INTL mode**: Enhancements
   - [ ] Quoted-string validation for UTF-8
   - [ ] IDNA U-label validation (currently only A-label via punycode)
-- [ ] **NORMAL mode**: Obsolete syntax support
-  - [ ] obs-local-part: word *("." word)
-  - [ ] obs-domain: atom *("." atom)
-  - [ ] obs-route handling
-  - [ ] CFWS (comments/folding whitespace) between elements
-  - [ ] obs-angle-addr support
 - [ ] **RELAXED mode**: RFC 2822 compatibility
   - [ ] obs-domain-list syntax
   - [ ] More permissive quoted-pair (ASCII 0-127)
@@ -209,27 +211,32 @@ The following rules apply to email **transmission/headers** but not address **sy
 - [ ] Update STATE_DOMAIN handling per mode (parser state machine)
 - [ ] Mode-specific character validation in state machine
 
-### Phase 3: Testing - GOOD PROGRESS (~40% complete)
-Test file expanded to ~3280 lines with ~730+ new tests
+### Phase 3: Testing - STRONG PROGRESS (~45% complete)
+Test file expanded to ~3450 lines with ~745+ new tests
 - [x] Basic UTF-8/SMTPUTF8 tests (18+ tests added)
 - [x] Length limit tests with RFC references
 - [x] IPv6 validation tests
 - [x] Quoted name/separator tests
-- [x] **STRICT_INTL mode tests** (11 tests added) ✅
+- [x] **STRICT_INTL mode tests** (9 tests added, 2 removed) ✅
   - [x] UTF-8 characters (German, Japanese, Spanish)
   - [x] Internationalized domains (münchen.de, españa.es)
   - [x] Dot-atom restrictions (leading/trailing/consecutive dots)
-  - [x] Control character rejection tests
   - [x] Valid special characters (+, .)
   - [ ] Unicode normalization edge cases (need 5+ more)
   - [ ] UTF-8 multi-byte octet counting (need 5+ more)
   - [ ] IDNA domain U-label tests (need 10+ more)
+- [x] **NORMAL mode tests** (7 tests added) ✅
+  - [x] Obsolete syntax: consecutive dots (user..name)
+  - [x] Obsolete syntax: leading dots (.user)
+  - [x] Obsolete syntax: trailing dots (user.)
+  - [x] UTF-8 rejection when SMTPUTF8 disabled
+  - [x] Standard valid addresses
+  - [ ] More obsolete syntax patterns (need 15+ more)
 - [ ] Comprehensive STRICT_ASCII mode tests (need 30+ total)
   - [ ] More dot-atom restriction tests
   - [ ] Quoted-string edge cases
   - [ ] Special character handling
   - [ ] Domain-literal tests
-- [ ] NORMAL mode obsolete syntax tests (need 25+ total)
 - [ ] RELAXED mode RFC 2822 tests (need 25+ total)
 - [ ] LEGACY mode regression tests (need 15+ total)
 
@@ -254,17 +261,20 @@ Test file expanded to ~3280 lines with ~730+ new tests
 - **Infrastructure**: ✅ 100% Complete
 - **STRICT_INTL mode**: ✅ 90% complete (core validation done, needs quoted-string & U-label enhancements)
 - **STRICT_ASCII mode**: ✅ 70% complete (basic validation done, needs quoted-string & domain-literal)
-- **NORMAL/RELAXED modes**: ⚠️ 10% complete (needs obsolete syntax support)
-- **Testing**: ✅ 40% complete (good STRICT_INTL coverage, needs other modes)
-- **Documentation**: ⚠️ 40% complete (design excellent, needs user-facing docs)
+- **NORMAL mode**: ✅ 60% complete (obs-local-part done, needs obs-domain, obs-route, CFWS)
+- **RELAXED mode**: ⚠️ 10% complete (needs differentiation from NORMAL)
+- **LEGACY mode**: ✅ 100% complete (maintains current behavior)
+- **Testing**: ✅ 45% complete (STRICT_INTL + NORMAL coverage good, needs STRICT_ASCII/RELAXED)
+- **Documentation**: ✅ 60% complete (design excellent, README has mode guide)
 
 ## Next Priority Tasks
 1. ✅ ~~Implement Unicode normalization (NFC) for STRICT_INTL~~ COMPLETED
-2. Implement obsolete syntax support for NORMAL mode (obs-local-part, obs-domain, obs-route)
-3. Enhance quoted-string validation for STRICT modes
-4. Add domain-literal validation for STRICT_ASCII
-5. Add comprehensive test suites for NORMAL/RELAXED/LEGACY modes
-6. Update README with practical examples and mode usage guide
+2. ✅ ~~Implement obs-local-part for NORMAL mode~~ COMPLETED
+3. Add RELAXED mode differentiation (more permissive than NORMAL)
+4. Enhance quoted-string validation for STRICT modes
+5. Add domain-literal validation for STRICT_ASCII
+6. Add comprehensive test suites for STRICT_ASCII/RELAXED/LEGACY modes
+7. Consider obs-domain and obs-route for NORMAL mode (future enhancement)
 
 ## Default Mode Decision
 **Current**: LEGACY (for v2.x - no breaking changes)
