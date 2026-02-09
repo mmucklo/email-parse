@@ -512,20 +512,25 @@ class Parse
                         }
                     } else {
                         if (self::STATE_DOMAIN == $subState) {
-                            try {
-                                // Test by trying to encode the current character into Punycode
-                                // Punycode should match the traditional domain name subset of characters
-                                if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
-                                    $emailAddress['domain'] .= $curChar;
-                                } else {
+                            if ($this->options->getRfcMode() === \Email\RfcMode::STRICT && $this->isUtf8Char($curChar)) {
+                                $emailAddress['invalid'] = true;
+                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                            } else {
+                                try {
+                                    // Test by trying to encode the current character into Punycode
+                                    // Punycode should match the traditional domain name subset of characters
+                                    if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
+                                        $emailAddress['domain'] .= $curChar;
+                                    } else {
+                                        $emailAddress['invalid'] = true;
+                                    }
+                                } catch (\Exception $e) {
+                                    $this->log('warning', "Email\\Parse->parse - exception trying to convert character '{$curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: {$emails}");
                                     $emailAddress['invalid'] = true;
                                 }
-                            } catch (\Exception $e) {
-                                $this->log('warning', "Email\\Parse->parse - exception trying to convert character '{$curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: {$emails}");
-                                $emailAddress['invalid'] = true;
-                            }
-                            if ($emailAddress['invalid']) {
-                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                                if ($emailAddress['invalid']) {
+                                    $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                                }
                             }
                         } elseif (self::STATE_START === $subState) {
                             if ($emailAddress['quote_temp']) {
@@ -808,15 +813,16 @@ class Parse
                 $emailAddress['invalid_reason'] = 'Confusion during parsing';
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip']) {
+                $strictMode = $this->options->getRfcMode() === \Email\RfcMode::STRICT;
                 if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
-                    if (!$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
+                    if (!$strictMode && !$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
                 } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
-                        if (!$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
+                        if (!$strictMode && !$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
                         }

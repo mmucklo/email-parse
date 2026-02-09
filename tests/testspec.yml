@@ -2428,3 +2428,392 @@
     invalid: true
     invalid_reason: "Invalid character found in email address local part: 'é'"
     comments: []
+-
+  emails: '.john@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: .john@example.com
+    name: ''
+    name_parsed: ''
+    local_part: .john
+    local_part_parsed: .john
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part is not RFC 5322 compliant'
+    comments: []
+-
+  emails: 'john.@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: john.@example.com
+    name: ''
+    name_parsed: ''
+    local_part: john.
+    local_part_parsed: john.
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part is not RFC 5322 compliant'
+    comments: []
+-
+  emails: 'jo..hn@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: jo..hn@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address should not contain two dots '.' in a row"
+    comments: []
+-
+  emails: 'john..doe@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: john..doe@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address should not contain two dots '.' in a row"
+    comments: []
+-
+  emails: '"john..doe"@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: '"john..doe"@example.com'
+    simple_address: '"john..doe"@example.com'
+    original_address: '"john..doe"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"john..doe"'
+    local_part_parsed: 'john..doe'
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"john\"doe"@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '"john\"doe"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: 'No ending quote: ''"''' 
+    comments: []
+-
+  emails: 'john\ doe@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'john\ doe@example.com'
+    name: "john\\"
+    name_parsed: "john\\"
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: '\\'"
+    comments: []
+-
+  emails: 'john@[127.0.0.1]'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: 'john@[127.0.0.1]'
+    simple_address: 'john@[127.0.0.1]'
+    original_address: 'john@[127.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: john
+    local_part_parsed: john
+    domain_part: '[127.0.0.1]'
+    domain: ''
+    ip: 127.0.0.1
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'john@[127.0.0.999]'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'john@[127.0.0.999]'
+    name: ''
+    name_parsed: ''
+    local_part: john
+    local_part_parsed: john
+    domain_part: '[127.0.0.999]'
+    domain: ''
+    ip: 127.0.0.999
+    invalid: true
+    invalid_reason: "IP address invalid: '127.0.0.999' does not appear to be a valid IP address"
+    comments: []
+-
+  emails: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: '\\'"
+    comments: []
+-
+  emails: '名@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: '名@example.com'
+    simple_address: '名@example.com'
+    original_address: '名@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 名
+    local_part_parsed: 名
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '名@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '名@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: '名'"
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'δοκιμή@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'δοκιμή@example.com'
+    simple_address: 'δοκιμή@example.com'
+    original_address: 'δοκιμή@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: δοκιμή
+    local_part_parsed: δοκιμή
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '名.太郎@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: '名.太郎@example.com'
+    simple_address: '名.太郎@example.com'
+    original_address: '名.太郎@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 名.太郎
+    local_part_parsed: 名.太郎
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"名.太郎"@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: '"名.太郎"@example.com'
+    simple_address: '"名.太郎"@example.com'
+    original_address: '"名.太郎"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"名.太郎"'
+    local_part_parsed: 名.太郎
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@bücher.de'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user@bücher.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: b
+    domain: b
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): 'ü'"
+    comments: []
+-
+  emails: 'user@xn--bcher-kva.de'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'user@xn--bcher-kva.de'
+    simple_address: 'user@xn--bcher-kva.de'
+    original_address: 'user@xn--bcher-kva.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: xn--bcher-kva.de
+    domain: xn--bcher-kva.de
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: 'ü'"
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: legacy
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
