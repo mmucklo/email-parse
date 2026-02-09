@@ -512,9 +512,8 @@ class Parse
                         }
                     } else {
                         if (self::STATE_DOMAIN == $subState) {
-                            if ($this->options->getRfcMode() === \Email\RfcMode::STRICT && $this->isUtf8Char($curChar)) {
-                                $emailAddress['invalid'] = true;
-                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                            if ($this->isUtf8Char($curChar)) {
+                                $emailAddress['domain'] .= $curChar;
                             } else {
                                 try {
                                     // Test by trying to encode the current character into Punycode
@@ -766,6 +765,7 @@ class Parse
                         'name_parsed' => '',
                         'local_part_parsed' => '',
                         'domain' => '',
+                        'domain_ascii' => null,
                         'ip' => '',
                         'invalid' => false,
                         'invalid_reason' => null,
@@ -835,20 +835,19 @@ class Parse
                     $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
                 }
             } elseif ($emailAddress['domain']) {
-                // Check for IDNA
-                if (max(array_keys(count_chars($emailAddress['domain'], 1))) > 127) {
-                    try {
-                        $emailAddress['domain'] = idn_to_ascii($emailAddress['domain']);
-                    } catch (\Exception $e) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
-                    }
-                }
-
-                $result = $this->validateDomainName($emailAddress['domain']);
-                if (!$result['valid']) {
+                $domainAscii = $this->normalizeDomainAscii($emailAddress['domain']);
+                if ($domainAscii === null) {
                     $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: '.$result['reason'] : 'Domain invalid for some unknown reason';
+                    $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
+                } else {
+                    if ($domainAscii !== $emailAddress['domain']) {
+                        $emailAddress['domain_ascii'] = $domainAscii;
+                    }
+                    $result = $this->validateDomainName($domainAscii);
+                    if (!$result['valid']) {
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: '.$result['reason'] : 'Domain invalid for some unknown reason';
+                    }
                 }
             }
         }
@@ -890,6 +889,7 @@ class Parse
                         'local_part_parsed' => $emailAddress['local_part_parsed'],
                         'domain_part' => $domainPart,
                         'domain' => $emailAddress['domain'],
+                        'domain_ascii' => $emailAddress['domain_ascii'] ?? null,
                         'ip' => $emailAddress['ip'],
                         'invalid' => $emailAddress['invalid'],
                         'invalid_reason' => $emailAddress['invalid_reason'],
@@ -935,6 +935,16 @@ class Parse
         }
 
         return (bool) preg_match($asciiPattern, $localPart);
+    }
+
+    protected function normalizeDomainAscii(string $domain): ?string
+    {
+        if (max(array_keys(count_chars($domain, 1))) <= 127) {
+            return $domain;
+        }
+
+        $ascii = idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+        return $ascii === false ? null : $ascii;
     }
 
     protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array

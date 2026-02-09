@@ -119,6 +119,18 @@ $parser = new Parse(null, $options);
 
 **Note:** When `useWhitespaceAsSeparator` is `false`, whitespace is still properly cleaned up and names with spaces (like "John Doe") continue to work correctly.
 
+#### Internationalized Domains (IDN)
+
+The parser supports internationalized domain names per RFC 5890/5891. Unicode domains are normalized to ASCII (punycode) for validation and length enforcement, while the original Unicode domain is preserved.
+
+```php
+$result = Parse::getInstance()->parse('user@bücher.de', false);
+// $result['domain'] = 'bücher.de'
+// $result['domain_ascii'] = 'xn--bcher-kva.de'
+```
+
+IDN normalization is applied in strict mode as long as the resulting punycode domain is RFC-compliant.
+
 #### Comment Extraction
 
 RFC 5322 allows comments in email addresses using parentheses. The parser automatically extracts these comments and returns them in the `comments` array:
@@ -179,7 +191,8 @@ how-about-comments(this is a comment!!)@xyz.com
                          'name_parsed' => string, // the name on the email if given (e.g.: John Q. Public), excluding any quotes
                         'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
                         'local_part_parsed' => string, // the local part (before the '@' sign - e.g. johnpublic), excluding any quotes
-                        'domain' => string, // the domain after the '@' if given
+                        'domain' => string, // the domain after the '@' if given (may be Unicode)
+                        'domain_ascii' => string|null, // punycode ASCII domain if IDN normalization applied
                          'ip' => string, // the IP after the '@' if given
                          'domain_part' => string, // either domain or IP depending on what given
                         'invalid' => boolean, // if the email is valid or not
@@ -195,7 +208,8 @@ how-about-comments(this is a comment!!)@xyz.com
             'name_parsed' => string, // the name excluding quotes
             'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
             'local_part_parsed' => string, // the local part excluding quotes
-            'domain' => string, // the domain after the '@' if given
+            'domain' => string, // the domain after the '@' if given (may be Unicode)
+            'domain_ascii' => string|null, // punycode ASCII domain if IDN normalization applied
             'ip' => string, // the IP after the '@' if given
             'domain_part' => string, // either domain or IP depending on what given
             'invalid' => boolean, // if the email is valid or not
