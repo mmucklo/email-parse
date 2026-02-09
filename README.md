@@ -80,6 +80,75 @@ public function __construct(
 )
 ```
 
+#### RFC Compliance Modes
+
+The parser supports multiple RFC compliance levels to balance strict validation with backward compatibility:
+
+```php
+use Email\Parse;
+use Email\ParseOptions;
+use Email\RfcMode;
+
+// STRICT_INTL: Full internationalization with UTF-8 support (RFC 6531/6532)
+$options = new ParseOptions(
+    [],
+    [','],
+    true,
+    null,
+    RfcMode::STRICT_INTL,  // RFC mode
+    true                    // Allow SMTPUTF8
+);
+$parser = new Parse(null, $options);
+$result = $parser->parse('müller@münchen.de', false);  // Valid UTF-8 address
+
+// STRICT_ASCII: Strict ASCII-only validation (RFC 5322 strict)
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_ASCII);
+$parser = new Parse(null, $options);
+
+// NORMAL: Balanced mode with obsolete syntax support (RECOMMENDED)
+$options = new ParseOptions([], [','], true, null, RfcMode::NORMAL);
+$parser = new Parse(null, $options);
+
+// RELAXED: Maximum compatibility (RFC 2822)
+$options = new ParseOptions([], [','], true, null, RfcMode::RELAXED);
+$parser = new Parse(null, $options);
+
+// LEGACY: Current parser behavior (default for v2.x)
+$options = new ParseOptions([], [','], true, null, RfcMode::LEGACY);
+$parser = new Parse(null, $options);
+```
+
+**Mode Comparison:**
+
+| Mode | Standard | UTF-8 Support | Obsolete Syntax | Use Case |
+|------|----------|---------------|-----------------|----------|
+| `STRICT_INTL` | RFC 6531/6532 | ✅ Full (NFC normalization) | ❌ No | International apps with UTF-8 emails |
+| `STRICT_ASCII` | RFC 5322 Strict | ❌ ASCII only | ❌ No | Modern ASCII-only applications |
+| `NORMAL` | RFC 5322 + obsolete | ❌ ASCII only | ✅ Yes | **Recommended default** (v3.0+) |
+| `RELAXED` | RFC 2822 | ❌ ASCII only | ✅ Permissive | Legacy system integration |
+| `LEGACY` | Current behavior | Via flag | ✅ Yes | **Current default** (v2.x) |
+
+**STRICT_INTL Mode Features:**
+- UTF-8 characters in local-part and domain (e.g., `日本語@example.jp`)
+- Unicode normalization (NFC per RFC 6532 §3.1)
+- C0/C1 control character rejection (RFC 6530 §10.1)
+- Internationalized domains (IDN) with A-label/U-label support
+- Length limits in octets (multi-byte UTF-8 counts as multiple octets)
+- Requires PHP Intl extension for full functionality
+
+**Example:**
+```php
+// UTF-8 email address validation
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_INTL, true);
+$parser = new Parse(null, $options);
+
+$result = $parser->parse('José.García@españa.es', false);
+// Valid: UTF-8 characters allowed in STRICT_INTL mode
+
+$result = $parser->parse('.user@example.com', false);
+// Invalid: Leading dot not allowed (dot-atom restrictions still apply)
+```
+
 #### Configuring Length Limits
 
 You can customize RFC 5321 length limits using the `LengthLimits` class:

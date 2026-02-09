@@ -661,6 +661,7 @@
       - 'comment with spaces !!!'
 -
   emails: testing@tūdaliņ.lv
+  include_domain_ascii: true
   multiple: false
   result:
     address: testing@tūdaliņ.lv
@@ -915,6 +916,7 @@
     comments: []
 -
   emails: bob@i18ène.fr
+  include_domain_ascii: true
   multiple: false
   result:
     address: bob@i18ène.fr
@@ -933,6 +935,7 @@
     comments: []
 -
   emails: I'm Bobé <bob@i18ène.fr>
+  include_domain_ascii: true
   multiple: false
   result:
     address: "I'm Bobé <bob@i18ène.fr>"
@@ -2882,6 +2885,7 @@
   multiple: false
   rfc_mode: strict
   allow_smtputf8: true
+  include_domain_ascii: true
   result:
     address: 'user@bücher.de'
     simple_address: 'user@bücher.de'
@@ -2982,6 +2986,7 @@
   multiple: false
   rfc_mode: strict
   allow_smtputf8: true
+  include_domain_ascii: true
   result:
     address: 'user@bücher.de'
     simple_address: 'user@bücher.de'
@@ -3022,6 +3027,7 @@
   multiple: false
   rfc_mode: strict
   allow_smtputf8: true
+  include_domain_ascii: true
   result:
     address: 'user@例え.テスト'
     simple_address: 'user@例え.テスト'
@@ -3057,3 +3063,221 @@
     invalid: false
     invalid_reason: null
     comments: []
+
+# STRICT_INTL Mode Tests (RFC 6531/6532)
+# Test UTF-8 characters, Unicode normalization, control character rejection
+
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '日本語@example.jp'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: '日本語@example.jp'
+    simple_address: '日本語@example.jp'
+    original_address: '日本語@example.jp'
+    name: ''
+    name_parsed: ''
+    local_part: 日本語
+    local_part_parsed: 日本語
+    domain_part: example.jp
+    domain: example.jp
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user@münchen.de'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user@münchen.de'
+    simple_address: 'user@münchen.de'
+    original_address: 'user@münchen.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: münchen.de
+    domain: münchen.de
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# Test C0 control characters should be rejected (RFC 6530 §10.1)
+-
+  emails: "user\x00test@example.com"
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: "user\x00test@example.com"
+    name: ''
+    name_parsed: ''
+    local_part: "user\x00test"
+    local_part_parsed: "user\x00test"
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ''"
+    comments: []
+
+# Test backspace character should be rejected (RFC 6530 §10.1)
+-
+  emails: "user\x08test@example.com"
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: "user\x08test@example.com"
+    name: ''
+    name_parsed: ''
+    local_part: "user\x08test"
+    local_part_parsed: "user\x08test"
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ''"
+    comments: []
+
+# Test dot-atom restrictions still apply in STRICT_INTL
+-
+  emails: '.user@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '.user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.user'
+    local_part_parsed: '.user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ''"
+    comments: []
+
+-
+  emails: 'user.@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.'
+    local_part_parsed: 'user.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ''"
+    comments: []
+
+-
+  emails: 'user..name@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..name'
+    local_part_parsed: 'user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ''"
+    comments: []
+
+# Test UTF-8 with valid special characters
+-
+  emails: 'user+tag@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user+tag@example.com'
+    simple_address: 'user+tag@example.com'
+    original_address: 'user+tag@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user+tag'
+    local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'José.García@españa.es'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'José.García@españa.es'
+    simple_address: 'José.García@españa.es'
+    original_address: 'José.García@españa.es'
+    name: ''
+    name_parsed: ''
+    local_part: 'José.García'
+    local_part_parsed: 'José.García'
+    domain_part: 'españa.es'
+    domain: 'españa.es'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+

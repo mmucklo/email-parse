@@ -12,6 +12,7 @@ class ParseOptions
     private LengthLimits $lengthLimits;
     private string $rfcMode = RfcMode::LEGACY;
     private bool $allowSmtpUtf8 = true;
+    private bool $includeDomainAscii = false;
 
     /**
      * @param array<string> $bannedChars
@@ -20,6 +21,7 @@ class ParseOptions
      * @param LengthLimits|null $lengthLimits Email length limits. Uses RFC defaults if not provided
      * @param string $rfcMode RFC compliance mode (STRICT, NORMAL, RELAXED, LEGACY)
      * @param bool $allowSmtpUtf8 Allow UTF-8 local parts (RFC 6531)
+     * @param bool $includeDomainAscii Include punycode domain in results
      */
     public function __construct(
         array $bannedChars = [],
@@ -27,7 +29,8 @@ class ParseOptions
         bool $useWhitespaceAsSeparator = true,
         ?LengthLimits $lengthLimits = null,
         string $rfcMode = RfcMode::LEGACY,
-        bool $allowSmtpUtf8 = true
+        bool $allowSmtpUtf8 = true,
+        bool $includeDomainAscii = false
     ) {
         if ($bannedChars) {
             $this->setBannedChars($bannedChars);
@@ -37,6 +40,7 @@ class ParseOptions
         $this->lengthLimits = $lengthLimits ?? LengthLimits::createDefault();
         $this->setRfcMode($rfcMode);
         $this->allowSmtpUtf8 = $allowSmtpUtf8;
+        $this->includeDomainAscii = $includeDomainAscii;
     }
 
     /**
@@ -103,7 +107,7 @@ class ParseOptions
             throw new \InvalidArgumentException("Invalid RFC mode: {$rfcMode}");
         }
 
-        $this->rfcMode = $rfcMode;
+        $this->rfcMode = RfcMode::normalize($rfcMode);
     }
 
     public function getRfcMode(): string
@@ -119,6 +123,16 @@ class ParseOptions
     public function getAllowSmtpUtf8(): bool
     {
         return $this->allowSmtpUtf8;
+    }
+
+    public function setIncludeDomainAscii(bool $includeDomainAscii): void
+    {
+        $this->includeDomainAscii = $includeDomainAscii;
+    }
+
+    public function getIncludeDomainAscii(): bool
+    {
+        return $this->includeDomainAscii;
     }
 
     // Convenience methods for backward compatibility

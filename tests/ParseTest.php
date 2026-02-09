@@ -41,13 +41,16 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             $allowSmtpUtf8 = $test['allow_smtputf8'] ?? true;
 
             // Configure Parse to support configured separators and length limits
+            $includeDomainAscii = $test['include_domain_ascii'] ?? false;
+
             $options = new ParseOptions(
                 ['%', '!'],
                 $separators,
                 $useWhitespaceAsSeparator,
                 $lengthLimits,
                 $rfcMode,
-                $allowSmtpUtf8
+                $allowSmtpUtf8,
+                $includeDomainAscii
             );
             $parser = new Parse(null, $options);
 

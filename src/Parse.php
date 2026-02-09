@@ -860,13 +860,19 @@ class Parse
         $domainPart = $emailAddress['ip'] ? '['.$emailAddress['ip'].']' : $emailAddress['domain'];
 
         if (!$emailAddress['invalid']) {
+            $rfcMode = $this->options->getRfcMode();
+
             if (0 == strlen($domainPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address needs a domain after the \'@\'';
-            } elseif ($this->options->getRfcMode() === \Email\RfcMode::STRICT &&
+            } elseif (($rfcMode === \Email\RfcMode::STRICT_ASCII || $rfcMode === \Email\RfcMode::STRICT) &&
                 !$this->validateLocalPartStrict($localPart, $emailAddress['local_part_quoted'])) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Local part is not RFC 5322 compliant';
+            } elseif ($rfcMode === \Email\RfcMode::STRICT_INTL &&
+                !$this->validateLocalPartStrictIntl($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 6531/6532 compliant';
             } elseif (!$this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'SMTPUTF8 is not enabled for UTF-8 local parts';
@@ -889,7 +895,7 @@ class Parse
                         'local_part_parsed' => $emailAddress['local_part_parsed'],
                         'domain_part' => $domainPart,
                         'domain' => $emailAddress['domain'],
-                        'domain_ascii' => $emailAddress['domain_ascii'] ?? null,
+                        'domain_ascii' => $this->options->getIncludeDomainAscii() ? ($emailAddress['domain_ascii'] ?? null) : null,
                         'ip' => $emailAddress['ip'],
                         'invalid' => $emailAddress['invalid'],
                         'invalid_reason' => $emailAddress['invalid_reason'],
@@ -935,6 +941,70 @@ class Parse
         }
 
         return (bool) preg_match($asciiPattern, $localPart);
+    }
+
+    /**
+     * Validate local part for STRICT_INTL mode (RFC 6531/6532).
+     * Enforces:
+     * - UTF-8 encoding (RFC 3629)
+     * - No C0/C1 control characters (RFC 6530 §10.1)
+     * - No backspace character (RFC 6530 §10.1)
+     * - Unicode normalization check (NFC recommended per RFC 6532 §3.1)
+     * - Dot-atom format (no leading/trailing/consecutive dots)
+     */
+    protected function validateLocalPartStrictIntl(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            // TODO: Validate quoted-string for STRICT_INTL
+            return true;
+        }
+
+        // Check for C0 control characters (U+0000-U+001F)
+        if (preg_match('/[\x00-\x1F]/', $localPart)) {
+            return false;
+        }
+
+        // Check for C1 control characters (U+0080-U+009F)
+        if (preg_match('/[\x80-\x9F]/u', $localPart)) {
+            return false;
+        }
+
+        // Validate UTF-8 encoding
+        if (!mb_check_encoding($localPart, 'UTF-8')) {
+            return false;
+        }
+
+        // Check Unicode normalization (warn if not NFC normalized)
+        $normalized = $this->normalizeUtf8($localPart);
+        if ($normalized === false) {
+            return false;
+        }
+        // Note: We don't enforce normalization here, just validate it CAN be normalized
+        // RFC 6532 says NFC SHOULD be used, not MUST
+
+        // Validate dot-atom format: no leading/trailing/consecutive dots
+        // UTF-8 pattern with letters and numbers from any script
+        $utf8Pattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+)*$/u";
+
+        return (bool) preg_match($utf8Pattern, $localPart);
+    }
+
+    /**
+     * Normalize a UTF-8 string using NFC normalization form.
+     * RFC 6532 §3.1 recommends NFC normalization for internationalized email addresses.
+     *
+     * @param string $str The string to normalize
+     * @return string|false The normalized string, or false on failure
+     */
+    protected function normalizeUtf8(string $str): string|false
+    {
+        if (!function_exists('normalizer_normalize')) {
+            // Intl extension not available, return as-is
+            return $str;
+        }
+
+        $normalized = \Normalizer::normalize($str, \Normalizer::NFC);
+        return $normalized === false ? false : $normalized;
     }
 
     protected function normalizeDomainAscii(string $domain): ?string
