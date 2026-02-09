@@ -873,6 +873,10 @@ class Parse
                 !$this->validateLocalPartStrictIntl($localPart, $emailAddress['local_part_quoted'])) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Local part is not RFC 6531/6532 compliant';
+            } elseif ($rfcMode === \Email\RfcMode::NORMAL &&
+                !$this->validateLocalPartNormal($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 5322 compliant (with obsolete syntax)';
             } elseif (!$this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'SMTPUTF8 is not enabled for UTF-8 local parts';
@@ -987,6 +991,38 @@ class Parse
         $utf8Pattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+)*$/u";
 
         return (bool) preg_match($utf8Pattern, $localPart);
+    }
+
+    /**
+     * Validate local part for NORMAL mode (RFC 5322 + obsolete syntax).
+     * This mode is more permissive than STRICT modes:
+     * - Accepts obs-local-part: word *("." word) which allows:
+     *   - Consecutive dots (user..name)
+     *   - Leading dots (.user)
+     *   - Trailing dots (user.)
+     * - Still ASCII-only (no UTF-8 unless allowSmtpUtf8 is enabled separately)
+     * - Accepts quoted-strings with more flexibility
+     *
+     * Per RFC 5322 §4: Obsolete syntax MUST be accepted but MUST NOT be generated
+     */
+    protected function validateLocalPartNormal(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            // Quoted strings are accepted in NORMAL mode
+            return true;
+        }
+
+        // NORMAL mode is more permissive - accepts obs-local-part format
+        // obs-local-part = word *("." word)
+        // This means dots can appear anywhere (leading, trailing, consecutive)
+
+        // ASCII pattern with more permissive dot handling
+        // Allow: alphanumeric, special chars, and dots in any position
+        $normalPattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~.]+$/";
+
+        // For NORMAL mode, we're more permissive - just check basic character validity
+        // The parser has already done most of the work
+        return (bool) preg_match($normalPattern, $localPart);
     }
 
     /**

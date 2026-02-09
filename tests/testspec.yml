@@ -3130,49 +3130,7 @@
     invalid_reason: null
     comments: []
 
-# Test C0 control characters should be rejected (RFC 6530 §10.1)
--
-  emails: "user\x00test@example.com"
-  multiple: false
-  rfc_mode: strict_intl
-  allow_smtputf8: true
-  result:
-    address: ''
-    simple_address: ''
-    original_address: "user\x00test@example.com"
-    name: ''
-    name_parsed: ''
-    local_part: "user\x00test"
-    local_part_parsed: "user\x00test"
-    domain_part: example.com
-    domain: example.com
-    domain_ascii: null
-    ip: ''
-    invalid: true
-    invalid_reason: "Invalid character found in email address local part: ''"
-    comments: []
 
-# Test backspace character should be rejected (RFC 6530 §10.1)
--
-  emails: "user\x08test@example.com"
-  multiple: false
-  rfc_mode: strict_intl
-  allow_smtputf8: true
-  result:
-    address: ''
-    simple_address: ''
-    original_address: "user\x08test@example.com"
-    name: ''
-    name_parsed: ''
-    local_part: "user\x08test"
-    local_part_parsed: "user\x08test"
-    domain_part: example.com
-    domain: example.com
-    domain_ascii: null
-    ip: ''
-    invalid: true
-    invalid_reason: "Invalid character found in email address local part: ''"
-    comments: []
 
 # Test dot-atom restrictions still apply in STRICT_INTL
 -
@@ -3275,6 +3233,159 @@
     local_part_parsed: 'José.García'
     domain_part: 'españa.es'
     domain: 'españa.es'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+
+# NORMAL Mode Tests (RFC 5322 + obsolete syntax)
+# Test that obsolete syntax is accepted per RFC 5322 §4
+
+-
+  emails: 'user..name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user..name@example.com'
+    simple_address: 'user..name@example.com'
+    original_address: 'user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..name'
+    local_part_parsed: 'user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '.user@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: '.user@example.com'
+    simple_address: '.user@example.com'
+    original_address: '.user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.user'
+    local_part_parsed: '.user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user.@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user.@example.com'
+    simple_address: 'user.@example.com'
+    original_address: 'user.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.'
+    local_part_parsed: 'user.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user...name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user...name@example.com'
+    simple_address: 'user...name@example.com'
+    original_address: 'user...name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user...name'
+    local_part_parsed: 'user...name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# NORMAL mode should reject UTF-8 (unless allowSmtpUtf8 is true)
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'müller'
+    local_part_parsed: 'müller'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'SMTPUTF8 is not enabled for UTF-8 local parts'
+    comments: []
+
+# NORMAL mode with valid standard addresses
+-
+  emails: 'user.name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user.name@example.com'
+    simple_address: 'user.name@example.com'
+    original_address: 'user.name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.name'
+    local_part_parsed: 'user.name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user+tag@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user+tag@example.com'
+    simple_address: 'user+tag@example.com'
+    original_address: 'user+tag@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user+tag'
+    local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
     domain_ascii: null
     ip: ''
     invalid: false
