@@ -446,11 +446,21 @@ class Parse
                         $state = self::STATE_SQUARE_BRACKET;
                     } elseif ('.' == $curChar) {
                         // Handle periods specially
-                        if ('.' == $prevChar) {
+                        $rfcMode = $this->options->getRfcMode();
+                        $isStrictMode = ($rfcMode === \Email\RfcMode::STRICT_INTL ||
+                                        $rfcMode === \Email\RfcMode::STRICT_ASCII ||
+                                        $rfcMode === \Email\RfcMode::STRICT);
+                        $isLegacyMode = ($rfcMode === \Email\RfcMode::LEGACY);
+
+                        if ('.' == $prevChar && $isStrictMode) {
+                            // Only enforce consecutive dot restriction in STRICT modes
+                            // NORMAL/RELAXED/LEGACY modes accept consecutive dots (obs-local-part)
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Email address should not contain two dots '.' in a row";
                         } elseif (self::STATE_LOCAL_PART == $subState) {
-                            if (!$emailAddress['local_part_parsed']) {
+                            if (!$emailAddress['local_part_parsed'] && ($isStrictMode || $isLegacyMode)) {
+                                // Leading dots are invalid in STRICT and LEGACY modes
+                                // NORMAL/RELAXED modes accept leading dots (obs-local-part)
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = "Email address can not start with '.'";
                             } else {
@@ -500,7 +510,7 @@ class Parse
                                 $emailAddress['name_quoted'] = true;
                             }
                             $emailAddress['name_parsed'] .= $curChar;
-                        } elseif (self::STATE_DOMAIN == $subState) {
+                        } elseif (self::STATE_DOMAIN == $subState) {  
                             $emailAddress['domain'] .= $curChar;
                         } else {
                             if ($emailAddress['quote_temp']) {
@@ -512,20 +522,24 @@ class Parse
                         }
                     } else {
                         if (self::STATE_DOMAIN == $subState) {
-                            try {
-                                // Test by trying to encode the current character into Punycode
-                                // Punycode should match the traditional domain name subset of characters
-                                if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
-                                    $emailAddress['domain'] .= $curChar;
-                                } else {
+                            if ($this->isUtf8Char($curChar)) {
+                                $emailAddress['domain'] .= $curChar;
+                            } else {
+                                try {
+                                    // Test by trying to encode the current character into Punycode
+                                    // Punycode should match the traditional domain name subset of characters
+                                    if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
+                                        $emailAddress['domain'] .= $curChar;
+                                    } else {
+                                        $emailAddress['invalid'] = true;
+                                    }
+                                } catch (\Exception $e) {
+                                    $this->log('warning', "Email\\Parse->parse - exception trying to convert character '{$curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: {$emails}");
                                     $emailAddress['invalid'] = true;
                                 }
-                            } catch (\Exception $e) {
-                                $this->log('warning', "Email\\Parse->parse - exception trying to convert character '{$curChar}' to punycode\n\$emailAddress['original_address']: {$emailAddress['original_address']}\n\$emails: {$emails}");
-                                $emailAddress['invalid'] = true;
-                            }
-                            if ($emailAddress['invalid']) {
-                                $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                                if ($emailAddress['invalid']) {
+                                    $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                                }
                             }
                         } elseif (self::STATE_START === $subState) {
                             if ($emailAddress['quote_temp']) {
@@ -533,8 +547,30 @@ class Parse
                                 $emailAddress['address_temp_quoted'] = true;
                                 $emailAddress['quote_temp'] = '';
                             }
-                            $emailAddress['special_char_in_substate'] = $curChar;
-                            $emailAddress['address_temp'] .= $curChar;
+
+                            $isUtf8 = $this->isUtf8Char($curChar);
+                            $rfcMode = $this->options->getRfcMode();
+                            $allowSmtpUtf8 = $this->options->getAllowSmtpUtf8();
+
+                            // Determine if UTF-8 parsing should be allowed:
+                            // - NORMAL: always defer validation
+                            // - STRICT_INTL: always allow (validation checks format)
+                            // - STRICT_ASCII/STRICT/RELAXED: allow if SMTPUTF8 enabled
+                            // - LEGACY: reject if SMTPUTF8 disabled
+                            $allowUtf8Parsing = ($rfcMode === \Email\RfcMode::NORMAL ||
+                                                 $rfcMode === \Email\RfcMode::STRICT_INTL ||
+                                                 $allowSmtpUtf8);
+
+                            if ($isUtf8) {
+                                $emailAddress['address_temp'] .= $curChar;
+                                if (!$allowUtf8Parsing) {
+                                    // LEGACY mode with SMTPUTF8 disabled: mark as special char
+                                    $emailAddress['special_char_in_substate'] = $curChar;
+                                }
+                            } else {
+                                $emailAddress['special_char_in_substate'] = $curChar;
+                                $emailAddress['address_temp'] .= $curChar;
+                            }
                         } elseif (self::STATE_NAME === $subState) {
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['name_parsed'] .= $emailAddress['quote_temp'];
@@ -543,6 +579,40 @@ class Parse
                             }
                             $emailAddress['special_char_in_substate'] = $curChar;
                             $emailAddress['name_parsed'] .= $curChar;
+                        } elseif (self::STATE_LOCAL_PART === $subState) {
+                            if ($emailAddress['quote_temp']) {
+                                $emailAddress['local_part_parsed'] .= $emailAddress['quote_temp'];
+                                $emailAddress['quote_temp'] = '';
+                                $emailAddress['local_part_quoted'] = true;
+                            }
+
+                            $isUtf8 = $this->isUtf8Char($curChar);
+                            $rfcMode = $this->options->getRfcMode();
+                            $allowSmtpUtf8 = $this->options->getAllowSmtpUtf8();
+
+                            // Determine if UTF-8 parsing should be allowed (same logic as STATE_START):
+                            // - NORMAL: always defer validation
+                            // - STRICT_INTL: always allow (validation checks format)
+                            // - STRICT_ASCII/STRICT/RELAXED: allow if SMTPUTF8 enabled
+                            // - LEGACY: reject if SMTPUTF8 disabled
+                            $allowUtf8Parsing = ($rfcMode === \Email\RfcMode::NORMAL ||
+                                                 $rfcMode === \Email\RfcMode::STRICT_INTL ||
+                                                 $allowSmtpUtf8);
+
+                            if ($isUtf8) {
+                                if ($allowUtf8Parsing) {
+                                    // Parse UTF-8 character
+                                    $emailAddress['local_part_parsed'] .= $curChar;
+                                } else {
+                                    // LEGACY mode with SMTPUTF8 disabled: reject
+                                    $emailAddress['invalid'] = true;
+                                    $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
+                                }
+                            } else {
+                                // Not UTF-8 and not in allowed character set
+                                $emailAddress['invalid'] = true;
+                                $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
+                            }
                         } else {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
@@ -745,6 +815,7 @@ class Parse
                         'name_parsed' => '',
                         'local_part_parsed' => '',
                         'domain' => '',
+                        'domain_ascii' => null,
                         'ip' => '',
                         'invalid' => false,
                         'invalid_reason' => null,
@@ -792,15 +863,16 @@ class Parse
                 $emailAddress['invalid_reason'] = 'Confusion during parsing';
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip']) {
+                $strictMode = $this->options->getRfcMode() === \Email\RfcMode::STRICT;
                 if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
-                    if (!$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
+                    if (!$strictMode && !$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                     }
                 } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
-                        if (!$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
+                        if (!$strictMode && !$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
                         }
@@ -813,20 +885,19 @@ class Parse
                     $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
                 }
             } elseif ($emailAddress['domain']) {
-                // Check for IDNA
-                if (max(array_keys(count_chars($emailAddress['domain'], 1))) > 127) {
-                    try {
-                        $emailAddress['domain'] = idn_to_ascii($emailAddress['domain']);
-                    } catch (\Exception $e) {
-                        $emailAddress['invalid'] = true;
-                        $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
-                    }
-                }
-
-                $result = $this->validateDomainName($emailAddress['domain']);
-                if (!$result['valid']) {
+                $domainAscii = $this->normalizeDomainAscii($emailAddress['domain']);
+                if ($domainAscii === null) {
                     $emailAddress['invalid'] = true;
-                    $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: '.$result['reason'] : 'Domain invalid for some unknown reason';
+                    $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
+                } else {
+                    if ($domainAscii !== $emailAddress['domain']) {
+                        $emailAddress['domain_ascii'] = $domainAscii;
+                    }
+                    $result = $this->validateDomainName($domainAscii);
+                    if (!$result['valid']) {
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: '.$result['reason'] : 'Domain invalid for some unknown reason';
+                    }
                 }
             }
         }
@@ -839,9 +910,30 @@ class Parse
         $domainPart = $emailAddress['ip'] ? '['.$emailAddress['ip'].']' : $emailAddress['domain'];
 
         if (!$emailAddress['invalid']) {
-            if (0 == mb_strlen($domainPart, $encoding)) {
+            $rfcMode = $this->options->getRfcMode();
+
+            if (0 == strlen($domainPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address needs a domain after the \'@\'';
+            } elseif (($rfcMode === \Email\RfcMode::STRICT_ASCII || $rfcMode === \Email\RfcMode::STRICT) &&
+                !$this->validateLocalPartStrict($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 5322 compliant';
+            } elseif ($rfcMode === \Email\RfcMode::STRICT_INTL &&
+                !$this->validateLocalPartStrictIntl($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 6531/6532 compliant';
+            } elseif ($rfcMode === \Email\RfcMode::NORMAL &&
+                !$this->validateLocalPartNormal($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 5322 compliant (with obsolete syntax)';
+            } elseif ($rfcMode === \Email\RfcMode::RELAXED &&
+                !$this->validateLocalPartRelaxed($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 2822 compliant';
+            } elseif (!$this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'SMTPUTF8 is not enabled for UTF-8 local parts';
             } elseif (strlen($localPart) > $this->options->getMaxLocalPartLength()) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address before the \'@\' can not be greater than ' . $this->options->getMaxLocalPartLength() . ' octets per RFC 5321';
@@ -861,6 +953,7 @@ class Parse
                         'local_part_parsed' => $emailAddress['local_part_parsed'],
                         'domain_part' => $domainPart,
                         'domain' => $emailAddress['domain'],
+                        'domain_ascii' => $this->options->getIncludeDomainAscii() ? ($emailAddress['domain_ascii'] ?? null) : null,
                         'ip' => $emailAddress['ip'],
                         'invalid' => $emailAddress['invalid'],
                         'invalid_reason' => $emailAddress['invalid_reason'],
@@ -887,9 +980,175 @@ class Parse
      * @return array array('valid' => boolean: whether valid or not,
      *               'reason' => string: if not valid, the reason why);
      */
+    protected function isUtf8Char(string $char): bool
+    {
+        return (bool) preg_match('//u', $char) && !preg_match('/^[\x00-\x7F]$/', $char);
+    }
+
+    protected function validateLocalPartStrict(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            return true;
+        }
+
+        $asciiPattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~]+)*$/";
+        $utf8Pattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+)*$/u";
+
+        if ($this->options->getAllowSmtpUtf8()) {
+            return (bool) preg_match($utf8Pattern, $localPart);
+        }
+
+        return (bool) preg_match($asciiPattern, $localPart);
+    }
+
+    /**
+     * Validate local part for STRICT_INTL mode (RFC 6531/6532).
+     * Enforces:
+     * - UTF-8 encoding (RFC 3629)
+     * - No C0/C1 control characters (RFC 6530 §10.1)
+     * - No backspace character (RFC 6530 §10.1)
+     * - Unicode normalization check (NFC recommended per RFC 6532 §3.1)
+     * - Dot-atom format (no leading/trailing/consecutive dots)
+     */
+    protected function validateLocalPartStrictIntl(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            // TODO: Validate quoted-string for STRICT_INTL
+            return true;
+        }
+
+        // Check for C0 control characters (U+0000-U+001F)
+        if (preg_match('/[\x00-\x1F]/', $localPart)) {
+            return false;
+        }
+
+        // Check for C1 control characters (U+0080-U+009F)
+        if (preg_match('/[\x80-\x9F]/u', $localPart)) {
+            return false;
+        }
+
+        // Validate UTF-8 encoding
+        if (!mb_check_encoding($localPart, 'UTF-8')) {
+            return false;
+        }
+
+        // Check Unicode normalization (warn if not NFC normalized)
+        $normalized = $this->normalizeUtf8($localPart);
+        if ($normalized === false) {
+            return false;
+        }
+        // Note: We don't enforce normalization here, just validate it CAN be normalized
+        // RFC 6532 says NFC SHOULD be used, not MUST
+
+        // Validate dot-atom format: no leading/trailing/consecutive dots
+        // UTF-8 pattern with letters and numbers from any script
+        $utf8Pattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+(?:\.[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~\p{L}\p{N}]+)*$/u";
+
+        return (bool) preg_match($utf8Pattern, $localPart);
+    }
+
+    /**
+     * Validate local part for NORMAL mode (RFC 5322 + obsolete syntax).
+     * This mode is more permissive than STRICT modes:
+     * - Accepts obs-local-part: word *("." word) which allows:
+     *   - Consecutive dots (user..name)
+     *   - Leading dots (.user)
+     *   - Trailing dots (user.)
+     * - Still ASCII-only (no UTF-8 unless allowSmtpUtf8 is enabled separately)
+     * - Accepts quoted-strings with more flexibility
+     *
+     * Per RFC 5322 §4: Obsolete syntax MUST be accepted but MUST NOT be generated
+     */
+    protected function validateLocalPartNormal(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            // Quoted strings are accepted in NORMAL mode
+            return true;
+        }
+
+        // If address contains UTF-8, skip this validation regardless of SMTPUTF8 flag
+        // Let the SMTPUTF8 check handle whether it's allowed or not
+        if (preg_match('/[^\x00-\x7F]/', $localPart)) {
+            return true;
+        }
+
+        // NORMAL mode is more permissive - accepts obs-local-part format
+        // obs-local-part = word *("." word)
+        // This means dots can appear anywhere (leading, trailing, consecutive)
+
+        // ASCII pattern with more permissive dot handling
+        // Allow: alphanumeric, special chars, and dots in any position
+        $normalPattern = "/^[A-Za-z0-9!#$%&'*+\-\/=?^_`{|}~.]+$/";
+
+        // For NORMAL mode, we're more permissive - just check basic character validity
+        // The parser has already done most of the work
+        return (bool) preg_match($normalPattern, $localPart);
+    }
+
+    /**
+     * Validate local part for RELAXED mode (RFC 2822 compatible).
+     * This is the most permissive validation mode:
+     * - Even more permissive than NORMAL mode
+     * - Accepts ASCII characters 1-127 (RFC 2822)
+     * - Very lenient with obsolete syntax
+     * - Accepts more unusual character combinations
+     *
+     * Use case: Maximum compatibility with legacy systems
+     */
+    protected function validateLocalPartRelaxed(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            // Quoted strings are fully accepted in RELAXED mode
+            return true;
+        }
+
+        // If address contains UTF-8 and SMTPUTF8 is enabled, skip this validation
+        // Let the SMTPUTF8 check handle UTF-8 validation
+        if ($this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
+            return true;
+        }
+
+        // RELAXED mode is the most permissive
+        // Accept ASCII 1-127 (excluding null byte which parser already rejects)
+        // Very lenient - basically just check it's ASCII
+        $relaxedPattern = "/^[\x01-\x7F]+$/";
+
+        return (bool) preg_match($relaxedPattern, $localPart);
+    }
+
+    /**
+     * Normalize a UTF-8 string using NFC normalization form.
+     * RFC 6532 §3.1 recommends NFC normalization for internationalized email addresses.
+     *
+     * @param string $str The string to normalize
+     * @return string|false The normalized string, or false on failure
+     */
+    protected function normalizeUtf8(string $str): string|false
+    {
+        if (!function_exists('normalizer_normalize')) {
+            // Intl extension not available, return as-is
+            return $str;
+        }
+
+        $normalized = \Normalizer::normalize($str, \Normalizer::NFC);
+        return $normalized === false ? false : $normalized;
+    }
+
+    protected function normalizeDomainAscii(string $domain): ?string
+    {
+        if (max(array_keys(count_chars($domain, 1))) <= 127) {
+            return $domain;
+        }
+
+        $ascii = idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+        return $ascii === false ? null : $ascii;
+    }
+
     protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
     {
-        if (mb_strlen($domain, $encoding) > 255) {
+        // Domain length limits are in octets (RFC 5321); keep strlen
+
+        if (strlen($domain) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long'];
         } else {
             $origEncoding = mb_regex_encoding();

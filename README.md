@@ -80,6 +80,133 @@ public function __construct(
 )
 ```
 
+#### RFC Compliance Modes
+
+The parser supports multiple RFC compliance levels to balance strict validation with backward compatibility:
+
+```php
+use Email\Parse;
+use Email\ParseOptions;
+use Email\RfcMode;
+
+// STRICT_INTL: Full internationalization with UTF-8 support (RFC 6531/6532)
+$options = new ParseOptions(
+    [],
+    [','],
+    true,
+    null,
+    RfcMode::STRICT_INTL,  // RFC mode
+    true                    // Allow SMTPUTF8
+);
+$parser = new Parse(null, $options);
+$result = $parser->parse('müller@münchen.de', false);  // Valid UTF-8 address
+
+// STRICT_ASCII: Strict ASCII-only validation (RFC 5322 strict)
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_ASCII);
+$parser = new Parse(null, $options);
+
+// NORMAL: Balanced mode with obsolete syntax support (RECOMMENDED)
+$options = new ParseOptions([], [','], true, null, RfcMode::NORMAL);
+$parser = new Parse(null, $options);
+
+// RELAXED: Maximum compatibility (RFC 2822)
+$options = new ParseOptions([], [','], true, null, RfcMode::RELAXED);
+$parser = new Parse(null, $options);
+
+// LEGACY: Current parser behavior (default for v2.x)
+$options = new ParseOptions([], [','], true, null, RfcMode::LEGACY);
+$parser = new Parse(null, $options);
+```
+
+**Mode Comparison:**
+
+| Mode | Standard | UTF-8 Support | Obsolete Syntax | Use Case |
+|------|----------|---------------|-----------------|----------|
+| `STRICT_INTL` | RFC 6531/6532 | ✅ Full (NFC normalization) | ❌ No | International apps with UTF-8 emails |
+| `STRICT_ASCII` | RFC 5322 Strict | ❌ ASCII only | ❌ No | Modern ASCII-only applications |
+| `NORMAL` | RFC 5322 + obsolete | ❌ ASCII only | ✅ Yes | **Recommended default** (v3.0+) |
+| `RELAXED` | RFC 2822 | ❌ ASCII only | ✅ Permissive | Legacy system integration |
+| `LEGACY` | Current behavior | Via flag | ✅ Yes | **Current default** (v2.x) |
+
+**STRICT_INTL Mode Features:**
+- UTF-8 characters in local-part and domain (e.g., `日本語@example.jp`)
+- Unicode normalization (NFC per RFC 6532 §3.1)
+- C0/C1 control character rejection (RFC 6530 §10.1)
+- Internationalized domains (IDN) with A-label/U-label support
+- Length limits in octets (multi-byte UTF-8 counts as multiple octets)
+- Requires PHP Intl extension for full functionality
+
+**Example:**
+```php
+// UTF-8 email address validation
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_INTL, true);
+$parser = new Parse(null, $options);
+
+$result = $parser->parse('José.García@españa.es', false);
+// Valid: UTF-8 characters allowed in STRICT_INTL mode
+
+$result = $parser->parse('.user@example.com', false);
+// Invalid: Leading dot not allowed (dot-atom restrictions still apply)
+```
+
+#### Migration Guide
+
+**Migrating from LEGACY to NORMAL (Recommended for v3.0+):**
+
+```php
+// Before (v2.x default - LEGACY mode)
+$parser = Parse::getInstance();
+$result = $parser->parse('user..name@example.com', false);  // Valid (accepts obsolete syntax)
+
+// After (v3.0+ recommended - NORMAL mode)
+$options = new ParseOptions([], [','], true, null, RfcMode::NORMAL);
+$parser = new Parse(null, $options);
+$result = $parser->parse('user..name@example.com', false);  // Still valid (NORMAL accepts obsolete syntax)
+```
+
+**Key Differences:**
+- **NORMAL mode** is the recommended default for v3.0+
+- Accepts obsolete syntax (consecutive/leading/trailing dots in local part)
+- Stricter than LEGACY for truly invalid addresses
+- Better RFC 5322 compliance with backward compatibility
+
+**Migrating to STRICT modes:**
+
+If you need stricter validation, consider STRICT_ASCII or STRICT_INTL:
+
+```php
+// STRICT_ASCII: Reject obsolete syntax
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_ASCII);
+$parser = new Parse(null, $options);
+$result = $parser->parse('user..name@example.com', false);  // Invalid (consecutive dots not allowed)
+$result = $parser->parse('user.name@example.com', false);   // Valid
+
+// STRICT_INTL: Add UTF-8 support
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_INTL, true);
+$parser = new Parse(null, $options);
+$result = $parser->parse('müller@münchen.de', false);  // Valid (UTF-8 allowed)
+```
+
+**UTF-8/SMTPUTF8 Considerations:**
+
+- UTF-8 requires the `allowSmtpUtf8` flag to be true (6th parameter)
+- STRICT_INTL: Always validates UTF-8 characters
+- NORMAL/RELAXED: Accept UTF-8 only when `allowSmtpUtf8 = true`
+- STRICT_ASCII: Reject UTF-8 unless `allowSmtpUtf8 = true`
+- LEGACY: Accept UTF-8 when `allowSmtpUtf8 = true`
+
+```php
+// Enable UTF-8 support
+$options = new ParseOptions(
+    [],                    // banned chars
+    [','],                 // separators
+    true,                  // use whitespace as separator
+    null,                  // length limits (use defaults)
+    RfcMode::NORMAL,       // RFC mode
+    true                   // allowSmtpUtf8 - REQUIRED for UTF-8
+);
+```
+
 #### Configuring Length Limits
 
 You can customize RFC 5321 length limits using the `LengthLimits` class:
@@ -118,6 +245,18 @@ $parser = new Parse(null, $options);
 - **Mixed separators** - All configured separators work together seamlessly
 
 **Note:** When `useWhitespaceAsSeparator` is `false`, whitespace is still properly cleaned up and names with spaces (like "John Doe") continue to work correctly.
+
+#### Internationalized Domains (IDN)
+
+The parser supports internationalized domain names per RFC 5890/5891. Unicode domains are normalized to ASCII (punycode) for validation and length enforcement, while the original Unicode domain is preserved.
+
+```php
+$result = Parse::getInstance()->parse('user@bücher.de', false);
+// $result['domain'] = 'bücher.de'
+// $result['domain_ascii'] = 'xn--bcher-kva.de'
+```
+
+IDN normalization is applied in strict mode as long as the resulting punycode domain is RFC-compliant.
 
 #### Comment Extraction
 
@@ -179,7 +318,8 @@ how-about-comments(this is a comment!!)@xyz.com
                          'name_parsed' => string, // the name on the email if given (e.g.: John Q. Public), excluding any quotes
                         'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
                         'local_part_parsed' => string, // the local part (before the '@' sign - e.g. johnpublic), excluding any quotes
-                        'domain' => string, // the domain after the '@' if given
+                        'domain' => string, // the domain after the '@' if given (may be Unicode)
+                        'domain_ascii' => string|null, // punycode ASCII domain if IDN normalization applied
                          'ip' => string, // the IP after the '@' if given
                          'domain_part' => string, // either domain or IP depending on what given
                         'invalid' => boolean, // if the email is valid or not
@@ -195,7 +335,8 @@ how-about-comments(this is a comment!!)@xyz.com
             'name_parsed' => string, // the name excluding quotes
             'local_part' => string, // the local part (before the '@' sign - e.g. johnpublic)
             'local_part_parsed' => string, // the local part excluding quotes
-            'domain' => string, // the domain after the '@' if given
+            'domain' => string, // the domain after the '@' if given (may be Unicode)
+            'domain_ascii' => string|null, // punycode ASCII domain if IDN normalization applied
             'ip' => string, // the IP after the '@' if given
             'domain_part' => string, // either domain or IP depending on what given
             'invalid' => boolean, // if the email is valid or not

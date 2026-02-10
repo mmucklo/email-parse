@@ -10,18 +10,27 @@ class ParseOptions
     private array $separators = [];
     private bool $useWhitespaceAsSeparator = true;
     private LengthLimits $lengthLimits;
+    private string $rfcMode = RfcMode::LEGACY;
+    private bool $allowSmtpUtf8 = true;
+    private bool $includeDomainAscii = false;
 
     /**
      * @param array<string> $bannedChars
      * @param array<string> $separators
      * @param bool $useWhitespaceAsSeparator
      * @param LengthLimits|null $lengthLimits Email length limits. Uses RFC defaults if not provided
+     * @param string $rfcMode RFC compliance mode (STRICT, NORMAL, RELAXED, LEGACY)
+     * @param bool $allowSmtpUtf8 Allow UTF-8 local parts (RFC 6531)
+     * @param bool $includeDomainAscii Include punycode domain in results
      */
     public function __construct(
         array $bannedChars = [],
         array $separators = [','],
         bool $useWhitespaceAsSeparator = true,
-        ?LengthLimits $lengthLimits = null
+        ?LengthLimits $lengthLimits = null,
+        string $rfcMode = RfcMode::LEGACY,
+        bool $allowSmtpUtf8 = true,
+        bool $includeDomainAscii = false
     ) {
         if ($bannedChars) {
             $this->setBannedChars($bannedChars);
@@ -29,6 +38,9 @@ class ParseOptions
         $this->setSeparators($separators);
         $this->useWhitespaceAsSeparator = $useWhitespaceAsSeparator;
         $this->lengthLimits = $lengthLimits ?? LengthLimits::createDefault();
+        $this->setRfcMode($rfcMode);
+        $this->allowSmtpUtf8 = $allowSmtpUtf8;
+        $this->includeDomainAscii = $includeDomainAscii;
     }
 
     /**
@@ -87,6 +99,40 @@ class ParseOptions
     public function getLengthLimits(): LengthLimits
     {
         return $this->lengthLimits;
+    }
+
+    public function setRfcMode(string $rfcMode): void
+    {
+        if (!RfcMode::isValid($rfcMode)) {
+            throw new \InvalidArgumentException("Invalid RFC mode: {$rfcMode}");
+        }
+
+        $this->rfcMode = RfcMode::normalize($rfcMode);
+    }
+
+    public function getRfcMode(): string
+    {
+        return $this->rfcMode;
+    }
+
+    public function setAllowSmtpUtf8(bool $allowSmtpUtf8): void
+    {
+        $this->allowSmtpUtf8 = $allowSmtpUtf8;
+    }
+
+    public function getAllowSmtpUtf8(): bool
+    {
+        return $this->allowSmtpUtf8;
+    }
+
+    public function setIncludeDomainAscii(bool $includeDomainAscii): void
+    {
+        $this->includeDomainAscii = $includeDomainAscii;
+    }
+
+    public function getIncludeDomainAscii(): bool
+    {
+        return $this->includeDomainAscii;
     }
 
     // Convenience methods for backward compatibility
