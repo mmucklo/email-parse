@@ -446,11 +446,21 @@ class Parse
                         $state = self::STATE_SQUARE_BRACKET;
                     } elseif ('.' == $curChar) {
                         // Handle periods specially
-                        if ('.' == $prevChar) {
+                        $rfcMode = $this->options->getRfcMode();
+                        $isStrictMode = ($rfcMode === \Email\RfcMode::STRICT_INTL ||
+                                        $rfcMode === \Email\RfcMode::STRICT_ASCII ||
+                                        $rfcMode === \Email\RfcMode::STRICT);
+                        $isLegacyMode = ($rfcMode === \Email\RfcMode::LEGACY);
+
+                        if ('.' == $prevChar && $isStrictMode) {
+                            // Only enforce consecutive dot restriction in STRICT modes
+                            // NORMAL/RELAXED/LEGACY modes accept consecutive dots (obs-local-part)
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Email address should not contain two dots '.' in a row";
                         } elseif (self::STATE_LOCAL_PART == $subState) {
-                            if (!$emailAddress['local_part_parsed']) {
+                            if (!$emailAddress['local_part_parsed'] && ($isStrictMode || $isLegacyMode)) {
+                                // Leading dots are invalid in STRICT and LEGACY modes
+                                // NORMAL/RELAXED modes accept leading dots (obs-local-part)
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = "Email address can not start with '.'";
                             } else {
@@ -537,8 +547,26 @@ class Parse
                                 $emailAddress['address_temp_quoted'] = true;
                                 $emailAddress['quote_temp'] = '';
                             }
-                            if ($this->options->getAllowSmtpUtf8() && $this->isUtf8Char($curChar)) {
+
+                            $isUtf8 = $this->isUtf8Char($curChar);
+                            $rfcMode = $this->options->getRfcMode();
+                            $allowSmtpUtf8 = $this->options->getAllowSmtpUtf8();
+
+                            // Determine if UTF-8 parsing should be allowed:
+                            // - NORMAL: always defer validation
+                            // - STRICT_INTL: always allow (validation checks format)
+                            // - STRICT_ASCII/STRICT/RELAXED: allow if SMTPUTF8 enabled
+                            // - LEGACY: reject if SMTPUTF8 disabled
+                            $allowUtf8Parsing = ($rfcMode === \Email\RfcMode::NORMAL ||
+                                                 $rfcMode === \Email\RfcMode::STRICT_INTL ||
+                                                 $allowSmtpUtf8);
+
+                            if ($isUtf8) {
                                 $emailAddress['address_temp'] .= $curChar;
+                                if (!$allowUtf8Parsing) {
+                                    // LEGACY mode with SMTPUTF8 disabled: mark as special char
+                                    $emailAddress['special_char_in_substate'] = $curChar;
+                                }
                             } else {
                                 $emailAddress['special_char_in_substate'] = $curChar;
                                 $emailAddress['address_temp'] .= $curChar;
@@ -557,9 +585,31 @@ class Parse
                                 $emailAddress['quote_temp'] = '';
                                 $emailAddress['local_part_quoted'] = true;
                             }
-                            if ($this->options->getAllowSmtpUtf8() && $this->isUtf8Char($curChar)) {
-                                $emailAddress['local_part_parsed'] .= $curChar;
+
+                            $isUtf8 = $this->isUtf8Char($curChar);
+                            $rfcMode = $this->options->getRfcMode();
+                            $allowSmtpUtf8 = $this->options->getAllowSmtpUtf8();
+
+                            // Determine if UTF-8 parsing should be allowed (same logic as STATE_START):
+                            // - NORMAL: always defer validation
+                            // - STRICT_INTL: always allow (validation checks format)
+                            // - STRICT_ASCII/STRICT/RELAXED: allow if SMTPUTF8 enabled
+                            // - LEGACY: reject if SMTPUTF8 disabled
+                            $allowUtf8Parsing = ($rfcMode === \Email\RfcMode::NORMAL ||
+                                                 $rfcMode === \Email\RfcMode::STRICT_INTL ||
+                                                 $allowSmtpUtf8);
+
+                            if ($isUtf8) {
+                                if ($allowUtf8Parsing) {
+                                    // Parse UTF-8 character
+                                    $emailAddress['local_part_parsed'] .= $curChar;
+                                } else {
+                                    // LEGACY mode with SMTPUTF8 disabled: reject
+                                    $emailAddress['invalid'] = true;
+                                    $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
+                                }
                             } else {
+                                // Not UTF-8 and not in allowed character set
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
                             }
@@ -877,6 +927,10 @@ class Parse
                 !$this->validateLocalPartNormal($localPart, $emailAddress['local_part_quoted'])) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Local part is not RFC 5322 compliant (with obsolete syntax)';
+            } elseif ($rfcMode === \Email\RfcMode::RELAXED &&
+                !$this->validateLocalPartRelaxed($localPart, $emailAddress['local_part_quoted'])) {
+                $emailAddress['invalid'] = true;
+                $emailAddress['invalid_reason'] = 'Local part is not RFC 2822 compliant';
             } elseif (!$this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'SMTPUTF8 is not enabled for UTF-8 local parts';
@@ -1012,6 +1066,12 @@ class Parse
             return true;
         }
 
+        // If address contains UTF-8, skip this validation regardless of SMTPUTF8 flag
+        // Let the SMTPUTF8 check handle whether it's allowed or not
+        if (preg_match('/[^\x00-\x7F]/', $localPart)) {
+            return true;
+        }
+
         // NORMAL mode is more permissive - accepts obs-local-part format
         // obs-local-part = word *("." word)
         // This means dots can appear anywhere (leading, trailing, consecutive)
@@ -1023,6 +1083,37 @@ class Parse
         // For NORMAL mode, we're more permissive - just check basic character validity
         // The parser has already done most of the work
         return (bool) preg_match($normalPattern, $localPart);
+    }
+
+    /**
+     * Validate local part for RELAXED mode (RFC 2822 compatible).
+     * This is the most permissive validation mode:
+     * - Even more permissive than NORMAL mode
+     * - Accepts ASCII characters 1-127 (RFC 2822)
+     * - Very lenient with obsolete syntax
+     * - Accepts more unusual character combinations
+     *
+     * Use case: Maximum compatibility with legacy systems
+     */
+    protected function validateLocalPartRelaxed(string $localPart, bool $quoted): bool
+    {
+        if ($quoted) {
+            // Quoted strings are fully accepted in RELAXED mode
+            return true;
+        }
+
+        // If address contains UTF-8 and SMTPUTF8 is enabled, skip this validation
+        // Let the SMTPUTF8 check handle UTF-8 validation
+        if ($this->options->getAllowSmtpUtf8() && preg_match('/[^\x00-\x7F]/', $localPart)) {
+            return true;
+        }
+
+        // RELAXED mode is the most permissive
+        // Accept ASCII 1-127 (excluding null byte which parser already rejects)
+        // Very lenient - basically just check it's ASCII
+        $relaxedPattern = "/^[\x01-\x7F]+$/";
+
+        return (bool) preg_match($relaxedPattern, $localPart);
     }
 
     /**

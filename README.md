@@ -149,6 +149,64 @@ $result = $parser->parse('.user@example.com', false);
 // Invalid: Leading dot not allowed (dot-atom restrictions still apply)
 ```
 
+#### Migration Guide
+
+**Migrating from LEGACY to NORMAL (Recommended for v3.0+):**
+
+```php
+// Before (v2.x default - LEGACY mode)
+$parser = Parse::getInstance();
+$result = $parser->parse('user..name@example.com', false);  // Valid (accepts obsolete syntax)
+
+// After (v3.0+ recommended - NORMAL mode)
+$options = new ParseOptions([], [','], true, null, RfcMode::NORMAL);
+$parser = new Parse(null, $options);
+$result = $parser->parse('user..name@example.com', false);  // Still valid (NORMAL accepts obsolete syntax)
+```
+
+**Key Differences:**
+- **NORMAL mode** is the recommended default for v3.0+
+- Accepts obsolete syntax (consecutive/leading/trailing dots in local part)
+- Stricter than LEGACY for truly invalid addresses
+- Better RFC 5322 compliance with backward compatibility
+
+**Migrating to STRICT modes:**
+
+If you need stricter validation, consider STRICT_ASCII or STRICT_INTL:
+
+```php
+// STRICT_ASCII: Reject obsolete syntax
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_ASCII);
+$parser = new Parse(null, $options);
+$result = $parser->parse('user..name@example.com', false);  // Invalid (consecutive dots not allowed)
+$result = $parser->parse('user.name@example.com', false);   // Valid
+
+// STRICT_INTL: Add UTF-8 support
+$options = new ParseOptions([], [','], true, null, RfcMode::STRICT_INTL, true);
+$parser = new Parse(null, $options);
+$result = $parser->parse('müller@münchen.de', false);  // Valid (UTF-8 allowed)
+```
+
+**UTF-8/SMTPUTF8 Considerations:**
+
+- UTF-8 requires the `allowSmtpUtf8` flag to be true (6th parameter)
+- STRICT_INTL: Always validates UTF-8 characters
+- NORMAL/RELAXED: Accept UTF-8 only when `allowSmtpUtf8 = true`
+- STRICT_ASCII: Reject UTF-8 unless `allowSmtpUtf8 = true`
+- LEGACY: Accept UTF-8 when `allowSmtpUtf8 = true`
+
+```php
+// Enable UTF-8 support
+$options = new ParseOptions(
+    [],                    // banned chars
+    [','],                 // separators
+    true,                  // use whitespace as separator
+    null,                  // length limits (use defaults)
+    RfcMode::NORMAL,       // RFC mode
+    true                   // allowSmtpUtf8 - REQUIRED for UTF-8
+);
+```
+
 #### Configuring Length Limits
 
 You can customize RFC 5321 length limits using the `LengthLimits` class:

@@ -3151,7 +3151,7 @@
     domain_ascii: null
     ip: ''
     invalid: true
-    invalid_reason: "Invalid character found in email address local part: ''"
+    invalid_reason: 'Local part is not RFC 6531/6532 compliant'
     comments: []
 
 -
@@ -3172,7 +3172,7 @@
     domain_ascii: null
     ip: ''
     invalid: true
-    invalid_reason: "Invalid character found in email address local part: ''"
+    invalid_reason: 'Local part is not RFC 6531/6532 compliant'
     comments: []
 
 -
@@ -3186,14 +3186,14 @@
     original_address: 'user..name@example.com'
     name: ''
     name_parsed: ''
-    local_part: 'user..name'
-    local_part_parsed: 'user..name'
-    domain_part: example.com
-    domain: example.com
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
     domain_ascii: null
     ip: ''
     invalid: true
-    invalid_reason: "Invalid character found in email address local part: ''"
+    invalid_reason: "Email address should not contain two dots '.' in a row"
     comments: []
 
 # Test UTF-8 with valid special characters
@@ -3235,6 +3235,866 @@
     domain: 'españa.es'
     domain_ascii: null
     ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_INTL Mode: Unicode Normalization Edge Cases
+# RFC 6532 §3.1 specifies Unicode NFC normalization SHOULD be used
+# Testing combining characters, different normalization forms, and edge cases
+
+-
+  emails: 'café@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'café@example.com'
+    simple_address: 'café@example.com'
+    original_address: 'café@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'café'
+    local_part_parsed: 'café'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'naïve@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'naïve@example.com'
+    simple_address: 'naïve@example.com'
+    original_address: 'naïve@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'naïve'
+    local_part_parsed: 'naïve'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'Æneas@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'Æneas@example.com'
+    simple_address: 'Æneas@example.com'
+    original_address: 'Æneas@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'Æneas'
+    local_part_parsed: 'Æneas'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'Ångström@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'Ångström@example.com'
+    simple_address: 'Ångström@example.com'
+    original_address: 'Ångström@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'Ångström'
+    local_part_parsed: 'Ångström'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'Zoë@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'Zoë@example.com'
+    simple_address: 'Zoë@example.com'
+    original_address: 'Zoë@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'Zoë'
+    local_part_parsed: 'Zoë'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'İstanbul@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'İstanbul@example.com'
+    simple_address: 'İstanbul@example.com'
+    original_address: 'İstanbul@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'İstanbul'
+    local_part_parsed: 'İstanbul'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_INTL Mode: UTF-8 Multi-byte Octet Counting
+# RFC 5321 §4.5.3.1.1 specifies 64-octet limit for local-part
+# UTF-8 characters can be 1-4 octets each, must count octets not characters
+
+-
+  emails: 'a@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'a@example.com'
+    simple_address: 'a@example.com'
+    original_address: 'a@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'a'
+    local_part_parsed: 'a'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'ñ@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'ñ@example.com'
+    simple_address: 'ñ@example.com'
+    original_address: 'ñ@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'ñ'
+    local_part_parsed: 'ñ'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '中@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: '中@example.com'
+    simple_address: '中@example.com'
+    original_address: '中@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '中'
+    local_part_parsed: '中'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '𝐀@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: '𝐀@example.com'
+    simple_address: '𝐀@example.com'
+    original_address: '𝐀@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '𝐀'
+    local_part_parsed: '𝐀'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    simple_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    local_part_parsed: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    local_part_parsed: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    domain_part: 'example.com'
+    domain: 'example.com'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address before the '@' can not be greater than 64 octets per RFC 5321"
+    comments: []
+
+# STRICT_INTL Mode: IDNA Domain U-label Tests
+# RFC 6531 §3.2 specifies domains must conform to IDNA standards
+# Testing various international domain names with U-labels
+
+-
+  emails: 'user@zürich.ch'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user@zürich.ch'
+    simple_address: 'user@zürich.ch'
+    original_address: 'user@zürich.ch'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 'zürich.ch'
+    domain: 'zürich.ch'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test@москва.рф'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'test@москва.рф'
+    simple_address: 'test@москва.рф'
+    original_address: 'test@москва.рф'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: 'москва.рф'
+    domain: 'москва.рф'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'info@北京.中国'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'info@北京.中国'
+    simple_address: 'info@北京.中国'
+    original_address: 'info@北京.中国'
+    name: ''
+    name_parsed: ''
+    local_part: info
+    local_part_parsed: info
+    domain_part: '北京.中国'
+    domain: '北京.中国'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'admin@한국.kr'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'admin@한국.kr'
+    simple_address: 'admin@한국.kr'
+    original_address: 'admin@한국.kr'
+    name: ''
+    name_parsed: ''
+    local_part: admin
+    local_part_parsed: admin
+    domain_part: '한국.kr'
+    domain: '한국.kr'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'contact@مصر.eg'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'contact@مصر.eg'
+    simple_address: 'contact@مصر.eg'
+    original_address: 'contact@مصر.eg'
+    name: ''
+    name_parsed: ''
+    local_part: contact
+    local_part_parsed: contact
+    domain_part: 'مصر.eg'
+    domain: 'مصر.eg'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'hello@ελλάδα.gr'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'hello@ελλάδα.gr'
+    simple_address: 'hello@ελλάδα.gr'
+    original_address: 'hello@ελλάδα.gr'
+    name: ''
+    name_parsed: ''
+    local_part: hello
+    local_part_parsed: hello
+    domain_part: 'ελλάδα.gr'
+    domain: 'ελλάδα.gr'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'support@türkiye.tr'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'support@türkiye.tr'
+    simple_address: 'support@türkiye.tr'
+    original_address: 'support@türkiye.tr'
+    name: ''
+    name_parsed: ''
+    local_part: support
+    local_part_parsed: support
+    domain_part: 'türkiye.tr'
+    domain: 'türkiye.tr'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'sales@日本.jp'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'sales@日本.jp'
+    simple_address: 'sales@日本.jp'
+    original_address: 'sales@日本.jp'
+    name: ''
+    name_parsed: ''
+    local_part: sales
+    local_part_parsed: sales
+    domain_part: '日本.jp'
+    domain: '日本.jp'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'info@québec.ca'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'info@québec.ca'
+    simple_address: 'info@québec.ca'
+    original_address: 'info@québec.ca'
+    name: ''
+    name_parsed: ''
+    local_part: info
+    local_part_parsed: info
+    domain_part: 'québec.ca'
+    domain: 'québec.ca'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'team@ísland.is'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'team@ísland.is'
+    simple_address: 'team@ísland.is'
+    original_address: 'team@ísland.is'
+    name: ''
+    name_parsed: ''
+    local_part: team
+    local_part_parsed: team
+    domain_part: 'ísland.is'
+    domain: 'ísland.is'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user@København.dk'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user@København.dk'
+    simple_address: 'user@København.dk'
+    original_address: 'user@København.dk'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 'København.dk'
+    domain: 'København.dk'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test@São-Paulo.br'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'test@São-Paulo.br'
+    simple_address: 'test@São-Paulo.br'
+    original_address: 'test@São-Paulo.br'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: 'São-Paulo.br'
+    domain: 'São-Paulo.br'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_ASCII Mode: Quoted-string Edge Cases
+# RFC 5322 §3.2.4 specifies quoted-string allows qtext and quoted-pairs
+# Testing various special characters and edge cases in quoted local-parts
+
+-
+  emails: '"user.name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user.name"@example.com'
+    simple_address: '"user.name"@example.com'
+    original_address: '"user.name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user.name"'
+    local_part_parsed: 'user.name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user name"@example.com'
+    simple_address: '"user name"@example.com'
+    original_address: '"user name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user name"'
+    local_part_parsed: 'user name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user@host"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user@host"@example.com'
+    simple_address: '"user@host"@example.com'
+    original_address: '"user@host"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user@host"'
+    local_part_parsed: 'user@host'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user,name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user,name"@example.com'
+    simple_address: '"user,name"@example.com'
+    original_address: '"user,name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user,name"'
+    local_part_parsed: 'user,name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user:name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user:name"@example.com'
+    simple_address: '"user:name"@example.com'
+    original_address: '"user:name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user:name"'
+    local_part_parsed: 'user:name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user;name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user;name"@example.com'
+    simple_address: '"user;name"@example.com'
+    original_address: '"user;name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user;name"'
+    local_part_parsed: 'user;name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user<name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user<name"@example.com'
+    simple_address: '"user<name"@example.com'
+    original_address: '"user<name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user<name"'
+    local_part_parsed: 'user<name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user>name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user>name"@example.com'
+    simple_address: '"user>name"@example.com'
+    original_address: '"user>name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user>name"'
+    local_part_parsed: 'user>name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user[name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user[name"@example.com'
+    simple_address: '"user[name"@example.com'
+    original_address: '"user[name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user[name"'
+    local_part_parsed: 'user[name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user]name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user]name"@example.com'
+    simple_address: '"user]name"@example.com'
+    original_address: '"user]name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user]name"'
+    local_part_parsed: 'user]name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user..dots"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user..dots"@example.com'
+    simple_address: '"user..dots"@example.com'
+    original_address: '"user..dots"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user..dots"'
+    local_part_parsed: 'user..dots'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_ASCII Mode: Domain-literal Edge Cases
+# RFC 5322 §3.4.1 specifies domain-literals for IP addresses
+# Testing IPv4 and IPv6 domain literals with various formats
+
+-
+  emails: 'user@[192.168.1.100]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'user@[192.168.1.100]'
+    simple_address: 'user@[192.168.1.100]'
+    original_address: 'user@[192.168.1.100]'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: '[192.168.1.100]'
+    domain: ''
+    domain_ascii: null
+    ip: '192.168.1.100'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+    simple_address: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+    original_address: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[IPv6:2001:db8::8a2e:370:7334]'
+    domain: ''
+    domain_ascii: null
+    ip: 'IPv6:2001:db8::8a2e:370:7334'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'admin@[10.0.0.1]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'admin@[10.0.0.1]'
+    simple_address: 'admin@[10.0.0.1]'
+    original_address: 'admin@[10.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: admin
+    local_part_parsed: admin
+    domain_part: '[10.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: '10.0.0.1'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'info@[IPv6:fe80::1]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'info@[IPv6:fe80::1]'
+    simple_address: 'info@[IPv6:fe80::1]'
+    original_address: 'info@[IPv6:fe80::1]'
+    name: ''
+    name_parsed: ''
+    local_part: info
+    local_part_parsed: info
+    domain_part: '[IPv6:fe80::1]'
+    domain: ''
+    domain_ascii: null
+    ip: 'IPv6:fe80::1'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'root@[127.0.0.1]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'root@[127.0.0.1]'
+    simple_address: 'root@[127.0.0.1]'
+    original_address: 'root@[127.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: root
+    local_part_parsed: root
+    domain_part: '[127.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: '127.0.0.1'
     invalid: false
     invalid_reason: null
     comments: []
@@ -3384,6 +4244,398 @@
     name_parsed: ''
     local_part: 'user+tag'
     local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# NORMAL Mode: Additional Obsolete Syntax Patterns
+# Testing more obs-local-part edge cases per RFC 5322 §4.4
+
+-
+  emails: 'user....name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user....name@example.com'
+    simple_address: 'user....name@example.com'
+    original_address: 'user....name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user....name'
+    local_part_parsed: 'user....name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '..user@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: '..user@example.com'
+    simple_address: '..user@example.com'
+    original_address: '..user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '..user'
+    local_part_parsed: '..user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user..@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user..@example.com'
+    simple_address: 'user..@example.com'
+    original_address: 'user..@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..'
+    local_part_parsed: 'user..'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '.@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: '.@example.com'
+    simple_address: '.@example.com'
+    original_address: '.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.'
+    local_part_parsed: '.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'a.b.c.d.e.f@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'a.b.c.d.e.f@example.com'
+    simple_address: 'a.b.c.d.e.f@example.com'
+    original_address: 'a.b.c.d.e.f@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'a.b.c.d.e.f'
+    local_part_parsed: 'a.b.c.d.e.f'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user.name.with.dots@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user.name.with.dots@example.com'
+    simple_address: 'user.name.with.dots@example.com'
+    original_address: 'user.name.with.dots@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.name.with.dots'
+    local_part_parsed: 'user.name.with.dots'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user@sub.domain.example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user@sub.domain.example.com'
+    simple_address: 'user@sub.domain.example.com'
+    original_address: 'user@sub.domain.example.com'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: sub.domain.example.com
+    domain: sub.domain.example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test.user..name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'test.user..name@example.com'
+    simple_address: 'test.user..name@example.com'
+    original_address: 'test.user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'test.user..name'
+    local_part_parsed: 'test.user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user-name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user-name@example.com'
+    simple_address: 'user-name@example.com'
+    original_address: 'user-name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user-name'
+    local_part_parsed: 'user-name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user_name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user_name@example.com'
+    simple_address: 'user_name@example.com'
+    original_address: 'user_name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user_name'
+    local_part_parsed: 'user_name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+
+# RELAXED Mode Tests (RFC 2822 compatibility)
+# Most permissive mode for maximum legacy compatibility
+
+-
+  emails: 'user..name@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user..name@example.com'
+    simple_address: 'user..name@example.com'
+    original_address: 'user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..name'
+    local_part_parsed: 'user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '.user@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: '.user@example.com'
+    simple_address: '.user@example.com'
+    original_address: '.user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.user'
+    local_part_parsed: '.user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user.@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user.@example.com'
+    simple_address: 'user.@example.com'
+    original_address: 'user.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.'
+    local_part_parsed: 'user.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# RELAXED mode should accept very unusual but technically valid patterns
+# Note: Multiple @ symbols are invalid per RFC, even in RELAXED mode
+-
+  emails: 'user@name@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user@name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user'
+    local_part_parsed: 'user'
+    domain_part: 'name'
+    domain: 'name'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Multiple at '@' symbols in email address"
+    comments: []
+
+# Standard valid addresses should work
+-
+  emails: 'user.name@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user.name@example.com'
+    simple_address: 'user.name@example.com'
+    original_address: 'user.name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.name'
+    local_part_parsed: 'user.name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user+tag@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user+tag@example.com'
+    simple_address: 'user+tag@example.com'
+    original_address: 'user+tag@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user+tag'
+    local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# RELAXED Mode: Additional Edge Cases
+# Testing atext characters that are valid per RFC 5322
+# RELAXED mode accepts the same characters as other modes, just with more permissive syntax
+
+-
+  emails: 'user-_=+@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user-_=+@example.com'
+    simple_address: 'user-_=+@example.com'
+    original_address: 'user-_=+@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user-_=+'
+    local_part_parsed: 'user-_=+'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '123456@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: '123456@example.com'
+    simple_address: '123456@example.com'
+    original_address: '123456@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '123456'
+    local_part_parsed: '123456'
     domain_part: example.com
     domain: example.com
     domain_ascii: null
