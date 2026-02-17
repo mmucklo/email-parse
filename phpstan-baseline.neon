@@ -61,40 +61,22 @@ parameters:
 			path: src/Parse.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between 4 and 5\|7 will always evaluate to false\.$#'
+			message: '#^Method Email\\Parse\:\:validateLocalPart\(\) has parameter \$emailAddress with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/Parse.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between 4 and 7 will always evaluate to false\.$#'
 			identifier: identical.alwaysFalse
 			count: 1
 			path: src/Parse.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between non\-falsy\-string and false will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 2
-			path: src/Parse.php
-
-		-
-			message: '#^Method Email\\ParseOptions\:\:__construct\(\) has parameter \$bannedChars with no value type specified in iterable type array\.$#'
+			message: '#^Method Email\\Tests\\ParseTest\:\:buildOptions\(\) has parameter \$test with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: src/ParseOptions.php
-
-		-
-			message: '#^Method Email\\ParseOptions\:\:getBannedChars\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/ParseOptions.php
-
-		-
-			message: '#^Method Email\\ParseOptions\:\:setBannedChars\(\) has parameter \$bannedChars with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/ParseOptions.php
-
-		-
-			message: '#^Property Email\\ParseOptions\:\:\$bannedChars type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/ParseOptions.php
+			path: tests/ParseTest.php
 
 		-
 			message: '#^Method Email\\Tests\\ParseTest\:\:testParseEmailAddresses\(\) has no return type specified\.$#'
