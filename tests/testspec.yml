@@ -15,6 +15,7 @@
         local_part_parsed: t.name
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -32,6 +33,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -49,6 +51,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -66,6 +69,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -83,6 +87,7 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322'
@@ -104,6 +109,7 @@
         local_part_parsed: test.testing
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -118,6 +124,7 @@
         local_part_parsed: test.testing2
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -135,6 +142,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -152,6 +160,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -169,6 +178,7 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Email address can not start with '.'"
@@ -186,6 +196,7 @@
     local_part_parsed: 'test .s set .set'
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -203,6 +214,7 @@
     local_part_parsed: t.name
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -220,6 +232,7 @@
     local_part_parsed: t.name.
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -241,6 +254,7 @@
         local_part_parsed: tname
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -255,6 +269,7 @@
         local_part_parsed: tname
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -269,6 +284,7 @@
         local_part_parsed: tname-test1
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -286,6 +302,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: 'Separator not permitted - only one email address allowed'
@@ -307,6 +324,7 @@
         local_part_parsed: e
         domain_part: asdf.g
         domain: asdf.g
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -321,6 +339,7 @@
         local_part_parsed: ''
         domain_part: ''
         domain: ''
+        domain_ascii: null
         ip: ''
         invalid: true
         invalid_reason: 'Misplaced separator or missing "@" symbol'
@@ -335,6 +354,7 @@
         local_part_parsed: "tn'''ame"
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -349,6 +369,7 @@
         local_part_parsed: tname-test1
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -366,6 +387,7 @@
     local_part_parsed: e
     domain_part: asdf.g
     domain: asdf.g
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -383,6 +405,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -400,6 +423,7 @@
     local_part_parsed: tname
     domain_part: asdf.ghjkl.com
     domain: asdf.ghjkl.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -418,6 +442,7 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "This character is not allowed in email addresses submitted (please put in quotes if needed): '!'"
@@ -439,6 +464,7 @@
         local_part_parsed: tname
         domain_part: '[10.0.10.45]'
         domain: ''
+        domain_ascii: null
         ip: 10.0.10.45
         invalid: true
         invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
@@ -453,6 +479,7 @@
         local_part_parsed: tname
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -467,6 +494,7 @@
         local_part_parsed: tname-test2
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -484,6 +512,7 @@
     local_part_parsed: tname
     domain_part: '[10.0.10.45]'
     domain: ''
+    domain_ascii: null
     ip: 10.0.10.45
     invalid: true
     invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
@@ -505,6 +534,7 @@
         local_part_parsed: tname
         domain_part: '[10.0.10.45]'
         domain: ''
+        domain_ascii: null
         ip: 10.0.10.45
         invalid: true
         invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
@@ -519,6 +549,7 @@
         local_part_parsed: tname
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -533,6 +564,7 @@
         local_part_parsed: tname-test2
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -550,6 +582,7 @@
     local_part_parsed: tname
     domain_part: '[10.0.10.45]'
     domain: ''
+    domain_ascii: null
     ip: 10.0.10.45
     invalid: true
     invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
@@ -571,6 +604,7 @@
         local_part_parsed: tname
         domain_part: '[10.0.10.45]'
         domain: ''
+        domain_ascii: null
         ip: 10.0.10.45
         invalid: true
         invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
@@ -586,6 +620,7 @@
         local_part_parsed: tname
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -600,6 +635,7 @@
         local_part_parsed: tname-test2
         domain_part: asdf.ghjkl.com
         domain: asdf.ghjkl.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -617,6 +653,7 @@
     local_part_parsed: tname
     domain_part: '[10.0.10.45]'
     domain: ''
+    domain_ascii: null
     ip: 10.0.10.45
     invalid: true
     invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
@@ -624,17 +661,19 @@
       - 'comment with spaces !!!'
 -
   emails: testing@tūdaliņ.lv
+  include_domain_ascii: true
   multiple: false
   result:
-    address: testing@xn--tdali-d8a8w.lv
-    simple_address: testing@xn--tdali-d8a8w.lv
+    address: testing@tūdaliņ.lv
+    simple_address: testing@tūdaliņ.lv
     original_address: testing@tūdaliņ.lv
     name: ''
     name_parsed: ''
     local_part: testing
     local_part_parsed: testing
-    domain_part: xn--tdali-d8a8w.lv
-    domain: xn--tdali-d8a8w.lv
+    domain_part: tūdaliņ.lv
+    domain: tūdaliņ.lv
+    domain_ascii: xn--tdali-d8a8w.lv
     ip: ''
     invalid: false
     invalid_reason: null
@@ -652,6 +691,7 @@
     local_part_parsed: testing
     domain_part: xn--tdali-d8a8w.lv
     domain: xn--tdali-d8a8w.lv
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -669,6 +709,7 @@
     local_part_parsed: testing
     domain_part: '-bad-domain.com'
     domain: '-bad-domain.com'
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Parts of the domain name '-bad-domain.com' can not start or end with '-'.  This part does: -bad-domain"
@@ -686,6 +727,7 @@
     local_part_parsed: testing
     domain_part: '[192.168.0.1]'
     domain: null
+    domain_ascii: null
     ip: 192.168.0.1
     invalid: true
     invalid_reason: "IP address invalid: '192.168.0.1' does not appear to be a valid IP address in the global range"
@@ -703,6 +745,7 @@
     local_part_parsed: testing
     domain_part: '[256.26.52.5]'
     domain: null
+    domain_ascii: null
     ip: 256.26.52.5
     invalid: true
     invalid_reason: "IP address invalid: '256.26.52.5' does not appear to be a valid IP address"
@@ -720,6 +763,7 @@
     local_part_parsed: testing
     domain_part: '[256.26.52.5]'
     domain: ''
+    domain_ascii: null
     ip: 256.26.52.5
     invalid: true
     invalid_reason: "IP address invalid: '256.26.52.5' does not appear to be a valid IP address"
@@ -737,6 +781,7 @@
     local_part_parsed: testing
     domain_part: '[299.236.532.265]'
     domain: ''
+    domain_ascii: null
     ip: 299.236.532.265
     invalid: true
     invalid_reason: "IP address invalid: '299.236.532.265' does not appear to be a valid IP address"
@@ -754,6 +799,7 @@
     local_part_parsed: testing
     domain_part: '[80.67.66.65]'
     domain: ''
+    domain_ascii: null
     ip: 80.67.66.65
     invalid: false
     invalid_reason: null
@@ -771,6 +817,7 @@
     local_part_parsed: testing
     domain_part: '[80.67.66.65]'
     domain: null
+    domain_ascii: null
     ip: 80.67.66.65
     invalid: false
     invalid_reason: null
@@ -788,6 +835,7 @@
     local_part_parsed: testing_underscore
     domain_part: somedomain.com
     domain: somedomain.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -805,6 +853,7 @@
     local_part_parsed: support
     domain_part: example.org
     domain: example.org
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -822,6 +871,7 @@
     local_part_parsed: e.cloitre
     domain_part: domain.tld
     domain: domain.tld
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -829,6 +879,7 @@
 -
   emails: 'Étienne Cloître <é.cloître@domain.tld>'
   multiple: false
+  allow_smtputf8: false
   result:
     address: ''
     simple_address: ''
@@ -839,13 +890,15 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
-    invalid_reason: "Invalid character found in email address (please put in quotes if needed): 'é'"
+    invalid_reason: "Invalid character found in email address local part: 'é'"
     comments: []
 -
   emails: é.cloître@domain.tld
   multiple: false
+  allow_smtputf8: false
   result:
     address: ''
     simple_address: ''
@@ -856,40 +909,45 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Invalid character found in email address local part: 'î'"
     comments: []
 -
   emails: bob@i18ène.fr
+  include_domain_ascii: true
   multiple: false
   result:
-    address: bob@xn--i18ne-6ra.fr
-    simple_address: bob@xn--i18ne-6ra.fr
+    address: bob@i18ène.fr
+    simple_address: bob@i18ène.fr
     original_address: bob@i18ène.fr
     name: ''
     name_parsed: ''
     local_part: bob
     local_part_parsed: bob
-    domain_part: xn--i18ne-6ra.fr
-    domain: xn--i18ne-6ra.fr
+    domain_part: i18ène.fr
+    domain: i18ène.fr
+    domain_ascii: xn--i18ne-6ra.fr
     ip: ''
     invalid: false
     invalid_reason: null
     comments: []
 -
-  emails: "I'm Bobé <bob@i18ène.fr>"
+  emails: I'm Bobé <bob@i18ène.fr>
+  include_domain_ascii: true
   multiple: false
   result:
-    address: "I'm Bobé <bob@xn--i18ne-6ra.fr>"
-    simple_address: bob@xn--i18ne-6ra.fr
+    address: "I'm Bobé <bob@i18ène.fr>"
+    simple_address: bob@i18ène.fr
     original_address: "I'm Bobé <bob@i18ène.fr>"
     name: "I'm Bobé"
     name_parsed: "I'm Bobé"
     local_part: bob
     local_part_parsed: bob
-    domain_part: xn--i18ne-6ra.fr
-    domain: xn--i18ne-6ra.fr
+    domain_part: i18ène.fr
+    domain: i18ène.fr
+    domain_ascii: xn--i18ne-6ra.fr
     ip: ''
     invalid: false
     invalid_reason: null
@@ -907,6 +965,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:2001:4860:4860::8888]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:2001:4860:4860::8888'
     invalid: false
     invalid_reason: null
@@ -924,6 +983,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:fe80::1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:fe80::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:fe80::1' does not appear to be a valid IPv6 address in the global range"
@@ -941,6 +1001,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:::1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::1' does not appear to be a valid IPv6 address in the global range"
@@ -958,6 +1019,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:fc00::1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:fc00::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:fc00::1' does not appear to be a valid IPv6 address in the global range"
@@ -975,6 +1037,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:2606:4700:4700::1111]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:2606:4700:4700::1111'
     invalid: false
     invalid_reason: null
@@ -992,6 +1055,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:::ffff:192.0.2.1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:::ffff:192.0.2.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.1' does not appear to be a valid IPv6 address in the global range"
@@ -1009,6 +1073,7 @@
     local_part_parsed: testing
     domain_part: '[172.16.0.1]'
     domain: ''
+    domain_ascii: null
     ip: 172.16.0.1
     invalid: true
     invalid_reason: "IP address invalid: '172.16.0.1' does not appear to be a valid IP address in the global range"
@@ -1026,6 +1091,7 @@
     local_part_parsed: testing
     domain_part: '[127.0.0.1]'
     domain: ''
+    domain_ascii: null
     ip: 127.0.0.1
     invalid: true
     invalid_reason: "IP address invalid: '127.0.0.1' does not appear to be a valid IP address in the global range"
@@ -1043,6 +1109,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:gggg::1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:gggg::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:gggg::1' does not appear to be a valid IP address"
@@ -1060,6 +1127,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:2001:4860:4860::8888::1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:2001:4860:4860::8888::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:2001:4860:4860::8888::1' does not appear to be a valid IP address"
@@ -1081,6 +1149,7 @@
         local_part_parsed: testing
         domain_part: '[IPv6:2001:4860:4860::8888]'
         domain: ''
+        domain_ascii: null
         ip: 'IPv6:2001:4860:4860::8888'
         invalid: false
         invalid_reason: null
@@ -1095,6 +1164,7 @@
         local_part_parsed: admin
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1112,6 +1182,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:2001:4860:4860::8888]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:2001:4860:4860::8888'
     invalid: true
     invalid_reason: 'Separator not permitted - only one email address allowed'
@@ -1129,6 +1200,7 @@
     local_part_parsed: testing
     domain_part: '[0.0.0.0]'
     domain: ''
+    domain_ascii: null
     ip: 0.0.0.0
     invalid: true
     invalid_reason: "IP address invalid: '0.0.0.0' does not appear to be a valid IP address in the global range"
@@ -1146,6 +1218,7 @@
     local_part_parsed: testing
     domain_part: '[255.255.255.255]'
     domain: ''
+    domain_ascii: null
     ip: 255.255.255.255
     invalid: true
     invalid_reason: "IP address invalid: '255.255.255.255' does not appear to be a valid IP address in the global range"
@@ -1163,6 +1236,7 @@
     local_part_parsed: example
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1180,6 +1254,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1197,6 +1272,7 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "No ending quote: '\"'"
@@ -1214,6 +1290,7 @@
     local_part_parsed: john
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1231,6 +1308,7 @@
     local_part_parsed: test.user
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1248,6 +1326,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1265,6 +1344,7 @@
     local_part_parsed: test
     domain_part: '[192.168.1.1]'
     domain: null
+    domain_ascii: null
     ip: 192.168.1.1
     invalid: true
     invalid_reason: "IP address invalid: '192.168.1.1' does not appear to be a valid IP address in the global range"
@@ -1282,6 +1362,7 @@
     local_part_parsed: test
     domain_part: '[IPv6:2001:db8::1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:2001:db8::1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:2001:db8::1' does not appear to be a valid IPv6 address in the global range"
@@ -1299,6 +1380,7 @@
     local_part_parsed: test
     domain_part: '[256.256.256.256]'
     domain: null
+    domain_ascii: null
     ip: 256.256.256.256
     invalid: true
     invalid_reason: "IP address invalid: '256.256.256.256' does not appear to be a valid IP address"
@@ -1316,6 +1398,7 @@
     local_part_parsed: test
     domain_part: '[10.0.0.1]'
     domain: null
+    domain_ascii: null
     ip: 10.0.0.1
     invalid: true
     invalid_reason: "IP address invalid: '10.0.0.1' does not appear to be a valid IP address in the global range"
@@ -1337,6 +1420,7 @@
         local_part_parsed: user1
         domain_part: '[80.67.66.65]'
         domain: ''
+        domain_ascii: null
         ip: 80.67.66.65
         invalid: false
         invalid_reason: null
@@ -1351,6 +1435,7 @@
         local_part_parsed: user2
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1368,6 +1453,7 @@
     local_part_parsed: user.name
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1385,6 +1471,7 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: 'No email address found'
@@ -1402,6 +1489,7 @@
     local_part_parsed: ''
     domain_part: ''
     domain: ''
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: 'No email address found'
@@ -1419,6 +1507,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1440,6 +1529,7 @@
         local_part_parsed: testing
         domain_part: '[IPv6:::ffff:192.0.0.1]'
         domain: ''
+        domain_ascii: null
         ip: 'IPv6:::ffff:192.0.0.1'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.0.1' does not appear to be a valid IPv6 address in the global range"
@@ -1457,6 +1547,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:::ffff:192.0.0.1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:::ffff:192.0.0.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.0.1' does not appear to be a valid IPv6 address in the global range"
@@ -1478,6 +1569,7 @@
         local_part_parsed: testing
         domain_part: '[IPv6:::ffff:192.0.2.100]'
         domain: ''
+        domain_ascii: null
         ip: 'IPv6:::ffff:192.0.2.100'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.100' does not appear to be a valid IPv6 address in the global range"
@@ -1495,6 +1587,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:::ffff:192.0.2.100]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:::ffff:192.0.2.100'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:192.0.2.100' does not appear to be a valid IPv6 address in the global range"
@@ -1516,6 +1609,7 @@
         local_part_parsed: testing
         domain_part: '[IPv6:::ffff:198.51.100.1]'
         domain: ''
+        domain_ascii: null
         ip: 'IPv6:::ffff:198.51.100.1'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:198.51.100.1' does not appear to be a valid IPv6 address in the global range"
@@ -1533,6 +1627,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:::ffff:198.51.100.1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:::ffff:198.51.100.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:198.51.100.1' does not appear to be a valid IPv6 address in the global range"
@@ -1554,6 +1649,7 @@
         local_part_parsed: testing
         domain_part: '[IPv6:::ffff:203.0.113.1]'
         domain: ''
+        domain_ascii: null
         ip: 'IPv6:::ffff:203.0.113.1'
         invalid: true
         invalid_reason: "IP address invalid: 'IPv6:::ffff:203.0.113.1' does not appear to be a valid IPv6 address in the global range"
@@ -1571,6 +1667,7 @@
     local_part_parsed: testing
     domain_part: '[IPv6:::ffff:203.0.113.1]'
     domain: ''
+    domain_ascii: null
     ip: 'IPv6:::ffff:203.0.113.1'
     invalid: true
     invalid_reason: "IP address invalid: 'IPv6:::ffff:203.0.113.1' does not appear to be a valid IPv6 address in the global range"
@@ -1588,6 +1685,7 @@
     local_part_parsed: test
     domain_part: server123.example.com
     domain: server123.example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -1610,6 +1708,7 @@
         local_part_parsed: test1
         domain_part: example.comtest2
         domain: example.comtest2
+        domain_ascii: null
         ip: ''
         invalid: true
         invalid_reason: "Multiple at '@' symbols in email address"
@@ -1632,6 +1731,7 @@
         local_part_parsed: test1
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1646,6 +1746,7 @@
         local_part_parsed: test2
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1668,6 +1769,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1682,6 +1784,7 @@
         local_part_parsed: jane
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1703,6 +1806,7 @@
         local_part_parsed: test1
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1717,6 +1821,7 @@
         local_part_parsed: test2
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1731,6 +1836,7 @@
         local_part_parsed: test3
         domain_part: example.org
         domain: example.org
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1752,6 +1858,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1766,6 +1873,7 @@
         local_part_parsed: jane
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1787,6 +1895,7 @@
         local_part_parsed: test1
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1801,6 +1910,7 @@
         local_part_parsed: test2
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1815,6 +1925,7 @@
         local_part_parsed: test3
         domain_part: example.org
         domain: example.org
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1839,6 +1950,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: true
         invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): ';'"
@@ -1863,6 +1975,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: true
         invalid_reason: "Invalid character found in domain of email address (please put in quotes if needed): ','"
@@ -1886,6 +1999,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1900,6 +2014,7 @@
         local_part_parsed: jane
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1923,6 +2038,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1937,6 +2053,7 @@
         local_part_parsed: jane
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1958,6 +2075,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1979,6 +2097,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -1993,6 +2112,7 @@
         local_part_parsed: jane
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -2014,6 +2134,7 @@
         local_part_parsed: ''
         domain_part: ''
         domain: ''
+        domain_ascii: null
         ip: ''
         invalid: true
         invalid_reason: 'Misplaced separator or missing "@" symbol'
@@ -2028,6 +2149,7 @@
         local_part_parsed: john
         domain_part: example.com
         domain: example.com
+        domain_ascii: null
         ip: ''
         invalid: false
         invalid_reason: null
@@ -2045,6 +2167,7 @@
     local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2062,6 +2185,7 @@
     local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Email address before the '@' can not be greater than 64 octets per RFC 5321"
@@ -2079,6 +2203,7 @@
     local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
     domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' must be less than 63 octets"
@@ -2096,6 +2221,7 @@
     local_part_parsed: test
     domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
     domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' must be less than 63 octets"
@@ -2114,6 +2240,7 @@
     local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2132,6 +2259,7 @@
     local_part_parsed: test
     domain_part: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
     domain: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2150,6 +2278,7 @@
     local_part_parsed: aaaaaaaaaaaa
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Email address before the '@' can not be greater than 10 octets per RFC 5321"
@@ -2168,6 +2297,7 @@
     local_part_parsed: test
     domain_part: aaaaaaaaa.example.com
     domain: aaaaaaaaa.example.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: "Domain invalid: Domain name part 'aaaaaaaaa' must be less than 8 octets"
@@ -2186,6 +2316,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
@@ -2204,6 +2335,7 @@
     local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2222,6 +2354,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: true
     invalid_reason: 'Email addresses can not be greater than 10 octets per RFC erratum 1690'
@@ -2240,6 +2373,7 @@
     local_part_parsed: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2257,6 +2391,7 @@
     local_part_parsed: john.smith
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2275,6 +2410,7 @@
     local_part_parsed: john.smith
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2293,6 +2429,7 @@
     local_part_parsed: john
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2311,6 +2448,7 @@
     local_part_parsed: john
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2329,6 +2467,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2348,6 +2487,7 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
@@ -2366,7 +2506,2141 @@
     local_part_parsed: test
     domain_part: example.com
     domain: example.com
+    domain_ascii: null
     ip: ''
     invalid: false
     invalid_reason: null
     comments: []
+-
+  emails: john,doe@example.com
+  multiple: false
+  rfc_mode: strict
+  separators: [';']
+  result:
+    address: ''
+    simple_address: ''
+    original_address: john,doe@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: ','"
+    comments: []
+-
+  emails: 'é@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: é@example.com
+    simple_address: é@example.com
+    original_address: é@example.com
+    name: ''
+    name_parsed: ''
+    local_part: é
+    local_part_parsed: é
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'é@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: é@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: 'é'"
+    comments: []
+-
+  emails: '.john@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: .john@example.com
+    name: ''
+    name_parsed: ''
+    local_part: .john
+    local_part_parsed: .john
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part contains invalid characters'
+    comments: []
+-
+  emails: 'john.@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: john.@example.com
+    name: ''
+    name_parsed: ''
+    local_part: john.
+    local_part_parsed: john.
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part contains invalid characters'
+    comments: []
+-
+  emails: 'jo..hn@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: jo..hn@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address should not contain two dots '.' in a row"
+    comments: []
+-
+  emails: 'john..doe@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: john..doe@example.com
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address should not contain two dots '.' in a row"
+    comments: []
+-
+  emails: '"john..doe"@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: '"john..doe"@example.com'
+    simple_address: '"john..doe"@example.com'
+    original_address: '"john..doe"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"john..doe"'
+    local_part_parsed: 'john..doe'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"john\"doe"@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: '"john\"doe"@example.com'
+    simple_address: '"john\"doe"@example.com'
+    original_address: '"john\"doe"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"john\"doe"'
+    local_part_parsed: 'john\"doe'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'john\ doe@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'john\ doe@example.com'
+    name: "john\\"
+    name_parsed: "john\\"
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: '\\'"
+    comments: []
+-
+  emails: 'john@[127.0.0.1]'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: 'john@[127.0.0.1]'
+    simple_address: 'john@[127.0.0.1]'
+    original_address: 'john@[127.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: john
+    local_part_parsed: john
+    domain_part: '[127.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: 127.0.0.1
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'john@[127.0.0.999]'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'john@[127.0.0.999]'
+    name: ''
+    name_parsed: ''
+    local_part: john
+    local_part_parsed: john
+    domain_part: '[127.0.0.999]'
+    domain: ''
+    domain_ascii: null
+    ip: 127.0.0.999
+    invalid: true
+    invalid_reason: "IP address invalid: '127.0.0.999' does not appear to be a valid IP address"
+    comments: []
+-
+  emails: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"@example.com'
+  multiple: false
+  rfc_mode: strict
+  result:
+    address: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"@example.com'
+    simple_address: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"@example.com'
+    original_address: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual"'
+    local_part_parsed: 'very.(),:;<>[]\\\".VERY.\"very@\\ \"very\".unusual'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '名@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: '名@example.com'
+    simple_address: '名@example.com'
+    original_address: '名@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 名
+    local_part_parsed: 名
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '名@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '名@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: '名'"
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'δοκιμή@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'δοκιμή@example.com'
+    simple_address: 'δοκιμή@example.com'
+    original_address: 'δοκιμή@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: δοκιμή
+    local_part_parsed: δοκιμή
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '名.太郎@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: '名.太郎@example.com'
+    simple_address: '名.太郎@example.com'
+    original_address: '名.太郎@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 名.太郎
+    local_part_parsed: 名.太郎
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: '"名.太郎"@example.com'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: '"名.太郎"@example.com'
+    simple_address: '"名.太郎"@example.com'
+    original_address: '"名.太郎"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"名.太郎"'
+    local_part_parsed: 名.太郎
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@bücher.de'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  include_domain_ascii: true
+  result:
+    address: 'user@bücher.de'
+    simple_address: 'user@bücher.de'
+    original_address: 'user@bücher.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: bücher.de
+    domain: bücher.de
+    domain_ascii: xn--bcher-kva.de
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@xn--bcher-kva.de'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'user@xn--bcher-kva.de'
+    simple_address: 'user@xn--bcher-kva.de'
+    original_address: 'user@xn--bcher-kva.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: xn--bcher-kva.de
+    domain: xn--bcher-kva.de
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: 'ü'"
+    comments: []
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: legacy
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@bücher.de'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  include_domain_ascii: true
+  result:
+    address: 'user@bücher.de'
+    simple_address: 'user@bücher.de'
+    original_address: 'user@bücher.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: bücher.de
+    domain: bücher.de
+    domain_ascii: xn--bcher-kva.de
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@xn--bcher-kva.de'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'user@xn--bcher-kva.de'
+    simple_address: 'user@xn--bcher-kva.de'
+    original_address: 'user@xn--bcher-kva.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: xn--bcher-kva.de
+    domain: xn--bcher-kva.de
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@例え.テスト'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  include_domain_ascii: true
+  result:
+    address: 'user@例え.テスト'
+    simple_address: 'user@例え.テスト'
+    original_address: 'user@例え.テスト'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 例え.テスト
+    domain: 例え.テスト
+    domain_ascii: xn--r8jz45g.xn--zckzah
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+-
+  emails: 'user@xn--r8jz45g.xn--zckzah'
+  multiple: false
+  rfc_mode: strict
+  allow_smtputf8: true
+  result:
+    address: 'user@xn--r8jz45g.xn--zckzah'
+    simple_address: 'user@xn--r8jz45g.xn--zckzah'
+    original_address: 'user@xn--r8jz45g.xn--zckzah'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: xn--r8jz45g.xn--zckzah
+    domain: xn--r8jz45g.xn--zckzah
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_INTL Mode Tests (RFC 6531/6532)
+# Test UTF-8 characters, Unicode normalization, control character rejection
+
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'müller@example.com'
+    simple_address: 'müller@example.com'
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: müller
+    local_part_parsed: müller
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '日本語@example.jp'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: '日本語@example.jp'
+    simple_address: '日本語@example.jp'
+    original_address: '日本語@example.jp'
+    name: ''
+    name_parsed: ''
+    local_part: 日本語
+    local_part_parsed: 日本語
+    domain_part: example.jp
+    domain: example.jp
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user@münchen.de'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user@münchen.de'
+    simple_address: 'user@münchen.de'
+    original_address: 'user@münchen.de'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: münchen.de
+    domain: münchen.de
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+
+
+# Test dot-atom restrictions still apply in STRICT_INTL
+-
+  emails: '.user@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '.user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.user'
+    local_part_parsed: '.user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part contains invalid characters'
+    comments: []
+
+-
+  emails: 'user.@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.'
+    local_part_parsed: 'user.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part contains invalid characters'
+    comments: []
+
+-
+  emails: 'user..name@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address should not contain two dots '.' in a row"
+    comments: []
+
+# Test UTF-8 with valid special characters
+-
+  emails: 'user+tag@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user+tag@example.com'
+    simple_address: 'user+tag@example.com'
+    original_address: 'user+tag@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user+tag'
+    local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'José.García@españa.es'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'José.García@españa.es'
+    simple_address: 'José.García@españa.es'
+    original_address: 'José.García@españa.es'
+    name: ''
+    name_parsed: ''
+    local_part: 'José.García'
+    local_part_parsed: 'José.García'
+    domain_part: 'españa.es'
+    domain: 'españa.es'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_INTL Mode: Unicode Normalization Edge Cases
+# RFC 6532 §3.1 specifies Unicode NFC normalization SHOULD be used
+# Testing combining characters, different normalization forms, and edge cases
+
+-
+  emails: 'café@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'café@example.com'
+    simple_address: 'café@example.com'
+    original_address: 'café@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'café'
+    local_part_parsed: 'café'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'naïve@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'naïve@example.com'
+    simple_address: 'naïve@example.com'
+    original_address: 'naïve@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'naïve'
+    local_part_parsed: 'naïve'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'Æneas@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'Æneas@example.com'
+    simple_address: 'Æneas@example.com'
+    original_address: 'Æneas@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'Æneas'
+    local_part_parsed: 'Æneas'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'Ångström@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'Ångström@example.com'
+    simple_address: 'Ångström@example.com'
+    original_address: 'Ångström@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'Ångström'
+    local_part_parsed: 'Ångström'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'Zoë@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'Zoë@example.com'
+    simple_address: 'Zoë@example.com'
+    original_address: 'Zoë@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'Zoë'
+    local_part_parsed: 'Zoë'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'İstanbul@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'İstanbul@example.com'
+    simple_address: 'İstanbul@example.com'
+    original_address: 'İstanbul@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'İstanbul'
+    local_part_parsed: 'İstanbul'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_INTL Mode: UTF-8 Multi-byte Octet Counting
+# RFC 5321 §4.5.3.1.1 specifies 64-octet limit for local-part
+# UTF-8 characters can be 1-4 octets each, must count octets not characters
+
+-
+  emails: 'a@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'a@example.com'
+    simple_address: 'a@example.com'
+    original_address: 'a@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'a'
+    local_part_parsed: 'a'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'ñ@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'ñ@example.com'
+    simple_address: 'ñ@example.com'
+    original_address: 'ñ@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'ñ'
+    local_part_parsed: 'ñ'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '中@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: '中@example.com'
+    simple_address: '中@example.com'
+    original_address: '中@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '中'
+    local_part_parsed: '中'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '𝐀@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: '𝐀@example.com'
+    simple_address: '𝐀@example.com'
+    original_address: '𝐀@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '𝐀'
+    local_part_parsed: '𝐀'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    simple_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    local_part_parsed: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    local_part_parsed: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+    domain_part: 'example.com'
+    domain: 'example.com'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address before the '@' can not be greater than 64 octets per RFC 5321"
+    comments: []
+
+# STRICT_INTL Mode: IDNA Domain U-label Tests
+# RFC 6531 §3.2 specifies domains must conform to IDNA standards
+# Testing various international domain names with U-labels
+
+-
+  emails: 'user@zürich.ch'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user@zürich.ch'
+    simple_address: 'user@zürich.ch'
+    original_address: 'user@zürich.ch'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 'zürich.ch'
+    domain: 'zürich.ch'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test@москва.рф'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'test@москва.рф'
+    simple_address: 'test@москва.рф'
+    original_address: 'test@москва.рф'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: 'москва.рф'
+    domain: 'москва.рф'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'info@北京.中国'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'info@北京.中国'
+    simple_address: 'info@北京.中国'
+    original_address: 'info@北京.中国'
+    name: ''
+    name_parsed: ''
+    local_part: info
+    local_part_parsed: info
+    domain_part: '北京.中国'
+    domain: '北京.中国'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'admin@한국.kr'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'admin@한국.kr'
+    simple_address: 'admin@한국.kr'
+    original_address: 'admin@한국.kr'
+    name: ''
+    name_parsed: ''
+    local_part: admin
+    local_part_parsed: admin
+    domain_part: '한국.kr'
+    domain: '한국.kr'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'contact@مصر.eg'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'contact@مصر.eg'
+    simple_address: 'contact@مصر.eg'
+    original_address: 'contact@مصر.eg'
+    name: ''
+    name_parsed: ''
+    local_part: contact
+    local_part_parsed: contact
+    domain_part: 'مصر.eg'
+    domain: 'مصر.eg'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'hello@ελλάδα.gr'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'hello@ελλάδα.gr'
+    simple_address: 'hello@ελλάδα.gr'
+    original_address: 'hello@ελλάδα.gr'
+    name: ''
+    name_parsed: ''
+    local_part: hello
+    local_part_parsed: hello
+    domain_part: 'ελλάδα.gr'
+    domain: 'ελλάδα.gr'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'support@türkiye.tr'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'support@türkiye.tr'
+    simple_address: 'support@türkiye.tr'
+    original_address: 'support@türkiye.tr'
+    name: ''
+    name_parsed: ''
+    local_part: support
+    local_part_parsed: support
+    domain_part: 'türkiye.tr'
+    domain: 'türkiye.tr'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'sales@日本.jp'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'sales@日本.jp'
+    simple_address: 'sales@日本.jp'
+    original_address: 'sales@日本.jp'
+    name: ''
+    name_parsed: ''
+    local_part: sales
+    local_part_parsed: sales
+    domain_part: '日本.jp'
+    domain: '日本.jp'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'info@québec.ca'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'info@québec.ca'
+    simple_address: 'info@québec.ca'
+    original_address: 'info@québec.ca'
+    name: ''
+    name_parsed: ''
+    local_part: info
+    local_part_parsed: info
+    domain_part: 'québec.ca'
+    domain: 'québec.ca'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'team@ísland.is'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'team@ísland.is'
+    simple_address: 'team@ísland.is'
+    original_address: 'team@ísland.is'
+    name: ''
+    name_parsed: ''
+    local_part: team
+    local_part_parsed: team
+    domain_part: 'ísland.is'
+    domain: 'ísland.is'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user@København.dk'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'user@København.dk'
+    simple_address: 'user@København.dk'
+    original_address: 'user@København.dk'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 'København.dk'
+    domain: 'København.dk'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test@São-Paulo.br'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: 'test@São-Paulo.br'
+    simple_address: 'test@São-Paulo.br'
+    original_address: 'test@São-Paulo.br'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: 'São-Paulo.br'
+    domain: 'São-Paulo.br'
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_ASCII Mode: Quoted-string Edge Cases
+# RFC 5322 §3.2.4 specifies quoted-string allows qtext and quoted-pairs
+# Testing various special characters and edge cases in quoted local-parts
+
+-
+  emails: '"user.name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user.name"@example.com'
+    simple_address: '"user.name"@example.com'
+    original_address: '"user.name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user.name"'
+    local_part_parsed: 'user.name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user name"@example.com'
+    simple_address: '"user name"@example.com'
+    original_address: '"user name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user name"'
+    local_part_parsed: 'user name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user@host"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user@host"@example.com'
+    simple_address: '"user@host"@example.com'
+    original_address: '"user@host"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user@host"'
+    local_part_parsed: 'user@host'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user,name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user,name"@example.com'
+    simple_address: '"user,name"@example.com'
+    original_address: '"user,name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user,name"'
+    local_part_parsed: 'user,name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user:name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user:name"@example.com'
+    simple_address: '"user:name"@example.com'
+    original_address: '"user:name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user:name"'
+    local_part_parsed: 'user:name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user;name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user;name"@example.com'
+    simple_address: '"user;name"@example.com'
+    original_address: '"user;name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user;name"'
+    local_part_parsed: 'user;name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user<name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user<name"@example.com'
+    simple_address: '"user<name"@example.com'
+    original_address: '"user<name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user<name"'
+    local_part_parsed: 'user<name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user>name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user>name"@example.com'
+    simple_address: '"user>name"@example.com'
+    original_address: '"user>name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user>name"'
+    local_part_parsed: 'user>name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user[name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user[name"@example.com'
+    simple_address: '"user[name"@example.com'
+    original_address: '"user[name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user[name"'
+    local_part_parsed: 'user[name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user]name"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user]name"@example.com'
+    simple_address: '"user]name"@example.com'
+    original_address: '"user]name"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user]name"'
+    local_part_parsed: 'user]name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '"user..dots"@example.com'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: '"user..dots"@example.com'
+    simple_address: '"user..dots"@example.com'
+    original_address: '"user..dots"@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '"user..dots"'
+    local_part_parsed: 'user..dots'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# STRICT_ASCII Mode: Domain-literal Edge Cases
+# RFC 5322 §3.4.1 specifies domain-literals for IP addresses
+# Testing IPv4 and IPv6 domain literals with various formats
+
+-
+  emails: 'user@[192.168.1.100]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'user@[192.168.1.100]'
+    simple_address: 'user@[192.168.1.100]'
+    original_address: 'user@[192.168.1.100]'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: '[192.168.1.100]'
+    domain: ''
+    domain_ascii: null
+    ip: '192.168.1.100'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+    simple_address: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+    original_address: 'test@[IPv6:2001:db8::8a2e:370:7334]'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[IPv6:2001:db8::8a2e:370:7334]'
+    domain: ''
+    domain_ascii: null
+    ip: 'IPv6:2001:db8::8a2e:370:7334'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'admin@[10.0.0.1]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'admin@[10.0.0.1]'
+    simple_address: 'admin@[10.0.0.1]'
+    original_address: 'admin@[10.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: admin
+    local_part_parsed: admin
+    domain_part: '[10.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: '10.0.0.1'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'info@[IPv6:fe80::1]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'info@[IPv6:fe80::1]'
+    simple_address: 'info@[IPv6:fe80::1]'
+    original_address: 'info@[IPv6:fe80::1]'
+    name: ''
+    name_parsed: ''
+    local_part: info
+    local_part_parsed: info
+    domain_part: '[IPv6:fe80::1]'
+    domain: ''
+    domain_ascii: null
+    ip: 'IPv6:fe80::1'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'root@[127.0.0.1]'
+  multiple: false
+  rfc_mode: strict_ascii
+  allow_smtputf8: false
+  result:
+    address: 'root@[127.0.0.1]'
+    simple_address: 'root@[127.0.0.1]'
+    original_address: 'root@[127.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: root
+    local_part_parsed: root
+    domain_part: '[127.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: '127.0.0.1'
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+
+# NORMAL Mode Tests (RFC 5322 + obsolete syntax)
+# Test that obsolete syntax is accepted per RFC 5322 §4
+
+-
+  emails: 'user..name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user..name@example.com'
+    simple_address: 'user..name@example.com'
+    original_address: 'user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..name'
+    local_part_parsed: 'user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '.user@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: '.user@example.com'
+    simple_address: '.user@example.com'
+    original_address: '.user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.user'
+    local_part_parsed: '.user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user.@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user.@example.com'
+    simple_address: 'user.@example.com'
+    original_address: 'user.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.'
+    local_part_parsed: 'user.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user...name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user...name@example.com'
+    simple_address: 'user...name@example.com'
+    original_address: 'user...name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user...name'
+    local_part_parsed: 'user...name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# NORMAL mode should reject UTF-8 (unless allowSmtpUtf8 is true)
+-
+  emails: 'müller@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'müller@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Invalid character found in email address local part: 'ü'"
+    comments: []
+
+# NORMAL mode with valid standard addresses
+-
+  emails: 'user.name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user.name@example.com'
+    simple_address: 'user.name@example.com'
+    original_address: 'user.name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.name'
+    local_part_parsed: 'user.name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user+tag@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user+tag@example.com'
+    simple_address: 'user+tag@example.com'
+    original_address: 'user+tag@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user+tag'
+    local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# NORMAL Mode: Additional Obsolete Syntax Patterns
+# Testing more obs-local-part edge cases per RFC 5322 §4.4
+
+-
+  emails: 'user....name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user....name@example.com'
+    simple_address: 'user....name@example.com'
+    original_address: 'user....name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user....name'
+    local_part_parsed: 'user....name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '..user@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: '..user@example.com'
+    simple_address: '..user@example.com'
+    original_address: '..user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '..user'
+    local_part_parsed: '..user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user..@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user..@example.com'
+    simple_address: 'user..@example.com'
+    original_address: 'user..@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..'
+    local_part_parsed: 'user..'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '.@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: '.@example.com'
+    simple_address: '.@example.com'
+    original_address: '.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.'
+    local_part_parsed: '.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'a.b.c.d.e.f@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'a.b.c.d.e.f@example.com'
+    simple_address: 'a.b.c.d.e.f@example.com'
+    original_address: 'a.b.c.d.e.f@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'a.b.c.d.e.f'
+    local_part_parsed: 'a.b.c.d.e.f'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user.name.with.dots@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user.name.with.dots@example.com'
+    simple_address: 'user.name.with.dots@example.com'
+    original_address: 'user.name.with.dots@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.name.with.dots'
+    local_part_parsed: 'user.name.with.dots'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user@sub.domain.example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user@sub.domain.example.com'
+    simple_address: 'user@sub.domain.example.com'
+    original_address: 'user@sub.domain.example.com'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: sub.domain.example.com
+    domain: sub.domain.example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'test.user..name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'test.user..name@example.com'
+    simple_address: 'test.user..name@example.com'
+    original_address: 'test.user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'test.user..name'
+    local_part_parsed: 'test.user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user-name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user-name@example.com'
+    simple_address: 'user-name@example.com'
+    original_address: 'user-name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user-name'
+    local_part_parsed: 'user-name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user_name@example.com'
+  multiple: false
+  rfc_mode: normal
+  allow_smtputf8: false
+  result:
+    address: 'user_name@example.com'
+    simple_address: 'user_name@example.com'
+    original_address: 'user_name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user_name'
+    local_part_parsed: 'user_name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+
+# RELAXED Mode Tests (RFC 2822 compatibility)
+# Most permissive mode for maximum legacy compatibility
+
+-
+  emails: 'user..name@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user..name@example.com'
+    simple_address: 'user..name@example.com'
+    original_address: 'user..name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user..name'
+    local_part_parsed: 'user..name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '.user@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: '.user@example.com'
+    simple_address: '.user@example.com'
+    original_address: '.user@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '.user'
+    local_part_parsed: '.user'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user.@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user.@example.com'
+    simple_address: 'user.@example.com'
+    original_address: 'user.@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.'
+    local_part_parsed: 'user.'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# RELAXED mode should accept very unusual but technically valid patterns
+# Note: Multiple @ symbols are invalid per RFC, even in RELAXED mode
+-
+  emails: 'user@name@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user@name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user'
+    local_part_parsed: 'user'
+    domain_part: 'name'
+    domain: 'name'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Multiple at '@' symbols in email address"
+    comments: []
+
+# Standard valid addresses should work
+-
+  emails: 'user.name@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user.name@example.com'
+    simple_address: 'user.name@example.com'
+    original_address: 'user.name@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user.name'
+    local_part_parsed: 'user.name'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: 'user+tag@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user+tag@example.com'
+    simple_address: 'user+tag@example.com'
+    original_address: 'user+tag@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user+tag'
+    local_part_parsed: 'user+tag'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+# RELAXED Mode: Additional Edge Cases
+# Testing atext characters that are valid per RFC 5322
+# RELAXED mode accepts the same characters as other modes, just with more permissive syntax
+
+-
+  emails: 'user-_=+@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: 'user-_=+@example.com'
+    simple_address: 'user-_=+@example.com'
+    original_address: 'user-_=+@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: 'user-_=+'
+    local_part_parsed: 'user-_=+'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
+-
+  emails: '123456@example.com'
+  multiple: false
+  rfc_mode: relaxed
+  allow_smtputf8: false
+  result:
+    address: '123456@example.com'
+    simple_address: '123456@example.com'
+    original_address: '123456@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: '123456'
+    local_part_parsed: '123456'
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: false
+    invalid_reason: null
+    comments: []
+
