@@ -1,5 +1,37 @@
 # Upgrade Guide
 
+## v3.0 → v3.1
+
+v3.1 is additive with one hard cutover: the 15 `ParseOptions` rule properties are now `readonly`. Factory presets and the deprecated setters still work. Everything else is new and non-breaking.
+
+### Breaking Change
+
+**`ParseOptions` rule properties are now readonly.** Direct assignment raises `Error`.
+
+```php
+// v3.0 — worked
+$options = ParseOptions::rfc5322();
+$options->requireFqdn = false;
+
+// v3.1 — throws Error
+$options = ParseOptions::rfc5322();
+$options->requireFqdn = false;  // Error: Cannot modify readonly property
+
+// v3.1 migration — fluent builder returns a new instance
+$options = ParseOptions::rfc5322()->withRequireFqdn(false);
+```
+
+There is a `withX()` builder for each of the 15 rule properties plus the 4 state fields (`withBannedChars`, `withSeparators`, `withUseWhitespaceAsSeparator`, `withLengthLimits`). Builders can be chained; each returns a new immutable instance with a single field replaced.
+
+### Additions (Non-Breaking)
+
+- **Typed output**: `Parse::parseSingle()` and `Parse::parseMultiple()` return `ParsedEmailAddress` / `ParseResult` value objects with readonly properties. The existing `parse()` method still returns arrays.
+- **Structured error codes**: every parsed-address entry now includes `invalid_reason_code: ?ParseErrorCode` alongside the existing `invalid_reason` string. Match codes instead of error text:
+  ```php
+  if ($result->invalidReasonCode === ParseErrorCode::MultipleAtSymbols) { … }
+  ```
+- **New rules**: `validateDisplayNamePhrase` (RFC 5322 §3.2.5) and `strictIdna` (RFC 5891/5892/5893). `strictIdna` is enabled by default in `ParseOptions::rfc6531()`.
+
 ## v2.x → v3.0
 
 v3.0 introduces configurable RFC compliance presets, immutable length limits, and stricter validation rules. The default behavior of `new ParseOptions()` is preserved for backward compatibility, but a few public APIs have been removed or renamed. This guide lists every observable change.

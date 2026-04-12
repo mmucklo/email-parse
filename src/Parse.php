@@ -2,6 +2,7 @@
 
 namespace Email;
 
+use Email\ParseErrorCode as Err;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -116,9 +117,14 @@ class Parse
      */
     private function validateIpGlobalRange(string $ip, int $ipType): bool
     {
-        // PHP 8.2+ has FILTER_FLAG_GLOBAL_RANGE constant
+        // PHP 8.2+ exposes FILTER_FLAG_GLOBAL_RANGE. Look it up via constant() so
+        // static analyzers running against a PHP 8.1 baseline do not flag it as
+        // an undefined reference.
         if (defined('FILTER_FLAG_GLOBAL_RANGE')) {
-            return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_GLOBAL_RANGE) !== false;
+            /** @var int $globalRangeFlag */
+            $globalRangeFlag = constant('FILTER_FLAG_GLOBAL_RANGE');
+
+            return filter_var($ip, FILTER_VALIDATE_IP, $ipType | $globalRangeFlag) !== false;
         }
 
         // PHP 8.1: Manually check for private/reserved ranges
@@ -181,6 +187,7 @@ class Parse
      *               'domain_part' => string, // domain or [IP] as it appears after '@'
      *               'invalid' => boolean, // true if the address failed validation
      *               'invalid_reason' => string|null, // reason for failure, null if valid
+     *               'invalid_reason_code' => ParseErrorCode|null, // structured error code, null if valid
      *               'comments' => array), // extracted RFC 5322 comments (e.g. ['note'])
      *               array( .... ) // the next email address matched
      *               )
@@ -191,9 +198,32 @@ class Parse
      *               'domain' => string, 'domain_ascii' => string|null,
      *               'ip' => string, 'domain_part' => string,
      *               'invalid' => boolean, 'invalid_reason' => string|null,
-     *               'comments' => array)
+     *               'invalid_reason_code' => ParseErrorCode|null, 'comments' => array)
      *               endif;
      */
+    /**
+     * Parse a single email address and return a typed value object.
+     *
+     * Recommended over {@see parse()} when you want IDE autocomplete and
+     * static-analysis friendly access to the parsed fields.
+     */
+    public function parseSingle(string $email, string $encoding = 'UTF-8'): ParsedEmailAddress
+    {
+        return ParsedEmailAddress::fromArray($this->parse($email, false, $encoding));
+    }
+
+    /**
+     * Parse a list of email addresses and return a typed result.
+     *
+     * Recommended over {@see parse()} in multi-address mode for the same reasons as
+     * {@see parseSingle()}. Separator handling and per-address rules are configured
+     * via {@see ParseOptions}.
+     */
+    public function parseMultiple(string $emails, string $encoding = 'UTF-8'): ParseResult
+    {
+        return ParseResult::fromArray($this->parse($emails, true, $encoding));
+    }
+
     public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
         $emailAddresses = [];
@@ -279,8 +309,10 @@ class Parse
                             $emailAddress['invalid'] = true;
                             if ($multiple || ($i + 5) >= $len) {
                                 $emailAddress['invalid_reason'] = 'Misplaced separator or missing "@" symbol';
+                                $emailAddress['invalid_reason_code'] = Err::MisplacedSeparator;
                             } else {
                                 $emailAddress['invalid_reason'] = 'Separator not permitted - only one email address allowed';
+                                $emailAddress['invalid_reason_code'] = Err::SeparatorNotPermitted;
                             }
                         }
                     } elseif (' ' == $curChar ||
@@ -310,6 +342,7 @@ class Parse
                             } elseif (self::STATE_LOCAL_PART == $subState) {
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Email address contains whitespace';
+                                $emailAddress['invalid_reason_code'] = Err::WhitespaceInAddress;
                             }
                         } elseif ($this->options->getUseWhitespaceAsSeparator() &&
                                   (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
@@ -322,6 +355,7 @@ class Parse
                             if (self::STATE_LOCAL_PART == $subState) {
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Email address contains whitespace';
+                                $emailAddress['invalid_reason_code'] = Err::WhitespaceInAddress;
                             } else {
                                 // If the previous section was a quoted string, then use that for the name
                                 $this->handleQuote($emailAddress);
@@ -333,6 +367,7 @@ class Parse
                         if (self::STATE_LOCAL_PART == $subState || self::STATE_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'Email address contains multiple opening "<" (either a typo or multiple emails that need to be separated by a comma or space)';
+                            $emailAddress['invalid_reason_code'] = Err::MultipleOpeningAngle;
                         } else {
                             // Here should be the start of the local part for sure everything else then is part of the name
                             $subState = self::STATE_LOCAL_PART;
@@ -344,6 +379,7 @@ class Parse
                         if (self::STATE_DOMAIN != $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Did not find domain name before a closing '>'";
+                            $emailAddress['invalid_reason_code'] = Err::MissingDomainBeforeClosingAngle;
                         } else {
                             $subState = self::STATE_AFTER_DOMAIN;
                         }
@@ -352,6 +388,7 @@ class Parse
                         if (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'Quote \'"\' found where it shouldn\'t be';
+                            $emailAddress['invalid_reason_code'] = Err::MisplacedQuote;
                         } else {
                             $state = self::STATE_QUOTE;
                         }
@@ -360,17 +397,21 @@ class Parse
                         if (self::STATE_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Multiple at '@' symbols in email address";
+                            $emailAddress['invalid_reason_code'] = Err::MultipleAtSymbols;
                         } elseif (self::STATE_AFTER_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Stray at '@' symbol found after domain name";
+                            $emailAddress['invalid_reason_code'] = Err::StrayAtAfterDomain;
                         } elseif (null !== $emailAddress['special_char_in_substate']) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$emailAddress['special_char_in_substate']}'";
+                            $emailAddress['invalid_reason_code'] = Err::InvalidCharacterInLocalPart;
                         } else {
                             $subState = self::STATE_DOMAIN;
                             if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = 'Something went wrong during parsing.';
+                                $emailAddress['invalid_reason_code'] = Err::ParserConfusion;
                                 $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}\n\$curChar: {$curChar}");
                             } elseif ($emailAddress['quote_temp']) {
                                 $emailAddress['local_part_parsed'] = $emailAddress['quote_temp'];
@@ -389,6 +430,7 @@ class Parse
                         if (self::STATE_DOMAIN != $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character '[' in email address";
+                            $emailAddress['invalid_reason_code'] = Err::InvalidOpeningBracket;
                         }
                         $state = self::STATE_SQUARE_BRACKET;
                     } elseif ('.' == $curChar) {
@@ -397,11 +439,13 @@ class Parse
                             // Consecutive dots only allowed when obs-local-part is enabled
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Email address should not contain two dots '.' in a row";
+                            $emailAddress['invalid_reason_code'] = Err::ConsecutiveDots;
                         } elseif (self::STATE_LOCAL_PART == $subState) {
                             if (!$emailAddress['local_part_parsed'] && !$this->options->allowObsLocalPart) {
                                 // Leading dots only allowed when obs-local-part is enabled
                                 $emailAddress['invalid'] = true;
                                 $emailAddress['invalid_reason'] = "Email address can not start with '.'";
+                                $emailAddress['invalid_reason_code'] = Err::LeadingDot;
                             } else {
                                 $emailAddress['local_part_parsed'] .= $curChar;
                             }
@@ -410,6 +454,7 @@ class Parse
                         } elseif (self::STATE_AFTER_DOMAIN == $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Stray period '.' found after domain of email address";
+                            $emailAddress['invalid_reason_code'] = Err::StrayPeriodAfterDomain;
                         } elseif (self::STATE_START == $subState) {
                             if ($emailAddress['quote_temp']) {
                                 $emailAddress['address_temp'] .= $emailAddress['quote_temp'];
@@ -423,6 +468,7 @@ class Parse
                             // valid in an unquoted display name or at the start of an address.
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'Stray period found in email address.  If the period is part of a person\'s name, it must appear in double quotes - e.g. "John Q. Public". Otherwise, an email address shouldn\'t begin with a period.';
+                            $emailAddress['invalid_reason_code'] = Err::StrayPeriod;
                         }
                     } elseif (preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
                         // RFC 5322 §3.2.3: atext characters — valid in unquoted local-parts and display names
@@ -430,10 +476,12 @@ class Parse
                         if (isset($this->options->getBannedChars()[$curChar])) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
+                            $emailAddress['invalid_reason_code'] = Err::CharacterNotAllowed;
                         } elseif (('/' == $curChar || '|' == $curChar) &&
                         !$emailAddress['local_part_parsed'] && !$emailAddress['address_temp'] && !$emailAddress['quote_temp'] && !$emailAddress['name_parsed']) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed at the beginning of an email address (please put in quotes if needed): '{$curChar}'";
+                            $emailAddress['invalid_reason_code'] = Err::InvalidCharacterAtStart;
                         } elseif (self::STATE_LOCAL_PART == $subState) {
                             // Legitimate character - Determine where to append based on the current 'substate'
 
@@ -479,6 +527,7 @@ class Parse
                                 }
                                 if ($emailAddress['invalid']) {
                                     $emailAddress['invalid_reason'] = "Invalid character found in domain of email address (please put in quotes if needed): '{$curChar}'";
+                                    $emailAddress['invalid_reason_code'] = Err::InvalidCharacterInDomain;
                                 }
                             }
                         } elseif (self::STATE_START === $subState || self::STATE_LOCAL_PART === $subState) {
@@ -511,6 +560,7 @@ class Parse
                                 } else {
                                     $emailAddress['invalid'] = true;
                                     $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
+                                    $emailAddress['invalid_reason_code'] = Err::InvalidCharacterInLocalPart;
                                 }
                             } else {
                                 // Non-UTF-8, non-atext character
@@ -521,6 +571,7 @@ class Parse
                                 } else {
                                     $emailAddress['invalid'] = true;
                                     $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
+                                    $emailAddress['invalid_reason_code'] = Err::InvalidCharacterInLocalPart;
                                 }
                             }
                         } elseif (self::STATE_NAME === $subState) {
@@ -534,6 +585,7 @@ class Parse
                         } else {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address (please put in quotes if needed): '{$curChar}'";
+                            $emailAddress['invalid_reason_code'] = Err::InvalidCharacterInAddress;
                         }
                     }
 
@@ -610,6 +662,7 @@ class Parse
                     $emailAddress['original_address'] .= $curChar;
                     $emailAddress['invalid'] = true;
                     $emailAddress['invalid_reason'] = 'Error during parsing';
+                    $emailAddress['invalid_reason_code'] = Err::ParseError;
                     $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$state}\n\$subState: {$subState}\n\$i: {$i}\n\$curChar: {$curChar}");
 
                     break;
@@ -647,17 +700,18 @@ class Parse
         // End-of-input reached with an unclosed delimiter — mark invalid with a descriptive reason
         if (!$emailAddress['invalid'] && $emailAddress['quote_temp']) {
             $emailAddress['invalid'] = true;
-            $emailAddress['invalid_reason'] = match ($state) {
-                self::STATE_QUOTE => 'No ending quote: \'"\'',
-                self::STATE_COMMENT => 'No closing parenthesis: \')\'',
-                self::STATE_SQUARE_BRACKET => 'No closing square bracket: \']\'',
-                default => 'Unterminated quoted section',
+            [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = match ($state) {
+                self::STATE_QUOTE => ['No ending quote: \'"\'', Err::UnterminatedQuote],
+                self::STATE_COMMENT => ['No closing parenthesis: \')\'', Err::UnterminatedComment],
+                self::STATE_SQUARE_BRACKET => ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket],
+                default => ['Unterminated quoted section', Err::IncompleteAddress],
             };
         }
         if (!$emailAddress['invalid'] && ($emailAddress['address_temp'] || $emailAddress['quote_temp'])) {
             $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}");
             $emailAddress['invalid'] = true;
             $emailAddress['invalid_reason'] = 'Incomplete address';
+            $emailAddress['invalid_reason_code'] = Err::IncompleteAddress;
             if (!$success) {
                 $reason = 'Invalid email addresses';
             } else {
@@ -673,6 +727,7 @@ class Parse
             if (!$multiple) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'No email address found';
+                $emailAddress['invalid_reason_code'] = Err::IncompleteAddress;
                 $this->addAddress(
                     $emailAddresses,
                     $emailAddress,
@@ -722,6 +777,7 @@ class Parse
             if ($emailAddress['address_temp_period'] > 0) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Periods within the display name of an email address must appear in quotes, such as "John Q. Public" <john@qpublic.com> according to RFC 5322';
+                $emailAddress['invalid_reason_code'] = Err::UnquotedPeriodInDisplayName;
             }
         }
     }
@@ -741,6 +797,7 @@ class Parse
             'ip' => '',
             'invalid' => false,
             'invalid_reason' => null,
+            'invalid_reason_code' => null,
             'local_part_quoted' => false,
             'name_quoted' => false,
             'address_temp_quoted' => false,
@@ -778,17 +835,20 @@ class Parse
             if ($emailAddress['address_temp'] || $emailAddress['quote_temp']) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Incomplete address';
+                $emailAddress['invalid_reason_code'] = Err::IncompleteAddress;
                 $this->log('error', "Email\\Parse->addAddress - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp'] : {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\n");
             } elseif ($emailAddress['ip'] && $emailAddress['domain']) {
                 // Error - this should never occur
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Confusion during parsing';
+                $emailAddress['invalid_reason_code'] = Err::ParserConfusion;
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$emailAddress['ip']}' and a domain '{$emailAddress['domain']}' found for the email address '{$emailAddress['original_address']}'\n");
             } elseif ($emailAddress['ip']) {
                 if (filter_var($emailAddress['ip'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
                     if ($this->options->validateIpGlobalRange && !$this->validateIpGlobalRange($emailAddress['ip'], FILTER_FLAG_IPV4)) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
+                        $emailAddress['invalid_reason_code'] = Err::IpNotInGlobalRange;
                     }
                 } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
@@ -796,14 +856,17 @@ class Parse
                         if ($this->options->validateIpGlobalRange && !$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IPv6 address in the global range';
+                            $emailAddress['invalid_reason_code'] = Err::Ipv6NotInGlobalRange;
                         }
                     } else {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
+                        $emailAddress['invalid_reason_code'] = Err::InvalidIpAddress;
                     }
                 } else {
                     $emailAddress['invalid'] = true;
                     $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address';
+                    $emailAddress['invalid_reason_code'] = Err::InvalidIpAddress;
                 }
             } elseif ($emailAddress['domain']) {
                 // Strip optional FQDN root-label dot (RFC 5321 §2.3.5 allows "example.com.")
@@ -824,6 +887,7 @@ class Parse
                 if ($domainAscii === null) {
                     $emailAddress['invalid'] = true;
                     $emailAddress['invalid_reason'] = "Can't convert domain {$emailAddress['domain']} to punycode";
+                    $emailAddress['invalid_reason_code'] = Err::PunycodeConversionFailed;
                 } else {
                     if ($domainAscii !== $emailAddress['domain']) {
                         $emailAddress['domain_ascii'] = $domainAscii;
@@ -832,6 +896,7 @@ class Parse
                     if (!$result['valid']) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = isset($result['reason']) ? 'Domain invalid: '.$result['reason'] : 'Domain invalid for some unknown reason';
+                        $emailAddress['invalid_reason_code'] = $result['code'] ?? Err::DomainInvalid;
                     }
                 }
             }
@@ -848,7 +913,25 @@ class Parse
             if (0 == strlen($domainPart)) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Email address needs a domain after the \'@\'';
+                $emailAddress['invalid_reason_code'] = Err::MissingDomain;
             }
+        }
+
+        // RFC 5322 §3.2.5 phrase validation for unquoted display names.
+        // A phrase is 1*word where each word is an atom (atext + CFWS) or quoted-string.
+        // Quoted display names are already phrase-valid; an unquoted name must contain
+        // only atext characters and whitespace. The parser's state machine already
+        // catches unquoted periods (UnquotedPeriodInDisplayName); this check adds
+        // rejection of non-atext bytes such as stray UTF-8 in an unquoted name.
+        if (!$emailAddress['invalid']
+            && $this->options->validateDisplayNamePhrase
+            && !$emailAddress['name_quoted']
+            && $emailAddress['name_parsed'] !== ''
+            && !preg_match('#^[A-Za-z0-9!\#$%&\'*+\-/=?^_`{|}~ \t]+$#', $emailAddress['name_parsed'])
+        ) {
+            $emailAddress['invalid'] = true;
+            $emailAddress['invalid_reason'] = "Display name '{$emailAddress['name_parsed']}' must be a quoted-string or atext-only phrase per RFC 5322 §3.2.5";
+            $emailAddress['invalid_reason_code'] = Err::InvalidDisplayNamePhrase;
         }
 
         // Unified local-part validation
@@ -857,6 +940,7 @@ class Parse
             if (!$result['valid']) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = $result['reason'];
+                $emailAddress['invalid_reason_code'] = $result['code'] ?? null;
             } elseif ($result['normalized'] !== null) {
                 // Apply NFC normalization result to the parsed local-part and re-derive display form
                 $emailAddress['local_part_parsed'] = $result['normalized'];
@@ -872,6 +956,7 @@ class Parse
             if ($dotPos === false || $dotPos === 0 || $dotPos === strlen($emailAddress['domain']) - 1) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = 'Domain must be a fully-qualified domain name';
+                $emailAddress['invalid_reason_code'] = Err::FqdnRequired;
             }
         }
 
@@ -887,9 +972,11 @@ class Parse
             if ($localPartWireLen > $limits->maxLocalPartLength) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = "Email address before the '@' can not be greater than {$limits->maxLocalPartLength} octets per RFC 5321";
+                $emailAddress['invalid_reason_code'] = Err::LocalPartTooLong;
             } elseif (($localPartWireLen + 1 + strlen($domainPart)) > $limits->maxTotalLength) {
                 $emailAddress['invalid'] = true;
                 $emailAddress['invalid_reason'] = "Email addresses can not be greater than {$limits->maxTotalLength} octets per RFC 3696 EID 1690";
+                $emailAddress['invalid_reason_code'] = Err::TotalLengthExceeded;
             }
         }
 
@@ -907,6 +994,7 @@ class Parse
                         'ip' => $emailAddress['ip'],
                         'invalid' => $emailAddress['invalid'],
                         'invalid_reason' => $emailAddress['invalid_reason'],
+                        'invalid_reason_code' => $emailAddress['invalid_reason_code'],
                         'comments' => $emailAddress['comments'], ];
 
         // Build the proper address by hand (has comments stripped out and should have quotes in the proper places)
@@ -934,7 +1022,7 @@ class Parse
      * Unified local-part validation based on ParseOptions rule properties.
      *
      * @param array $emailAddress The email address array from the parser
-     * @return array{valid: bool, reason: ?string, normalized: ?string}
+     * @return array{valid: bool, reason: ?string, code: ?ParseErrorCode, normalized: ?string}
      */
     protected function validateLocalPart(array $emailAddress): array
     {
@@ -946,13 +1034,13 @@ class Parse
         // (allowUtf8LocalPart is false in rfc5321() and rfc5322() presets)
         $hasUtf8 = (bool) preg_match('/[^\x00-\x7F]/', $localPart);
         if ($hasUtf8 && !$opts->allowUtf8LocalPart) {
-            return ['valid' => false, 'reason' => 'UTF-8 characters not allowed in local part', 'normalized' => null];
+            return ['valid' => false, 'reason' => 'UTF-8 characters not allowed in local part', 'code' => Err::Utf8NotAllowedInLocalPart, 'normalized' => null];
         }
 
         // Quoted-string content validation (RFC 5321 §4.1.2 qtextSMTP, RFC 5322 §3.2.4 qtext)
         if ($quoted) {
             if ($opts->rejectEmptyQuotedLocalPart && $localPart === '') {
-                return ['valid' => false, 'reason' => 'Empty quoted local part not allowed', 'normalized' => null];
+                return ['valid' => false, 'reason' => 'Empty quoted local part not allowed', 'code' => Err::EmptyQuotedLocalPart, 'normalized' => null];
             }
 
             if ($opts->validateQuotedContent) {
@@ -963,12 +1051,12 @@ class Parse
                     if ($localPart[$i] === '\\') {
                         // quoted-pair: must be followed by a valid character
                         if ($i + 1 >= $len) {
-                            return ['valid' => false, 'reason' => 'Trailing backslash in quoted string', 'normalized' => null];
+                            return ['valid' => false, 'reason' => 'Trailing backslash in quoted string', 'code' => Err::TrailingBackslashInQuotedString, 'normalized' => null];
                         }
                         $nextByte = ord($localPart[$i + 1]);
                         // RFC 5321 §4.1.2 quoted-pairSMTP: backslash followed by %d32-126
                         if ($nextByte < 32 || $nextByte > 126) {
-                            return ['valid' => false, 'reason' => 'Invalid escaped character in quoted string', 'normalized' => null];
+                            return ['valid' => false, 'reason' => 'Invalid escaped character in quoted string', 'code' => Err::InvalidEscapedCharInQuotedString, 'normalized' => null];
                         }
                         $i++; // skip the escaped character on the next iteration
                     }
@@ -981,17 +1069,17 @@ class Parse
                     // qtextSMTP: %d32-33 / %d35-91 / %d93-126
                     // Reject: NUL, C0 controls, DQUOTE(%d34), backslash(%d92), DEL(%d127+)
                     if ($byte <= 31 || $byte == 34 || $byte == 92 || $byte >= 127) {
-                        return ['valid' => false, 'reason' => 'Invalid character in quoted string: byte ' . $byte, 'normalized' => null];
+                        return ['valid' => false, 'reason' => 'Invalid character in quoted string: byte ' . $byte, 'code' => Err::InvalidCharInQuotedString, 'normalized' => null];
                     }
                 }
 
                 // C1 control check for internationalized quoted content
                 if ($opts->rejectC1Controls && preg_match('/[\x{0080}-\x{009F}]/u', $localPart)) {
-                    return ['valid' => false, 'reason' => 'C1 control character in quoted string', 'normalized' => null];
+                    return ['valid' => false, 'reason' => 'C1 control character in quoted string', 'code' => Err::C1ControlInQuotedString, 'normalized' => null];
                 }
             }
 
-            return ['valid' => true, 'reason' => null, 'normalized' => null];
+            return ['valid' => true, 'reason' => null, 'code' => null, 'normalized' => null];
         }
 
         // Unquoted local part validation
@@ -1000,10 +1088,10 @@ class Parse
         // RFC 6530 §10.1: C1 control characters (U+0080-U+009F) are also prohibited
         // in internationalized email addresses (they are valid UTF-8 but meaningless).
         if ($opts->rejectC0Controls && preg_match('/[\x00-\x1F]/', $localPart)) {
-            return ['valid' => false, 'reason' => 'C0 control character in local part', 'normalized' => null];
+            return ['valid' => false, 'reason' => 'C0 control character in local part', 'code' => Err::C0ControlInLocalPart, 'normalized' => null];
         }
         if ($opts->rejectC1Controls && preg_match('/[\x{0080}-\x{009F}]/u', $localPart)) {
-            return ['valid' => false, 'reason' => 'C1 control character in local part', 'normalized' => null];
+            return ['valid' => false, 'reason' => 'C1 control character in local part', 'code' => Err::C1ControlInLocalPart, 'normalized' => null];
         }
 
         // NFC normalization: apply and return normalized form for caller to store
@@ -1011,7 +1099,7 @@ class Parse
         if ($opts->applyNfcNormalization) {
             $nfc = $this->normalizeUtf8($localPart);
             if ($nfc === false) {
-                return ['valid' => false, 'reason' => 'Local part cannot be NFC normalized', 'normalized' => null];
+                return ['valid' => false, 'reason' => 'Local part cannot be NFC normalized', 'code' => Err::LocalPartCannotBeNormalized, 'normalized' => null];
             }
             if ($nfc !== $localPart) {
                 $normalizedLocalPart = $nfc;
@@ -1021,7 +1109,7 @@ class Parse
 
         // UTF-8 encoding validation
         if ($hasUtf8 && !mb_check_encoding($localPart, 'UTF-8')) {
-            return ['valid' => false, 'reason' => 'Invalid UTF-8 encoding in local part', 'normalized' => null];
+            return ['valid' => false, 'reason' => 'Invalid UTF-8 encoding in local part', 'code' => Err::InvalidUtf8Encoding, 'normalized' => null];
         }
 
         // Build the validation pattern for unquoted local-parts.
@@ -1052,10 +1140,10 @@ class Parse
         }
 
         if (!preg_match($pattern, $localPart)) {
-            return ['valid' => false, 'reason' => 'Local part contains invalid characters', 'normalized' => null];
+            return ['valid' => false, 'reason' => 'Local part contains invalid characters', 'code' => Err::LocalPartContainsInvalidChars, 'normalized' => null];
         }
 
-        return ['valid' => true, 'reason' => null, 'normalized' => $normalizedLocalPart];
+        return ['valid' => true, 'reason' => null, 'code' => null, 'normalized' => $normalizedLocalPart];
     }
 
     /**
@@ -1089,9 +1177,31 @@ class Parse
             return $domain;
         }
 
-        $ascii = idn_to_ascii($domain, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46);
+        // When `strictIdna` is enabled, apply full IDNA2008 conformance:
+        //   - USE_STD3_RULES: reject labels containing characters outside LDH (RFC 5891 §4.4).
+        //   - CHECK_BIDI: enforce the Bidi rule for labels with RTL characters (RFC 5893).
+        //   - CHECK_CONTEXTJ: enforce CONTEXTJ rules for U+200C / U+200D (RFC 5892 Appendix A).
+        //   - NONTRANSITIONAL_TO_ASCII: treat IDNA2008 deviations (ß, ς, etc.) literally
+        //     instead of the IDNA2003 mapping — required for full RFC 5891 compliance.
+        // Without strictIdna we retain the permissive UTS#46 default for backward compatibility.
+        $flags = $this->options->strictIdna
+            ? IDNA_USE_STD3_RULES | IDNA_CHECK_BIDI | IDNA_CHECK_CONTEXTJ | IDNA_NONTRANSITIONAL_TO_ASCII
+            : IDNA_DEFAULT;
 
-        return $ascii === false ? null : $ascii;
+        $idnaInfo = [];
+        $ascii = idn_to_ascii($domain, $flags, INTL_IDNA_VARIANT_UTS46, $idnaInfo);
+
+        if ($ascii === false) {
+            return null;
+        }
+
+        // Under strictIdna, idn_to_ascii() may still return a string while reporting
+        // errors in $idnaInfo['errors']. Treat any reported error as a conversion failure.
+        if ($this->options->strictIdna && ($idnaInfo['errors'] ?? 0) !== 0) {
+            return null;
+        }
+
+        return $ascii;
     }
 
     /**
@@ -1108,28 +1218,32 @@ class Parse
      * @param string $domain   The ASCII domain name to validate (after punycode conversion)
      * @param string $encoding The encoding of the string (if not UTF-8)
      *
-     * @return array{valid: bool, reason?: string}
+     * @return array{valid: bool, reason?: string, code?: ParseErrorCode}
      */
     protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
     {
         // RFC 5321 §4.5.3.1.2: total domain length limit is in octets
         if (strlen($domain) > 255) {
-            return ['valid' => false, 'reason' => 'Domain name too long'];
+            return ['valid' => false, 'reason' => 'Domain name too long', 'code' => Err::DomainTooLong];
         } else {
+            // mb_regex_encoding() can return false on failure; only restore when
+            // we got back a real encoding name.
             $origEncoding = mb_regex_encoding();
             mb_regex_encoding($encoding);
             $parts = mb_split('\\.', $domain);
-            mb_regex_encoding($origEncoding);
+            if ($origEncoding) {
+                mb_regex_encoding($origEncoding);
+            }
             $maxLabelLen = $this->options->getLengthLimits()->maxDomainLabelLength;
             foreach ($parts as $part) {
                 if (strlen($part) > $maxLabelLen) {
-                    return ['valid' => false, 'reason' => "Domain name part '{$part}' must be less than {$maxLabelLen} octets"];
+                    return ['valid' => false, 'reason' => "Domain name part '{$part}' must be less than {$maxLabelLen} octets", 'code' => Err::DomainLabelTooLong];
                 }
                 if (!preg_match('/^[a-zA-Z0-9\-]+$/', $part)) {
-                    return ['valid' => false, 'reason' => "Domain name '{$domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '{$part}' contains characters outside of that range."];
+                    return ['valid' => false, 'reason' => "Domain name '{$domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '{$part}' contains characters outside of that range.", 'code' => Err::DomainContainsInvalidChars];
                 }
                 if ('-' == mb_substr($part, 0, 1, $encoding) || '-' == mb_substr($part, mb_strlen($part) - 1, 1, $encoding)) {
-                    return ['valid' => false, 'reason' => "Parts of the domain name '{$domain}' can not start or end with '-'.  This part does: {$part}"];
+                    return ['valid' => false, 'reason' => "Parts of the domain name '{$domain}' can not start or end with '-'.  This part does: {$part}", 'code' => Err::DomainLabelStartsOrEndsWithHyphen];
                 }
             }
         }

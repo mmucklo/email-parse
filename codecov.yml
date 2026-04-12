@@ -1,0 +1,20 @@
+coverage:
+  status:
+    project:
+      default:
+        # Overall coverage must not drop more than 1 percentage point vs. base.
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        # New lines in a PR must be at least 70% covered. Many new lines are
+        # invalid_reason_code assignments paired with pre-existing untested
+        # error branches; demanding 80% on those would require contrived
+        # tests for every parser edge case.
+        target: 70%
+        threshold: 0%
+
+comment:
+  layout: "reach, diff, flags, files"
+  behavior: default
+  require_changes: false
