@@ -1,16 +1,20 @@
 {
   "name": "mmucklo/email-parse",
   "type": "library",
-  "description": "email-parse a (reasonably) RFC822 / RF2822-compliant library for batch parsing multiple (and single) email addresses",
+  "description": "RFC 5322 / RFC 6531-compliant library for batch parsing multiple (and single) email addresses",
   "license": "MIT",
   "keywords": [
     "email",
     "parse",
+    "RFC5322",
+    "RFC6531",
     "RFC822",
     "RFC2822",
     "email-parse",
     "multiple-email",
-    "batch-email"
+    "batch-email",
+    "internationalized-email",
+    "UTF-8"
   ],
   "authors": [
     {
