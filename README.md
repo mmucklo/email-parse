@@ -51,6 +51,13 @@ foreach (Parse::getInstance()->parseStream($csvRows) as $addr) {
     if ($addr->invalid) continue;
     // ...
 }
+
+// Serialization (v3.3+)
+$parsed = Parse::getInstance()->parseSingle('"J Doe" <j@example.com>');
+(string) $parsed;        // "j@example.com" — Stringable returns simple_address
+$parsed->canonical();    // 'J Doe <j@example.com>' — minimal RFC 5322 quoting
+$parsed->toArray();      // legacy array shape, for mixed-API code
+$parsed->toJson();       // JSON string
 ```
 
 ### Advanced Usage with ParseOptions
@@ -94,7 +101,7 @@ $parser = new Parse(null, $options);
 // RFC 6531 — Strict Internationalized (full UTF-8 + NFC normalization)
 $options = ParseOptions::rfc6531();
 $parser = new Parse(null, $options);
-$result = $parser->parse('müller@münchen.de', false);  // Valid UTF-8 address
+$result = $parser->parseSingle('müller@münchen.de');  // Valid UTF-8 address
 
 // RFC 5322 — Standard with obsolete syntax support (recommended)
 $options = ParseOptions::rfc5322();
@@ -133,10 +140,10 @@ $parser = new Parse(null, $options);
 $options = ParseOptions::rfc6531();
 $parser = new Parse(null, $options);
 
-$result = $parser->parse('José.García@españa.es', false);
+$result = $parser->parseSingle('José.García@españa.es');
 // Valid: UTF-8 characters allowed in rfc6531() preset
 
-$result = $parser->parse('.user@example.com', false);
+$result = $parser->parseSingle('.user@example.com');
 // Invalid: Leading dot not allowed (dot-atom restrictions still apply)
 ```
 
@@ -173,6 +180,7 @@ $parser = new Parse(null, $options);
 | `validateDisplayNamePhrase` | `false` | Enforce RFC 5322 §3.2.5 phrase syntax on unquoted display names |
 | `strictIdna` | `false` | Apply full IDNA2008 conformance on U-label domains (RFC 5891/5892/5893) |
 | `allowObsRoute` | `false` | Accept RFC 5322 §4.4 obs-route source-routes like `<@host1,@host2:user@host3>` |
+| `localPartNormalizer` | `null` | `?callable(string $local, string $domain): string` — domain-specific canonicalization hook (v3.3+); set via `withLocalPartNormalizer()` |
 | **Length & Output** | | |
 | `enforceLengthLimits` | `true` | Enforce RFC 5321 length limits (64/254/63) |
 | `includeDomainAscii` | `false` | Include punycode `domain_ascii` in output |
@@ -244,9 +252,9 @@ The `domain_ascii` field is included in the output when `includeDomainAscii` is 
 ```php
 $options = ParseOptions::rfc6531();
 $parser = new Parse(null, $options);
-$result = $parser->parse('user@bücher.de', false);
-// $result['domain'] = 'bücher.de'
-// $result['domain_ascii'] = 'xn--bcher-kva.de'
+$result = $parser->parseSingle('user@bücher.de');
+// $result->domain      === 'bücher.de'
+// $result->domainAscii === 'xn--bcher-kva.de'
 ```
 
 ### Comment Extraction
@@ -257,20 +265,20 @@ RFC 5322 allows comments in email addresses using parentheses. The parser automa
 use Email\Parse;
 
 // Single comment
-$result = Parse::getInstance()->parse('john@example.com (home address)', false);
-// $result['comments'] = ['home address']
+$result = Parse::getInstance()->parseSingle('john@example.com (home address)');
+// $result->comments === ['home address']
 
 // Multiple comments
-$result = Parse::getInstance()->parse('test(comment1)(comment2)@example.com', false);
-// $result['comments'] = ['comment1', 'comment2']
+$result = Parse::getInstance()->parseSingle('test(comment1)(comment2)@example.com');
+// $result->comments === ['comment1', 'comment2']
 
 // Nested comments
-$result = Parse::getInstance()->parse('test@example.com (comment with (nested) parens)', false);
-// $result['comments'] = ['comment with (nested) parens']
+$result = Parse::getInstance()->parseSingle('test@example.com (comment with (nested) parens)');
+// $result->comments === ['comment with (nested) parens']
 
 // No comments
-$result = Parse::getInstance()->parse('test@example.com', false);
-// $result['comments'] = []
+$result = Parse::getInstance()->parseSingle('test@example.com');
+// $result->comments === []
 ```
 
 Comments are stripped from the `address` field but preserved in `original_address`.
@@ -304,7 +312,7 @@ $parser = new Parse(null, $options);
 // Use the rfc6531() preset for full internationalized email support
 $options = ParseOptions::rfc6531();
 $parser = new Parse(null, $options);
-$result = $parser->parse('müller@münchen.de', false);
+$result = $parser->parseSingle('müller@münchen.de');
 ```
 
 #### Function Spec ####
@@ -357,6 +365,9 @@ $result = $parser->parse('müller@münchen.de', false);
 
 Other Examples:
 ---------------
+
+The following examples use the legacy array-returning `parse()` method to document its full output shape. New code should prefer `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed return values; both APIs expose the same underlying fields.
+
 ```php
  $email = '"J Doe" <johndoe@xyz.com>';
  $result = Email\Parse::getInstance()->parse($email, false);

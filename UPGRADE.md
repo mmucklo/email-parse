@@ -1,5 +1,35 @@
 # Upgrade Guide
 
+## v3.2 → v3.3
+
+v3.3 is fully additive — no breaking changes, no behavior changes for existing callers. Everything listed here is opt-in.
+
+### Additions
+
+- **Serialization**: `ParsedEmailAddress::toArray()`, `ParsedEmailAddress::toJson()`, and the corresponding methods on `ParseResult`. Use these to round-trip typed objects back to the legacy array shape or emit JSON:
+  ```php
+  $result = $parser->parseSingle('user@example.com');
+  $result->toArray();   // legacy array shape
+  $result->toJson();    // JSON string; ParseErrorCode serializes to its backing value
+  ```
+- **`implements \Stringable`** on `ParsedEmailAddress` — `(string) $parsed` returns `simpleAddress` for valid addresses, empty string otherwise. Lets a parsed address drop into string contexts (logging, templating, concatenation).
+- **`ParsedEmailAddress::canonical()`** — minimal-quoting RFC 5322 display form. Drops unnecessary quotes that the `$address` field may preserve from the input; adds quotes only when §3.2.4 / §3.2.5 require them.
+- **Local-part normalizer callback** — configure with `withLocalPartNormalizer(fn(string $local, string $domain): string)`. Invoked only after successful validation; the returned string replaces `local_part_parsed`. `originalAddress` still preserves the verbatim input. Example (Gmail):
+  ```php
+  $opts = ParseOptions::rfc5322()->withLocalPartNormalizer(
+      fn (string $local, string $domain): string =>
+          $domain === 'gmail.com'
+              ? ($plus = strpos(str_replace('.', '', $local), '+')) === false
+                  ? str_replace('.', '', $local)
+                  : substr(str_replace('.', '', $local), 0, $plus)
+              : $local,
+  );
+  ```
+
+### Minimum Requirements (Unchanged)
+
+PHP `^8.1`, `ext-mbstring`, `ext-intl`.
+
 ## v3.1 → v3.2
 
 v3.2 is fully additive — no breaking changes. Two behavior changes are worth noting for callers who depended on them:

@@ -43,6 +43,7 @@ class ParseOptions
      * @param bool              $validateDisplayNamePhrase Enforce RFC 5322 §3.2.5 phrase syntax for unquoted display names (atext + WSP only).
      * @param bool              $strictIdna                Apply full IDNA2008 conformance on U-label domains (CONTEXTJ/O, Bidi rule, STD3, nontransitional mapping).
      * @param bool              $allowObsRoute             Accept RFC 5322 §4.4 obs-route source-route prefix inside angle-addr (e.g. `<@host1,@host2:user@host3>`); the route is captured and the real addr-spec is used ("accept and discard" per spec).
+     * @param ?\Closure         $localPartNormalizer       Optional callback `fn(string $localPart, string $domain): string` invoked after local-part validation succeeds. The returned string replaces `local_part_parsed` in the output (and is re-quoted if needed). Typical uses: Gmail dot-insensitivity, `+tag` plus-addressing.
      */
     public function __construct(
         array $bannedChars = [],
@@ -66,6 +67,7 @@ class ParseOptions
         public readonly bool $validateDisplayNamePhrase = false,
         public readonly bool $strictIdna = false,
         public readonly bool $allowObsRoute = false,
+        public readonly ?\Closure $localPartNormalizer = null,
     ) {
         foreach ($bannedChars as $char) {
             $this->bannedChars[$char] = true;
@@ -305,6 +307,29 @@ class ParseOptions
     }
 
     /**
+     * Supply a local-part normalizer callback, or `null` to clear any current one.
+     *
+     * The callback is invoked after local-part validation succeeds with
+     * `fn(string $localPart, string $domain): string`. Its return value
+     * replaces `local_part_parsed` in the output — typical uses are Gmail
+     * dot-insensitivity (`john.doe` → `johndoe`) and plus-addressing
+     * (`user+tag` → `user`), typically gated on the domain.
+     *
+     *   $opts = ParseOptions::rfc5322()->withLocalPartNormalizer(
+     *       fn(string $local, string $domain): string =>
+     *           $domain === 'gmail.com'
+     *               ? strtolower(strstr(str_replace('.', '', $local), '+', true) ?: str_replace('.', '', $local))
+     *               : $local,
+     *   );
+     */
+    public function withLocalPartNormalizer(?callable $normalizer): self
+    {
+        return $this->cloneWith([
+            'localPartNormalizer' => $normalizer === null ? null : \Closure::fromCallable($normalizer),
+        ]);
+    }
+
+    /**
      * Build a new ParseOptions preserving every current value except those
      * listed in $overrides.
      *
@@ -336,6 +361,9 @@ class ParseOptions
             validateDisplayNamePhrase:  $get('validateDisplayNamePhrase', $this->validateDisplayNamePhrase),
             strictIdna:                 $get('strictIdna', $this->strictIdna),
             allowObsRoute:              $get('allowObsRoute', $this->allowObsRoute),
+            localPartNormalizer:        array_key_exists('localPartNormalizer', $overrides)
+                ? $overrides['localPartNormalizer']
+                : $this->localPartNormalizer,
         );
     }
 
