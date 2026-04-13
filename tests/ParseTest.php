@@ -669,4 +669,174 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('local', $result->localPart);
         $this->assertSame('domain.com', $result->domain);
     }
+
+    public function testToArrayRoundTripsLegacyShape(): void
+    {
+        // Parse an address both ways; toArray() on the typed object must match
+        // the legacy parse() output exactly (same keys, same order, same types).
+        $parser = new Parse();
+        $legacy = $parser->parse('"J Doe" <john@example.com> (nickname)', false);
+        $typed = $parser->parseSingle('"J Doe" <john@example.com> (nickname)');
+
+        $this->assertSame($legacy, $typed->toArray());
+    }
+
+    public function testToArrayPreservesErrorCode(): void
+    {
+        $typed = Parse::getInstance()->parseSingle('not-an-email');
+        $arr = $typed->toArray();
+        $this->assertTrue($arr['invalid']);
+        $this->assertInstanceOf(\Email\ParseErrorCode::class, $arr['invalid_reason_code']);
+    }
+
+    public function testToJsonProducesParseableJson(): void
+    {
+        $typed = Parse::getInstance()->parseSingle('user@example.com');
+        $decoded = json_decode($typed->toJson(), true);
+        $this->assertIsArray($decoded);
+        $this->assertSame('user', $decoded['local_part']);
+        $this->assertSame('example.com', $decoded['domain']);
+    }
+
+    public function testToJsonSerializesErrorCodeAsString(): void
+    {
+        // ParseErrorCode is a BackedEnum; json_encode emits its backing value.
+        $typed = Parse::getInstance()->parseSingle('<<a@b.com>');
+        $decoded = json_decode($typed->toJson(), true);
+        $this->assertSame('multiple_opening_angle', $decoded['invalid_reason_code']);
+    }
+
+    public function testStringableReturnsSimpleAddressWhenValid(): void
+    {
+        $typed = Parse::getInstance()->parseSingle('"J Doe" <john@example.com>');
+        $this->assertSame('john@example.com', (string) $typed);
+    }
+
+    public function testStringableReturnsEmptyStringWhenInvalid(): void
+    {
+        $typed = Parse::getInstance()->parseSingle('not-an-email');
+        $this->assertSame('', (string) $typed);
+    }
+
+    public function testCanonicalAddrSpecWithoutName(): void
+    {
+        $typed = Parse::getInstance()->parseSingle('john@example.com');
+        $this->assertSame('john@example.com', $typed->canonical());
+    }
+
+    public function testCanonicalAddrSpecWithSimpleName(): void
+    {
+        // Atext-only name needs no quotes.
+        $typed = Parse::getInstance()->parseSingle('John Doe <john@example.com>');
+        $this->assertSame('John Doe <john@example.com>', $typed->canonical());
+    }
+
+    public function testCanonicalStripsUnnecessaryNameQuotes(): void
+    {
+        // Input had quotes; canonical form drops them because the name is
+        // pure atext+WSP and quoting is not required per RFC 5322 §3.2.5.
+        $typed = Parse::getInstance()->parseSingle('"John Doe" <john@example.com>');
+        $this->assertSame('John Doe <john@example.com>', $typed->canonical());
+    }
+
+    public function testCanonicalKeepsRequiredNameQuotes(): void
+    {
+        // Period in display name requires quoting (it's not atext).
+        $typed = Parse::getInstance()->parseSingle('"John Q. Public" <john@example.com>');
+        $this->assertSame('"John Q. Public" <john@example.com>', $typed->canonical());
+    }
+
+    public function testCanonicalQuotesLocalPartWhenRequired(): void
+    {
+        // Local-part with a space must be quoted per RFC 5322 §3.2.4.
+        $typed = Parse::getInstance()->parseSingle('"with space"@example.com');
+        $this->assertSame('"with space"@example.com', $typed->canonical());
+    }
+
+    public function testCanonicalReturnsEmptyForInvalidAddress(): void
+    {
+        $typed = Parse::getInstance()->parseSingle('not-an-email');
+        $this->assertSame('', $typed->canonical());
+    }
+
+    public function testParseResultToArrayRoundTripsLegacyShape(): void
+    {
+        $parser = new Parse();
+        $legacy = $parser->parse('a@a.com, b@b.com', true);
+        $typed = $parser->parseMultiple('a@a.com, b@b.com');
+
+        $this->assertSame($legacy, $typed->toArray());
+    }
+
+    public function testParseResultToJsonProducesParseableJson(): void
+    {
+        $typed = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+        $decoded = json_decode($typed->toJson(), true);
+        $this->assertTrue($decoded['success']);
+        $this->assertCount(2, $decoded['email_addresses']);
+        $this->assertSame('a', $decoded['email_addresses'][0]['local_part']);
+    }
+
+    public function testLocalPartNormalizerRewritesLocalPart(): void
+    {
+        // Gmail-style: strip dots and +tags from the local-part for gmail.com.
+        $gmailNormalizer = function (string $local, string $domain): string {
+            if ($domain !== 'gmail.com') {
+                return $local;
+            }
+            $local = str_replace('.', '', $local);
+            $plus = strpos($local, '+');
+
+            return $plus === false ? $local : substr($local, 0, $plus);
+        };
+
+        $opts = ParseOptions::rfc5322()->withLocalPartNormalizer($gmailNormalizer);
+        $result = (new Parse(null, $opts))->parseSingle('john.doe+spam@gmail.com');
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame('johndoe', $result->localPartParsed);
+        $this->assertSame('johndoe@gmail.com', $result->simpleAddress);
+        // original_address retains the verbatim input for audit.
+        $this->assertSame('john.doe+spam@gmail.com', $result->originalAddress);
+    }
+
+    public function testLocalPartNormalizerSkipsOtherDomains(): void
+    {
+        // The normalizer is gmail-specific; other domains pass through.
+        $normalizer = fn (string $local, string $domain) => $domain === 'gmail.com'
+            ? str_replace('.', '', $local)
+            : $local;
+
+        $opts = ParseOptions::rfc5322()->withLocalPartNormalizer($normalizer);
+        $result = (new Parse(null, $opts))->parseSingle('j.doe@example.com');
+
+        $this->assertSame('j.doe', $result->localPartParsed);
+    }
+
+    public function testLocalPartNormalizerNotInvokedOnInvalidAddress(): void
+    {
+        // Invalid address short-circuits validateLocalPart; the normalizer
+        // must not run on unvalidated input.
+        $invocations = 0;
+        $normalizer = function (string $local, string $domain) use (&$invocations): string {
+            ++$invocations;
+
+            return $local;
+        };
+
+        $opts = ParseOptions::rfc5322()->withLocalPartNormalizer($normalizer);
+        (new Parse(null, $opts))->parseSingle('not-an-email');
+
+        $this->assertSame(0, $invocations);
+    }
+
+    public function testLocalPartNormalizerCanBeClearedByPassingNull(): void
+    {
+        $normalizer = fn (string $l) => strtolower($l);
+        $a = ParseOptions::rfc5322()->withLocalPartNormalizer($normalizer);
+        $b = $a->withLocalPartNormalizer(null);
+
+        $this->assertNotNull($a->localPartNormalizer);
+        $this->assertNull($b->localPartNormalizer);
+    }
 }

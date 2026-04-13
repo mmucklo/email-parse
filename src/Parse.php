@@ -1079,6 +1079,24 @@ class Parse
                     ? "\"{$emailAddress['local_part_parsed']}\""
                     : $emailAddress['local_part_parsed'];
             }
+
+            // Optional caller-supplied local-part normalizer — invoked after structural
+            // validation so the callback only sees addresses that already conform to
+            // the configured ParseOptions rules. Typical uses: Gmail dot-insensitivity
+            // (`john.doe` → `johndoe`), plus-addressing (`user+tag` → `user`), or any
+            // domain-specific canonicalization. The returned string replaces
+            // local_part_parsed and the display form is re-derived; `original_address`
+            // still preserves the verbatim input.
+            if (!$emailAddress['invalid'] && $this->options->localPartNormalizer !== null) {
+                $normalizer = $this->options->localPartNormalizer;
+                $normalized = $normalizer($emailAddress['local_part_parsed'], $emailAddress['domain']);
+                if ($normalized !== $emailAddress['local_part_parsed']) {
+                    $emailAddress['local_part_parsed'] = $normalized;
+                    $localPart = $emailAddress['local_part_quoted']
+                        ? "\"{$emailAddress['local_part_parsed']}\""
+                        : $emailAddress['local_part_parsed'];
+                }
+            }
         }
 
         // FQDN check

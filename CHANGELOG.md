@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.3.0]
+
+Serialization and ergonomic polish for the typed value objects, a canonical display-form method, and an opt-in local-part normalizer callback. All additions are non-breaking for v3.2 callers.
+
+### Added
+- `ParsedEmailAddress::toArray(): array` — round-trips to the legacy array shape produced by `Parse::parse()`. Useful when mixing typed and array-based code.
+- `ParsedEmailAddress::toJson(int $flags = 0): string` — convenience wrapper over `json_encode` with `JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES`. `ParseErrorCode` serializes to its backing string value.
+- `ParseResult::toArray()` and `ParseResult::toJson()` — same for the multi-address container; each entry is serialized via `ParsedEmailAddress::toArray()`.
+- `ParsedEmailAddress implements \Stringable` — `(string) $parsed` returns the `simpleAddress` for valid addresses, empty string otherwise. Lets a parsed address drop directly into string contexts (logging, templates, etc.).
+- `ParsedEmailAddress::canonical(): string` — canonical RFC 5322 display form with minimal quoting per §3.2.4 (local-part) and §3.2.5 (phrase). Drops unnecessary quotes that `$address` may preserve from the input, and adds quotes only where required. Returns empty string for invalid addresses.
+- `ParseOptions::$localPartNormalizer` (readonly `?\Closure`) + `withLocalPartNormalizer(?callable)` fluent builder. The callback `fn(string $localPart, string $domain): string` is invoked after local-part validation succeeds; the returned string replaces `local_part_parsed` in the output. Typical uses: Gmail dot-insensitivity, `+tag` plus-addressing, or any domain-specific canonicalization. `originalAddress` still preserves the verbatim input.
+
+### Changed
+- None — all additions; no behavior changes for existing callers.
+
 ## [3.2.0]
 
 Streaming batch parsing, severity classification for validation errors, RFC 5322 §4.4 obs-route support, and broader CFWS tolerance around addr-spec boundaries. All additions are non-breaking for v3.1 callers.
