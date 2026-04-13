@@ -38,22 +38,24 @@ Future plans by version. Items here are intent, not commitment — priority and 
 - [x] `strictIdna: bool` — apply full IDNA2008 conformance (`IDNA_USE_STD3_RULES | IDNA_CHECK_BIDI | IDNA_CHECK_CONTEXTJ | IDNA_NONTRANSITIONAL_TO_ASCII`) per RFC 5891/5892/5893. Enabled by default in `rfc6531()`.
 - [x] Extended test coverage: 265 assertions (target: 250+).
 
-## v3.2 — Streaming, Severity Levels, Obsolete Syntax
+## v3.2 — Streaming, Severity Levels, Obsolete Syntax — shipped
 
 **Batch streaming:**
-- [ ] `parseStream(iterable): Generator` — yield `ParsedEmailAddress` one at a time for large email lists, reducing memory footprint.
+- [x] `Parse::parseStream(iterable, string): Generator<ParsedEmailAddress>` — yields one typed address at a time; each input item may itself contain multiple separator-delimited addresses.
 
 **Validation severity levels:**
-- [ ] Add a `ValidationSeverity` enum (`Critical`, `Warning`, `Info`) attached to each parsed address — allows callers to accept "soft" failures while rejecting hard ones.
+- [x] `ValidationSeverity` enum with `Critical`, `Warning`, `Info` cases.
+- [x] `ParseErrorCode::severity()` method classifying every code (13 Warning, rest Critical).
+- [x] `ParsedEmailAddress::invalidSeverity()` accessor returning the derived severity (or `null` when valid).
 
 **Obsolete syntax extensions (RFC 5322 §4):**
 
-> Note: `obs-local-part` is already supported via `allowObsLocalPart` in v3.0. The items below cover the remaining obsolete forms.
+> Note: `obs-local-part` was already supported via `allowObsLocalPart` in v3.0.
 
-- [ ] `obs-route` handling for the `rfc5322()` preset.
-- [ ] CFWS (comments / folding whitespace) improvements.
-- [ ] `obs-angle-addr` support.
-- [ ] `obs-domain-list` syntax for the `rfc2822()` preset.
+- [x] `obs-route` handling — `ParseOptions::$allowObsRoute` gates acceptance of `<@host1,@host2:user@host3>` source-route prefixes; the route is captured on `ParsedEmailAddress::$obsRoute`. Enabled by default in `rfc5322()` and `rfc2822()`.
+- [x] `obs-angle-addr` — implied by obs-route support (it is the outer `[CFWS] "<" obs-route addr-spec ">" [CFWS]` form).
+- [x] `obs-domain-list` — the `*("," [CFWS] ["@" domain])` shape is consumed inside `STATE_OBS_ROUTE`.
+- [x] CFWS (comments / folding whitespace) improvements — look-ahead in the whitespace handler now absorbs CFWS at dot-atom boundaries (`local @domain`, `local@ domain`, `local @ domain`) and around angle-addr delimiters (`<  local@domain  >`, `<local @ domain>`), including folded whitespace (LF + WSP). Comments in these positions were already supported in v3.0.
 
 ## v4.0 — Breaking Modernization
 

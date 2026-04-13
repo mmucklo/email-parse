@@ -182,4 +182,35 @@ enum ParseErrorCode: string
 
     /** Unquoted display name contains characters outside atext + WSP (RFC 5322 §3.2.5 phrase). */
     case InvalidDisplayNamePhrase = 'invalid_display_name_phrase';
+
+    /**
+     * Classify this error by severity.
+     *
+     * Critical: the input is structurally unparseable or violates a fundamental
+     * RFC 5322 / 5321 syntax rule — the address is not valid in any interpretation.
+     *
+     * Warning: the address is well-formed but was rejected by a configured
+     * validation rule (UTF-8 gating, FQDN requirement, IP range check, length
+     * limits, C0/C1 control policy, empty-quoted rejection, punycode conversion).
+     * Callers may choose to accept Warning-level failures depending on context.
+     */
+    public function severity(): ValidationSeverity
+    {
+        return match ($this) {
+            self::Utf8NotAllowedInLocalPart,
+            self::C0ControlInLocalPart,
+            self::C1ControlInLocalPart,
+            self::C1ControlInQuotedString,
+            self::EmptyQuotedLocalPart,
+            self::FqdnRequired,
+            self::IpNotInGlobalRange,
+            self::Ipv6NotInGlobalRange,
+            self::LocalPartTooLong,
+            self::TotalLengthExceeded,
+            self::DomainTooLong,
+            self::DomainLabelTooLong,
+            self::PunycodeConversionFailed => ValidationSeverity::Warning,
+            default => ValidationSeverity::Critical,
+        };
+    }
 }

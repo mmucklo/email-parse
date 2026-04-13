@@ -27,6 +27,7 @@ final class ParsedEmailAddress
      * @param ?string             $invalidReason     Human-readable failure reason; `null` if valid.
      * @param ?ParseErrorCode     $invalidReasonCode Structured failure code; `null` if valid.
      * @param array<int, string>  $comments          RFC 5322 comments extracted from the address.
+     * @param ?string             $obsRoute          RFC 5322 §4.4 obs-route prefix if one was stripped from inside angle-addr (e.g. `@host1,@host2`); `null` otherwise. Only populated when {@see ParseOptions::$allowObsRoute} is enabled.
      */
     public function __construct(
         public readonly string $address,
@@ -44,6 +45,7 @@ final class ParsedEmailAddress
         public readonly ?string $invalidReason,
         public readonly ?ParseErrorCode $invalidReasonCode,
         public readonly array $comments,
+        public readonly ?string $obsRoute = null,
     ) {
     }
 
@@ -70,6 +72,25 @@ final class ParsedEmailAddress
             invalidReason:     $arr['invalid_reason'],
             invalidReasonCode: $arr['invalid_reason_code'],
             comments:          $arr['comments'],
+            obsRoute:          $arr['obs_route'] ?? null,
         );
+    }
+
+    /**
+     * Severity of the validation failure, derived from {@see $invalidReasonCode}.
+     * Returns `null` when the address is valid (no failure to classify).
+     *
+     * Callers can use this to distinguish structural failures from policy
+     * violations:
+     *
+     *   if ($parsed->invalid && $parsed->invalidSeverity() === ValidationSeverity::Warning) {
+     *       // Well-formed but violates a configured rule — e.g. private-range IP
+     *       // literal, non-FQDN domain, octet length over RFC 5321 §4.5.3.1.
+     *       // Safe to accept in non-SMTP contexts.
+     *   }
+     */
+    public function invalidSeverity(): ?ValidationSeverity
+    {
+        return $this->invalidReasonCode?->severity();
     }
 }

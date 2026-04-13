@@ -161,12 +161,15 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         if (!array_key_exists('invalid_reason_code', $expected)) {
             unset($actual['invalid_reason_code']);
-
-            return [$expected, $actual];
+        } elseif (is_string($expected['invalid_reason_code'])) {
+            $expected['invalid_reason_code'] = \Email\ParseErrorCode::from($expected['invalid_reason_code']);
         }
 
-        if (is_string($expected['invalid_reason_code'])) {
-            $expected['invalid_reason_code'] = \Email\ParseErrorCode::from($expected['invalid_reason_code']);
+        // obs_route — same opt-in pattern: existing YAML entries omit it; new
+        // tests can assert it by adding the key. When expected doesn't specify,
+        // strip from actual so pre-obs-route YAML tests pass unchanged.
+        if (!array_key_exists('obs_route', $expected)) {
+            unset($actual['obs_route']);
         }
 
         return [$expected, $actual];
@@ -433,5 +436,237 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $result = (new Parse(null, $opts))->parseSingle("\"a\x01b\"@example.com");
         $this->assertTrue($result->invalid);
         $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $result->invalidReasonCode);
+    }
+
+    public function testValidAddressHasNullInvalidSeverity(): void
+    {
+        $result = Parse::getInstance()->parseSingle('user@example.com');
+        $this->assertFalse($result->invalid);
+        $this->assertNull($result->invalidSeverity());
+    }
+
+    public function testStructuralFailureIsCriticalSeverity(): void
+    {
+        // Missing '@' — structural failure, unparseable.
+        $result = Parse::getInstance()->parseSingle('not-an-email');
+        $this->assertTrue($result->invalid);
+        $this->assertSame(\Email\ValidationSeverity::Critical, $result->invalidSeverity());
+    }
+
+    public function testPolicyFailureIsWarningSeverity(): void
+    {
+        // FQDN requirement: single-label domain is syntactically fine but policy-rejected.
+        $opts = ParseOptions::rfc5321();
+        $result = (new Parse(null, $opts))->parseSingle('user@localhost');
+        $this->assertTrue($result->invalid);
+        $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
+
+        // Private-range IP literal is syntactically valid but rejected by the global-range rule.
+        $result = Parse::getInstance()->parseSingle('user@[192.168.0.1]');
+        $this->assertTrue($result->invalid);
+        $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
+    }
+
+    public function testEveryErrorCodeHasASeverity(): void
+    {
+        // Defensive: ensure no new ParseErrorCode is added without mapping its severity.
+        foreach (\Email\ParseErrorCode::cases() as $code) {
+            $severity = $code->severity();
+            $this->assertInstanceOf(\Email\ValidationSeverity::class, $severity);
+        }
+    }
+
+    public function testParseStreamYieldsTypedObjects(): void
+    {
+        $parser = Parse::getInstance();
+        $gen = $parser->parseStream(['a@a.com', 'b@b.com']);
+        $this->assertInstanceOf(\Generator::class, $gen);
+        $results = iterator_to_array($gen, false);
+        $this->assertCount(2, $results);
+        $this->assertInstanceOf(\Email\ParsedEmailAddress::class, $results[0]);
+        $this->assertSame('a', $results[0]->localPart);
+        $this->assertSame('b.com', $results[1]->domain);
+    }
+
+    public function testParseStreamSplitsMultiAddressItems(): void
+    {
+        // Each input item may itself contain several comma-separated addresses;
+        // parseStream yields one ParsedEmailAddress per address regardless.
+        $parser = Parse::getInstance();
+        $results = iterator_to_array(
+            $parser->parseStream(['a@a.com, b@b.com', 'c@c.com']),
+            false,
+        );
+        $this->assertCount(3, $results);
+        $this->assertSame(['a', 'b', 'c'], array_map(fn ($r) => $r->localPart, $results));
+    }
+
+    public function testParseStreamAcceptsGeneratorInput(): void
+    {
+        // A caller-supplied generator should be consumed lazily.
+        $input = (function () {
+            yield 'one@example.com';
+            yield 'two@example.com';
+        })();
+
+        $results = iterator_to_array(Parse::getInstance()->parseStream($input), false);
+        $this->assertCount(2, $results);
+        $this->assertSame('one', $results[0]->localPart);
+        $this->assertSame('two', $results[1]->localPart);
+    }
+
+    public function testParseStreamEmitsInvalidEntries(): void
+    {
+        // Invalid addresses still appear in the stream — callers filter by $addr->invalid.
+        $results = iterator_to_array(
+            Parse::getInstance()->parseStream(['valid@ok.com', 'not-an-email']),
+            false,
+        );
+        $this->assertCount(2, $results);
+        $this->assertFalse($results[0]->invalid);
+        $this->assertTrue($results[1]->invalid);
+    }
+
+    public function testObsRouteIsAcceptedAndCapturedInRfc5322(): void
+    {
+        // RFC 5322 §4.4: obs-route prefix is recognized, captured, and discarded;
+        // the real addr-spec (after the colon) becomes the parsed address.
+        $result = (new Parse(null, ParseOptions::rfc5322()))
+            ->parseSingle('<@hostA:user@hostB>');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('user', $result->localPart);
+        $this->assertSame('hostB', $result->domain);
+        $this->assertSame('@hostA', $result->obsRoute);
+    }
+
+    public function testObsRouteSupportsMultipleHosts(): void
+    {
+        // Multiple routed hosts joined by comma per obs-domain-list.
+        $result = (new Parse(null, ParseOptions::rfc5322()))
+            ->parseSingle('<@hostA,@hostB:user@hostC>');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('user', $result->localPart);
+        $this->assertSame('hostC', $result->domain);
+        $this->assertSame('@hostA,@hostB', $result->obsRoute);
+    }
+
+    public function testObsRoutePreservesDisplayName(): void
+    {
+        $result = (new Parse(null, ParseOptions::rfc5322()))
+            ->parseSingle('John Doe <@route.com:jdoe@example.com>');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('John Doe', $result->nameParsed);
+        $this->assertSame('jdoe', $result->localPart);
+        $this->assertSame('example.com', $result->domain);
+        $this->assertSame('@route.com', $result->obsRoute);
+    }
+
+    public function testObsRouteInMultiAddressBatch(): void
+    {
+        // Each address in a batch parses its own obs-route independently.
+        $result = (new Parse(null, ParseOptions::rfc5322()))
+            ->parseMultiple('<@routeA:a@x.com>, <@routeB:b@y.com>');
+        $this->assertTrue($result->success);
+        $this->assertCount(2, $result->emailAddresses);
+        $this->assertSame('@routeA', $result->emailAddresses[0]->obsRoute);
+        $this->assertSame('@routeB', $result->emailAddresses[1]->obsRoute);
+    }
+
+    public function testObsRouteRejectedWhenFlagIsOff(): void
+    {
+        // Default constructor (legacy mode) has allowObsRoute=false — the colon
+        // inside <...> is rejected as an invalid domain character.
+        $result = (new Parse(null, new ParseOptions()))
+            ->parseSingle('<@hostA:user@hostB>');
+        $this->assertTrue($result->invalid);
+        $this->assertNull($result->obsRoute);
+
+        // rfc5321() also keeps obs-route off per SMTP Mailbox strictness.
+        $result = (new Parse(null, ParseOptions::rfc5321()))
+            ->parseSingle('<@hostA:user@hostB>');
+        $this->assertTrue($result->invalid);
+    }
+
+    public function testObsRouteIncompleteWithoutColonIsInvalid(): void
+    {
+        // `<@host>` has no colon — incomplete obs-route.
+        $result = (new Parse(null, ParseOptions::rfc5322()))
+            ->parseSingle('<@host>');
+        $this->assertTrue($result->invalid);
+        $this->assertSame(\Email\ParseErrorCode::IncompleteAddress, $result->invalidReasonCode);
+    }
+
+    public function testObsRouteWithEmptyAddrSpecIsInvalid(): void
+    {
+        // `<@hostA:>` — empty addr-spec after the colon.
+        $result = (new Parse(null, ParseOptions::rfc5322()))
+            ->parseSingle('<@hostA:>');
+        $this->assertTrue($result->invalid);
+    }
+
+    public function testValidAddressHasNullObsRoute(): void
+    {
+        // A normal address produces obsRoute=null (not empty string).
+        $result = Parse::getInstance()->parseSingle('user@example.com');
+        $this->assertNull($result->obsRoute);
+    }
+
+    /**
+     * RFC 5322 §3.2.2 CFWS — folding whitespace is allowed around dot-atom
+     * boundaries. Each case below is a structurally valid RFC 5322 addr-spec
+     * that the v3.1 parser rejected as "Email address contains whitespace";
+     * v3.2 absorbs the CFWS positionally via look-ahead in the WSP handler.
+     */
+    public function testCfwsTrailingLocalPart(): void
+    {
+        // "local @domain" — trailing CFWS on local-part dot-atom.
+        $result = Parse::getInstance()->parseSingle('local @domain.com');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('local', $result->localPart);
+        $this->assertSame('domain.com', $result->domain);
+    }
+
+    public function testCfwsLeadingDomain(): void
+    {
+        // "local@ domain" — leading CFWS on domain dot-atom.
+        $result = Parse::getInstance()->parseSingle('local@ domain.com');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('local', $result->localPart);
+        $this->assertSame('domain.com', $result->domain);
+    }
+
+    public function testCfwsAroundAtSymbol(): void
+    {
+        $result = Parse::getInstance()->parseSingle('local @ domain.com');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('local', $result->localPart);
+        $this->assertSame('domain.com', $result->domain);
+    }
+
+    public function testCfwsInsideAngleAddr(): void
+    {
+        // Whitespace inside <> flanking the addr-spec.
+        $result = Parse::getInstance()->parseSingle('John Doe <  local@domain.com  >');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('John Doe', $result->nameParsed);
+        $this->assertSame('local', $result->localPart);
+        $this->assertSame('domain.com', $result->domain);
+    }
+
+    public function testCfwsAroundAtInsideAngleAddr(): void
+    {
+        $result = Parse::getInstance()->parseSingle('<local @ domain.com>');
+        $this->assertFalse($result->invalid);
+        $this->assertSame('local', $result->localPart);
+        $this->assertSame('domain.com', $result->domain);
+    }
+
+    public function testCfwsFoldingWhitespace(): void
+    {
+        // Folded whitespace (LF + WSP) is still whitespace per CFWS lookahead.
+        $result = Parse::getInstance()->parseSingle("local\n\t@domain.com");
+        $this->assertFalse($result->invalid);
+        $this->assertSame('local', $result->localPart);
+        $this->assertSame('domain.com', $result->domain);
     }
 }

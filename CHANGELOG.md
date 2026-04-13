@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.2.0]
+
+Streaming batch parsing, severity classification for validation errors, RFC 5322 §4.4 obs-route support, and broader CFWS tolerance around addr-spec boundaries. All additions are non-breaking for v3.1 callers.
+
+### Added
+- `Parse::parseStream(iterable, string): Generator<ParsedEmailAddress>` — lazy batch parsing that yields one typed address at a time, reducing memory footprint for large inputs (CSV rows, pipelines, etc.). Each input item may itself contain multiple separator-delimited addresses.
+- `ValidationSeverity` backed enum with `Critical`, `Warning`, `Info` cases. Callers can distinguish structural parse failures (Critical) from policy violations where the address is syntactically well-formed (Warning) to accept soft failures in non-SMTP contexts.
+- `ParseErrorCode::severity(): ValidationSeverity` — every error code is now classified. 13 codes are Warning (UTF-8 rejection, C0/C1 controls, empty-quoted, FQDN requirement, IP global-range, length limits, punycode conversion); all others are Critical.
+- `ParsedEmailAddress::invalidSeverity(): ?ValidationSeverity` — derived from `invalidReasonCode`; returns `null` when the address is valid.
+- RFC 5322 §4.4 obs-route support: `<@host1,@host2:user@host3>` source-route prefixes are recognized and stripped; the real addr-spec becomes the parsed address. The route string is captured on `ParsedEmailAddress::$obsRoute`. Gated by `ParseOptions::$allowObsRoute` (default `false`; enabled in `rfc5322()` and `rfc2822()`).
+- `ParseOptions::$allowObsRoute` property and `withAllowObsRoute()` fluent builder.
+- `obs_route` field on the array output of `Parse::parse()` (populated when an obs-route is consumed; `null` otherwise).
+
+### Changed
+- RFC 5322 §3.2.2 CFWS: folding whitespace is now absorbed at dot-atom boundaries and around angle-addr delimiters via look-ahead in the whitespace handler. Previously-rejected inputs like `local @domain.com`, `local@ domain.com`, `<  local@domain.com  >`, `<local @ domain.com>`, and multi-line folded whitespace now parse successfully.
+- Parser internal: added `STATE_OBS_ROUTE` state for absorbing obs-route prefixes; added `in_angle_addr` and `obs_route` tracking fields to the internal email-address accumulator.
+- `composer stan` now runs with `--memory-limit=512M` to accommodate the larger codebase.
+
+### Fixed
+- None — no behavior regressions; only additions and tolerance expansions.
+
 ## [3.1.0]
 
 Immutable `ParseOptions`, typed value-object output, structured error codes, and two new validation rules. All additions are non-breaking for v3.0 callers; readonly rule properties are a hard cutover for code that was mutating them directly (the factory methods and deprecated setters continue to work).

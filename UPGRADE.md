@@ -1,5 +1,44 @@
 # Upgrade Guide
 
+## v3.1 → v3.2
+
+v3.2 is fully additive — no breaking changes. Two behavior changes are worth noting for callers who depended on them:
+
+### Behavior Changes (Tolerance Expansions)
+
+**CFWS around `@` and inside `<…>` is now accepted.** The v3.1 parser rejected these inputs as "Email address contains whitespace"; v3.2 treats them as RFC 5322 §3.2.2 folding whitespace:
+
+```php
+// All of these now parse successfully (v3.2+):
+'local @domain.com'          // trailing CFWS on local-part
+'local@ domain.com'          // leading CFWS on domain
+'local @ domain.com'         // both
+'<  local@domain.com  >'     // inside angle-addr
+'<local @ domain.com>'       // both, inside angle-addr
+"local\n\t@domain.com"       // folded whitespace
+```
+
+If your code validated that addresses are "tight" (no whitespace), re-check with the v3.2 definition — these now register as `invalid=false`.
+
+**Obs-route `<@host:addr>` is accepted in `rfc5322()` and `rfc2822()` presets.** Previously rejected as "Invalid character in domain"; now recognized, stripped, and the real addr-spec is exposed. The captured route is available as `$parsed->obsRoute`. Disabled in `rfc5321()` and legacy defaults — no change there. To opt out, call `->withAllowObsRoute(false)` on the preset.
+
+### Additions (Non-Breaking)
+
+- **`Parse::parseStream(iterable, string): Generator`** — lazy batch parsing. Use it for large inputs where holding every `ParsedEmailAddress` in memory is undesirable.
+- **`ValidationSeverity` enum** — `Critical` / `Warning` / `Info`. Access via `$parsed->invalidSeverity()` or `$errorCode->severity()`. Use it to distinguish "unparseable" from "policy-rejected but well-formed":
+  ```php
+  if ($parsed->invalid && $parsed->invalidSeverity() === ValidationSeverity::Warning) {
+      // Well-formed address rejected by a configured rule (UTF-8, FQDN, IP range, length).
+      // Safe to accept in non-SMTP contexts if desired.
+  }
+  ```
+- **`ParsedEmailAddress::$obsRoute`** — captured obs-route prefix (e.g. `@hostA,@hostB`) when one was stripped. `null` for normal addresses.
+- **`ParseOptions::$allowObsRoute`** (readonly) + `withAllowObsRoute()` builder.
+
+### Minimum Requirements (Unchanged)
+
+PHP `^8.1`, `ext-mbstring`, `ext-intl`.
+
 ## v3.0 → v3.1
 
 v3.1 is additive with one hard cutover: the 15 `ParseOptions` rule properties are now `readonly`. Factory presets and the deprecated setters still work. Everything else is new and non-breaking.
