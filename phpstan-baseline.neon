@@ -67,6 +67,36 @@ parameters:
 			path: tests/ParseTest.php
 
 		-
+			message: '#^Method Email\\Tests\\ParseTest\:\:fillReasonCode\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/ParseTest.php
+
+		-
+			message: '#^Method Email\\Tests\\ParseTest\:\:normalizeActual\(\) has parameter \$result with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/ParseTest.php
+
+		-
+			message: '#^Method Email\\Tests\\ParseTest\:\:normalizeActual\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/ParseTest.php
+
+		-
+			message: '#^Method Email\\Tests\\ParseTest\:\:normalizeExpected\(\) has parameter \$result with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/ParseTest.php
+
+		-
+			message: '#^Method Email\\Tests\\ParseTest\:\:normalizeExpected\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: tests/ParseTest.php
+
+		-
 			message: '#^Method Email\\Tests\\ParseTest\:\:testParseEmailAddresses\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1

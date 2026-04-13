@@ -32,7 +32,19 @@ Usage:
 ```php
 use Email\Parse;
 
+// Array-based API (v2.x-compatible)
 $result = Parse::getInstance()->parse("a@aaa.com b@bbb.com");
+
+// Typed value objects (v3.1+, recommended for new code)
+$address = Parse::getInstance()->parseSingle('john@example.com');
+echo $address->localPart;           // "john"
+echo $address->domain;              // "example.com"
+if ($address->invalid) {
+    echo $address->invalidReasonCode->value;
+}
+
+$result = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+foreach ($result->emailAddresses as $addr) { /* ... */ }
 ```
 
 ### Advanced Usage with ParseOptions
@@ -124,12 +136,12 @@ $result = $parser->parse('.user@example.com', false);
 
 ### Customizing Rules
 
-Each preset sets a combination of boolean rule properties. You can override any of them after creating a preset:
+Each preset sets a combination of boolean rule properties. Rule properties are **readonly** (v3.1+) — override them via fluent `withX()` builders that return new instances:
 
 ```php
-$options = ParseOptions::rfc6531();
-$options->requireFqdn = false;          // Allow single-label domains
-$options->includeDomainAscii = false;   // Don't output punycode domain
+$options = ParseOptions::rfc6531()
+    ->withRequireFqdn(false)          // Allow single-label domains
+    ->withIncludeDomainAscii(false);  // Don't output punycode domain
 $parser = new Parse(null, $options);
 ```
 
@@ -152,6 +164,8 @@ $parser = new Parse(null, $options);
 | `rejectC0Controls` | `false` | Reject C0 control characters U+0000-U+001F (RFC 5321) |
 | `rejectC1Controls` | `false` | Reject C1 control characters U+0080-U+009F (RFC 6530) |
 | `applyNfcNormalization` | `false` | Apply NFC Unicode normalization (RFC 6532 §3.1) |
+| `validateDisplayNamePhrase` | `false` | Enforce RFC 5322 §3.2.5 phrase syntax on unquoted display names |
+| `strictIdna` | `false` | Apply full IDNA2008 conformance on U-label domains (RFC 5891/5892/5893) |
 | **Length & Output** | | |
 | `enforceLengthLimits` | `true` | Enforce RFC 5321 length limits (64/254/63) |
 | `includeDomainAscii` | `false` | Include punycode `domain_ascii` in output |

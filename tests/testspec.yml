@@ -4934,3 +4934,100 @@
     invalid: false
     invalid_reason: null
     comments: []
+-
+  emails: 'foo'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'foo'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'Incomplete address'
+    invalid_reason_code: 'incomplete_address'
+    comments: []
+-
+  emails: 'foo@bar@baz.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'foo@bar@baz.com'
+    name: ''
+    name_parsed: ''
+    local_part: foo
+    local_part_parsed: foo
+    domain_part: bar
+    domain: bar
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Multiple at '@' symbols in email address"
+    invalid_reason_code: 'multiple_at_symbols'
+    comments: []
+-
+  emails: 'a..b@example.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'a..b@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: ''
+    local_part_parsed: ''
+    domain_part: ''
+    domain: ''
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Email address should not contain two dots '.' in a row"
+    invalid_reason_code: 'consecutive_dots'
+    comments: []
+-
+  emails: '.a@example.com'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '.a@example.com'
+    name: ''
+    name_parsed: ''
+    local_part: .a
+    local_part_parsed: .a
+    domain_part: example.com
+    domain: example.com
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: 'Local part contains invalid characters'
+    invalid_reason_code: 'local_part_contains_invalid_chars'
+    comments: []
+-
+  emails: 'user@[127.0.0.1]'
+  multiple: false
+  rfc_mode: strict_intl
+  allow_smtputf8: true
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'user@[127.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: '[127.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: '127.0.0.1'
+    invalid: true
+    invalid_reason: "IP address invalid: '127.0.0.1' does not appear to be a valid IP address in the global range"
+    invalid_reason_code: 'ip_not_in_global_range'
+    comments: []

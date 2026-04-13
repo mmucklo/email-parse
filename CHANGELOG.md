@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.1.0]
+
+Immutable `ParseOptions`, typed value-object output, structured error codes, and two new validation rules. All additions are non-breaking for v3.0 callers; readonly rule properties are a hard cutover for code that was mutating them directly (the factory methods and deprecated setters continue to work).
+
+### Added
+- `ParseErrorCode` backed enum exposing 46 distinct failure codes grouped by category (structural, character-class, dot placement, local-part content, quoted-string, domain, IP literal, length, display-name). Stable string backing values.
+- `invalid_reason_code: ?ParseErrorCode` field on every parsed-address entry, populated at every `invalid_reason` emission site alongside the existing string.
+- `ParsedEmailAddress` value object — immutable, readonly properties for all per-address fields (`address`, `originalAddress`, `simpleAddress`, `name`, `nameParsed`, `localPart`, `localPartParsed`, `domain`, `domainAscii`, `ip`, `domainPart`, `invalid`, `invalidReason`, `invalidReasonCode`, `comments`). `fromArray()` factory for conversion from the legacy array shape.
+- `ParseResult` value object — immutable container for multi-address results (`success`, `reason`, `emailAddresses: list<ParsedEmailAddress>`).
+- `Parse::parseSingle(string, string): ParsedEmailAddress` — typed single-address entry point.
+- `Parse::parseMultiple(string, string): ParseResult` — typed multi-address entry point.
+- `ParseOptions::withX()` fluent builders returning new instances: `withBannedChars`, `withSeparators`, `withUseWhitespaceAsSeparator`, `withLengthLimits`, plus one per rule property (19 builders in total).
+- `validateDisplayNamePhrase: bool` rule — enforce RFC 5322 §3.2.5 phrase syntax (atext + WSP only) for unquoted display names. Adds `ParseErrorCode::InvalidDisplayNamePhrase`.
+- `strictIdna: bool` rule — apply full IDNA2008 conformance on U-label domains (`IDNA_USE_STD3_RULES | IDNA_CHECK_BIDI | IDNA_CHECK_CONTEXTJ | IDNA_NONTRANSITIONAL_TO_ASCII`) per RFC 5891/5892/5893. Enabled by default in `rfc6531()`.
+
+### Changed
+- `ParseOptions`: the 15 boolean rule properties are now `readonly` and set via constructor named arguments or the factory presets. Direct assignment such as `$options->requireFqdn = false` now throws `Error` (use `withRequireFqdn(false)` instead).
+- `ParseOptions::rfc6531()` preset now includes `strictIdna: true`.
+- Existing `parse()` method unchanged — returns the same array shape plus the new `invalid_reason_code` key.
+
+### Fixed
+- None — no behavior regressions; only additions.
+
 ## [3.0.0]
 
 Configurable RFC compliance presets, immutable length limits, stricter validation, and substantial documentation. See [UPGRADE.md](UPGRADE.md) for migration steps.

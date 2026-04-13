@@ -8,77 +8,62 @@ class ParseOptions
     private array $bannedChars = [];
     /** @var array<string, bool> */
     private array $separators = [];
-    private bool $useWhitespaceAsSeparator = true;
+    private bool $useWhitespaceAsSeparator;
     private LengthLimits $lengthLimits;
 
-    // ===== v3.0 Rule Properties =====
-    // Defaults match legacy (v2.x) behavior so `new ParseOptions()` is backward-compatible.
-
-    // --- Local-Part Rules ---
-
-    /** Allow UTF-8 characters in local-part (RFC 6531 §3.3, 6532 §3.2). */
-    public bool $allowUtf8LocalPart = true;
-
-    /** Allow obs-local-part syntax (RFC 5322 §4.4): permits leading, trailing, and consecutive dots. */
-    public bool $allowObsLocalPart = false;
-
-    /** Allow quoted-string form in local-part (RFC 5322 §3.2.4, 5321 §4.1.2). */
-    public bool $allowQuotedString = true;
-
-    /** Validate content of quoted-strings against qtext/quoted-pair rules (RFC 5322 §3.2.4, 5321 §4.1.2). */
-    public bool $validateQuotedContent = false;
-
-    /** Reject empty quoted local-parts like ""@domain per RFC 5321 EID 5414 (non-empty Quoted-string required). */
-    public bool $rejectEmptyQuotedLocalPart = false;
-
-    // --- Domain Rules ---
-
-    /** Allow UTF-8 (U-label) domain names (RFC 6531 §3.3, 5890/5891). */
-    public bool $allowUtf8Domain = true;
-
-    /** Allow domain-literal form [IP] in domain (RFC 5321 §4.1.3). */
-    public bool $allowDomainLiteral = true;
-
-    /** Require fully-qualified domain name — at least two dot-separated labels (RFC 5321 §2.3.5). */
-    public bool $requireFqdn = false;
-
-    /** Validate that IP addresses in domain-literals are in global range. */
-    public bool $validateIpGlobalRange = true;
-
-    // --- Character Validation Rules ---
-
-    /** Reject C0 control characters U+0000-U+001F in local-part (RFC 5321 §4.1.2). */
-    public bool $rejectC0Controls = false;
-
-    /** Reject C1 control characters U+0080-U+009F in local-part (RFC 6530 §10.1, RFC 6532 §3.2). */
-    public bool $rejectC1Controls = false;
-
-    /** Apply NFC Unicode normalization to local-part and domain (RFC 6532 §3.1). */
-    public bool $applyNfcNormalization = false;
-
-    // --- Length Limits ---
-
-    /** Enforce RFC 5321 §4.5.3.1 length limits (in octets): 64 local-part (§4.5.3.1.1), 254 total (RFC 3696 EID 1690), 63 domain label (RFC 1035 §2.3.4). */
-    public bool $enforceLengthLimits = true;
-
-    // --- Output Options ---
-
-    /** Include ASCII (punycode) domain in output for internationalized domains. */
-    public bool $includeDomainAscii = false;
-
-    // ===== Constructor (v2.x signature — UNCHANGED) =====
-
     /**
-     * @param array<string> $bannedChars
-     * @param array<string> $separators
-     * @param bool $useWhitespaceAsSeparator
-     * @param LengthLimits|null $lengthLimits Email length limits. Uses RFC defaults if not provided.
+     * Construct a parser configuration.
+     *
+     * The first four positional parameters preserve the v2.x / v3.0 signature for
+     * backward compatibility. The 15 rule properties following them are readonly
+     * (PHP 8.1) — mutate via the `withX()` fluent builders, which return new
+     * instances with the change applied.
+     *
+     * Default values match legacy (v2.x) parser behavior so `new ParseOptions()`
+     * preserves existing call sites.
+     *
+     * @param array<string>     $bannedChars
+     * @param array<string>     $separators
+     * @param LengthLimits|null $lengthLimits       Email length limits; RFC defaults when null.
+     *
+     * @param bool              $allowUtf8LocalPart        Allow UTF-8 in local-part (RFC 6531 §3.3, 6532 §3.2).
+     * @param bool              $allowObsLocalPart         Allow obs-local-part (RFC 5322 §4.4): leading/trailing/consecutive dots.
+     * @param bool              $allowQuotedString         Allow quoted-string local-part (RFC 5322 §3.2.4, 5321 §4.1.2).
+     * @param bool              $validateQuotedContent     Validate qtext/quoted-pair rules in quoted strings.
+     * @param bool              $rejectEmptyQuotedLocalPart Reject `""@domain` (RFC 5321 EID 5414).
+     * @param bool              $allowUtf8Domain           Allow U-label domains (RFC 6531 §3.3, 5890/5891).
+     * @param bool              $allowDomainLiteral        Allow `[IP]` / `[IPv6:addr]` (RFC 5321 §4.1.3).
+     * @param bool              $requireFqdn               Require fully-qualified domain name (RFC 5321 §2.3.5).
+     * @param bool              $validateIpGlobalRange     Validate IP literals are in the global range.
+     * @param bool              $rejectC0Controls          Reject C0 control chars U+0000-U+001F (RFC 5321 §4.1.2).
+     * @param bool              $rejectC1Controls          Reject C1 control chars U+0080-U+009F (RFC 6530 §10.1, 6532 §3.2).
+     * @param bool              $applyNfcNormalization     Apply NFC Unicode normalization (RFC 6532 §3.1).
+     * @param bool              $enforceLengthLimits       Enforce RFC 5321 §4.5.3.1 length limits.
+     * @param bool              $includeDomainAscii        Emit punycode domain in output.
+     * @param bool              $validateDisplayNamePhrase Enforce RFC 5322 §3.2.5 phrase syntax for unquoted display names (atext + WSP only).
+     * @param bool              $strictIdna                Apply full IDNA2008 conformance on U-label domains (CONTEXTJ/O, Bidi rule, STD3, nontransitional mapping).
      */
     public function __construct(
         array $bannedChars = [],
         array $separators = [','],
         bool $useWhitespaceAsSeparator = true,
         ?LengthLimits $lengthLimits = null,
+        public readonly bool $allowUtf8LocalPart = true,
+        public readonly bool $allowObsLocalPart = false,
+        public readonly bool $allowQuotedString = true,
+        public readonly bool $validateQuotedContent = false,
+        public readonly bool $rejectEmptyQuotedLocalPart = false,
+        public readonly bool $allowUtf8Domain = true,
+        public readonly bool $allowDomainLiteral = true,
+        public readonly bool $requireFqdn = false,
+        public readonly bool $validateIpGlobalRange = true,
+        public readonly bool $rejectC0Controls = false,
+        public readonly bool $rejectC1Controls = false,
+        public readonly bool $applyNfcNormalization = false,
+        public readonly bool $enforceLengthLimits = true,
+        public readonly bool $includeDomainAscii = false,
+        public readonly bool $validateDisplayNamePhrase = false,
+        public readonly bool $strictIdna = false,
     ) {
         foreach ($bannedChars as $char) {
             $this->bannedChars[$char] = true;
@@ -95,130 +80,269 @@ class ParseOptions
     /**
      * RFC 5321 Mailbox — strict ASCII-only, matching what SMTP servers must accept.
      *
-     * Follows RFC 5321 §4.1.2 (Local-part / Dot-string / Quoted-string), §4.1.3
-     * (domain literals), §4.5.3.1 (length limits), and §2.3.5 (FQDN requirement).
-     * No obs-local-part, no UTF-8, no C0 controls.
+     * Follows RFC 5321 §4.1.2 (Local-part), §4.1.3 (domain literals),
+     * §4.5.3.1 (length limits), and §2.3.5 (FQDN). No obs-local-part, no UTF-8.
      */
     public static function rfc5321(): self
     {
-        $opts = new self();
-        $opts->allowUtf8LocalPart = false;
-        $opts->allowObsLocalPart = false;
-        $opts->allowQuotedString = true;
-        $opts->validateQuotedContent = true;
-        $opts->rejectEmptyQuotedLocalPart = true;
-        $opts->allowUtf8Domain = false;
-        $opts->allowDomainLiteral = true;
-        $opts->requireFqdn = true;
-        $opts->validateIpGlobalRange = true;
-        $opts->rejectC0Controls = true;
-        $opts->rejectC1Controls = false;
-        $opts->applyNfcNormalization = false;
-        $opts->enforceLengthLimits = true;
-        $opts->includeDomainAscii = false;
-
-        return $opts;
+        return new self(
+            allowUtf8LocalPart: false,
+            allowObsLocalPart: false,
+            allowQuotedString: true,
+            validateQuotedContent: true,
+            rejectEmptyQuotedLocalPart: true,
+            allowUtf8Domain: false,
+            allowDomainLiteral: true,
+            requireFqdn: true,
+            validateIpGlobalRange: true,
+            rejectC0Controls: true,
+            rejectC1Controls: false,
+            applyNfcNormalization: false,
+            enforceLengthLimits: true,
+            includeDomainAscii: false,
+        );
     }
 
     /**
      * RFC 6531/6532 — full internationalized email (EAI), strictest validation.
      *
-     * Extends RFC 5321 Mailbox syntax per RFC 6531 §3.3 (SMTPUTF8 extension) and
-     * RFC 6532 §3 (UTF-8 in headers/addr-spec). Adds NFC normalization per
-     * RFC 6532 §3.1, C1-control rejection per RFC 6530 §10.1, and punycode
-     * (A-label) output for internationalized domains.
+     * Extends RFC 5321 Mailbox per RFC 6531 §3.3 and RFC 6532 §3 (UTF-8 in
+     * addr-spec and headers). Adds NFC normalization (RFC 6532 §3.1),
+     * C1-control rejection (RFC 6530 §10.1), and punycode output for IDNs.
      */
     public static function rfc6531(): self
     {
-        $opts = new self();
-        $opts->allowUtf8LocalPart = true;
-        $opts->allowObsLocalPart = false;
-        $opts->allowQuotedString = true;
-        $opts->validateQuotedContent = true;
-        $opts->rejectEmptyQuotedLocalPart = true;
-        $opts->allowUtf8Domain = true;
-        $opts->allowDomainLiteral = true;
-        $opts->requireFqdn = true;
-        $opts->validateIpGlobalRange = true;
-        $opts->rejectC0Controls = true;
-        $opts->rejectC1Controls = true;
-        $opts->applyNfcNormalization = true;
-        $opts->enforceLengthLimits = true;
-        $opts->includeDomainAscii = true;
-
-        return $opts;
+        return new self(
+            allowUtf8LocalPart: true,
+            allowObsLocalPart: false,
+            allowQuotedString: true,
+            validateQuotedContent: true,
+            rejectEmptyQuotedLocalPart: true,
+            allowUtf8Domain: true,
+            allowDomainLiteral: true,
+            requireFqdn: true,
+            validateIpGlobalRange: true,
+            rejectC0Controls: true,
+            rejectC1Controls: true,
+            applyNfcNormalization: true,
+            enforceLengthLimits: true,
+            includeDomainAscii: true,
+            strictIdna: true,
+        );
     }
 
     /**
      * RFC 5322 addr-spec — recommended default for new code.
      *
-     * Follows RFC 5322 §3.4.1 (addr-spec) including the obs-local-part form
-     * from RFC 5322 §4.4, which allows leading/trailing/consecutive dots.
-     * Generators MUST NOT produce obs-local-part (RFC 5322 §4 intro), but
-     * parsers MUST accept it.  ASCII only; no UTF-8 in local-part or domain.
+     * Follows RFC 5322 §3.4.1 including obs-local-part (§4.4): permissive dot
+     * placement. Generators MUST NOT produce obs-local-part, but parsers MUST
+     * accept it. ASCII only; no UTF-8 in local-part or domain.
      */
     public static function rfc5322(): self
     {
-        $opts = new self();
-        $opts->allowUtf8LocalPart = false;
-        $opts->allowObsLocalPart = true;
-        $opts->allowQuotedString = true;
-        $opts->validateQuotedContent = false;
-        $opts->rejectEmptyQuotedLocalPart = false;
-        $opts->allowUtf8Domain = false;
-        $opts->allowDomainLiteral = true;
-        $opts->requireFqdn = false;
-        $opts->validateIpGlobalRange = true;
-        $opts->rejectC0Controls = true;
-        $opts->rejectC1Controls = false;
-        $opts->applyNfcNormalization = false;
-        $opts->enforceLengthLimits = true;
-        $opts->includeDomainAscii = false;
-
-        return $opts;
+        return new self(
+            allowUtf8LocalPart: false,
+            allowObsLocalPart: true,
+            allowQuotedString: true,
+            validateQuotedContent: false,
+            rejectEmptyQuotedLocalPart: false,
+            allowUtf8Domain: false,
+            allowDomainLiteral: true,
+            requireFqdn: false,
+            validateIpGlobalRange: true,
+            rejectC0Controls: true,
+            rejectC1Controls: false,
+            applyNfcNormalization: false,
+            enforceLengthLimits: true,
+            includeDomainAscii: false,
+        );
     }
 
     /**
-     * RFC 2822 — maximum compatibility with older software and legacy addresses.
+     * RFC 2822 — maximum compatibility with older software.
      *
-     * Like rfc5322() but also permits C0 control characters, which were not
-     * explicitly prohibited by RFC 2822.  Use this preset only when you must
-     * accept addresses from very old or non-conforming systems.
+     * Like rfc5322() but also permits C0 controls, which were not explicitly
+     * prohibited by RFC 2822. Use only when accepting addresses from very old
+     * or non-conforming systems.
      */
     public static function rfc2822(): self
     {
-        $opts = new self();
-        $opts->allowUtf8LocalPart = false;
-        $opts->allowObsLocalPart = true;
-        $opts->allowQuotedString = true;
-        $opts->validateQuotedContent = false;
-        $opts->rejectEmptyQuotedLocalPart = false;
-        $opts->allowUtf8Domain = false;
-        $opts->allowDomainLiteral = true;
-        $opts->requireFqdn = false;
-        $opts->validateIpGlobalRange = true;
-        $opts->rejectC0Controls = false;
-        $opts->rejectC1Controls = false;
-        $opts->applyNfcNormalization = false;
-        $opts->enforceLengthLimits = true;
-        $opts->includeDomainAscii = false;
-
-        return $opts;
+        return new self(
+            allowUtf8LocalPart: false,
+            allowObsLocalPart: true,
+            allowQuotedString: true,
+            validateQuotedContent: false,
+            rejectEmptyQuotedLocalPart: false,
+            allowUtf8Domain: false,
+            allowDomainLiteral: true,
+            requireFqdn: false,
+            validateIpGlobalRange: true,
+            rejectC0Controls: false,
+            rejectC1Controls: false,
+            applyNfcNormalization: false,
+            enforceLengthLimits: true,
+            includeDomainAscii: false,
+        );
     }
 
-    // No legacy() factory needed — `new ParseOptions()` IS legacy behavior.
+    // ===== Fluent builders =====
+    //
+    // The readonly rule properties cannot be reassigned. Each `withX()` method
+    // returns a new ParseOptions instance with the single field replaced and
+    // every other field preserved. The four non-readonly state fields
+    // (bannedChars, separators, useWhitespaceAsSeparator, lengthLimits) also
+    // have `withX()` builders for symmetry; they will become readonly in v4.0.
 
-    // ===== Getters/Setters =====
+    /** @param array<string> $bannedChars */
+    public function withBannedChars(array $bannedChars): self
+    {
+        return $this->cloneWith(['bannedChars' => $bannedChars]);
+    }
+
+    /** @param array<string> $separators */
+    public function withSeparators(array $separators): self
+    {
+        return $this->cloneWith(['separators' => $separators]);
+    }
+
+    public function withUseWhitespaceAsSeparator(bool $value): self
+    {
+        return $this->cloneWith(['useWhitespaceAsSeparator' => $value]);
+    }
+
+    public function withLengthLimits(LengthLimits $limits): self
+    {
+        return $this->cloneWith(['lengthLimits' => $limits]);
+    }
+
+    public function withAllowUtf8LocalPart(bool $value): self
+    {
+        return $this->cloneWith(['allowUtf8LocalPart' => $value]);
+    }
+
+    public function withAllowObsLocalPart(bool $value): self
+    {
+        return $this->cloneWith(['allowObsLocalPart' => $value]);
+    }
+
+    public function withAllowQuotedString(bool $value): self
+    {
+        return $this->cloneWith(['allowQuotedString' => $value]);
+    }
+
+    public function withValidateQuotedContent(bool $value): self
+    {
+        return $this->cloneWith(['validateQuotedContent' => $value]);
+    }
+
+    public function withRejectEmptyQuotedLocalPart(bool $value): self
+    {
+        return $this->cloneWith(['rejectEmptyQuotedLocalPart' => $value]);
+    }
+
+    public function withAllowUtf8Domain(bool $value): self
+    {
+        return $this->cloneWith(['allowUtf8Domain' => $value]);
+    }
+
+    public function withAllowDomainLiteral(bool $value): self
+    {
+        return $this->cloneWith(['allowDomainLiteral' => $value]);
+    }
+
+    public function withRequireFqdn(bool $value): self
+    {
+        return $this->cloneWith(['requireFqdn' => $value]);
+    }
+
+    public function withValidateIpGlobalRange(bool $value): self
+    {
+        return $this->cloneWith(['validateIpGlobalRange' => $value]);
+    }
+
+    public function withRejectC0Controls(bool $value): self
+    {
+        return $this->cloneWith(['rejectC0Controls' => $value]);
+    }
+
+    public function withRejectC1Controls(bool $value): self
+    {
+        return $this->cloneWith(['rejectC1Controls' => $value]);
+    }
+
+    public function withApplyNfcNormalization(bool $value): self
+    {
+        return $this->cloneWith(['applyNfcNormalization' => $value]);
+    }
+
+    public function withEnforceLengthLimits(bool $value): self
+    {
+        return $this->cloneWith(['enforceLengthLimits' => $value]);
+    }
+
+    public function withIncludeDomainAscii(bool $value): self
+    {
+        return $this->cloneWith(['includeDomainAscii' => $value]);
+    }
+
+    public function withValidateDisplayNamePhrase(bool $value): self
+    {
+        return $this->cloneWith(['validateDisplayNamePhrase' => $value]);
+    }
+
+    public function withStrictIdna(bool $value): self
+    {
+        return $this->cloneWith(['strictIdna' => $value]);
+    }
 
     /**
-     * @deprecated v3.0 — Use constructor param or factory method. Will be removed in v4.0.
+     * Build a new ParseOptions preserving every current value except those
+     * listed in $overrides.
+     *
+     * @param array<string, mixed> $overrides
+     */
+    private function cloneWith(array $overrides): self
+    {
+        $get = fn (string $name, mixed $default): mixed => $overrides[$name] ?? $default;
+
+        return new self(
+            bannedChars:                $get('bannedChars', array_keys($this->bannedChars)),
+            separators:                 $get('separators', array_keys($this->separators)),
+            useWhitespaceAsSeparator:   $get('useWhitespaceAsSeparator', $this->useWhitespaceAsSeparator),
+            lengthLimits:               $get('lengthLimits', $this->lengthLimits),
+            allowUtf8LocalPart:         $get('allowUtf8LocalPart', $this->allowUtf8LocalPart),
+            allowObsLocalPart:          $get('allowObsLocalPart', $this->allowObsLocalPart),
+            allowQuotedString:          $get('allowQuotedString', $this->allowQuotedString),
+            validateQuotedContent:      $get('validateQuotedContent', $this->validateQuotedContent),
+            rejectEmptyQuotedLocalPart: $get('rejectEmptyQuotedLocalPart', $this->rejectEmptyQuotedLocalPart),
+            allowUtf8Domain:            $get('allowUtf8Domain', $this->allowUtf8Domain),
+            allowDomainLiteral:         $get('allowDomainLiteral', $this->allowDomainLiteral),
+            requireFqdn:                $get('requireFqdn', $this->requireFqdn),
+            validateIpGlobalRange:      $get('validateIpGlobalRange', $this->validateIpGlobalRange),
+            rejectC0Controls:           $get('rejectC0Controls', $this->rejectC0Controls),
+            rejectC1Controls:           $get('rejectC1Controls', $this->rejectC1Controls),
+            applyNfcNormalization:      $get('applyNfcNormalization', $this->applyNfcNormalization),
+            enforceLengthLimits:        $get('enforceLengthLimits', $this->enforceLengthLimits),
+            includeDomainAscii:         $get('includeDomainAscii', $this->includeDomainAscii),
+            validateDisplayNamePhrase:  $get('validateDisplayNamePhrase', $this->validateDisplayNamePhrase),
+            strictIdna:                 $get('strictIdna', $this->strictIdna),
+        );
+    }
+
+    // ===== Legacy deprecated setters =====
+    //
+    // These remain as mutating setters for the four non-readonly state fields
+    // only. They continue to work for v2.x callers; they will be removed in v4.0.
+
+    /**
+     * @deprecated v3.0 — Use constructor param or withBannedChars(). Removed in v4.0.
      * @param array<string> $bannedChars
      */
     public function setBannedChars(array $bannedChars): void
     {
         $this->bannedChars = [];
-        foreach ($bannedChars as $bannedChar) {
-            $this->bannedChars[$bannedChar] = true;
+        foreach ($bannedChars as $char) {
+            $this->bannedChars[$char] = true;
         }
     }
 
@@ -229,14 +353,14 @@ class ParseOptions
     }
 
     /**
-     * @deprecated v3.0 — Use constructor param or factory method. Will be removed in v4.0.
+     * @deprecated v3.0 — Use constructor param or withSeparators(). Removed in v4.0.
      * @param array<string> $separators
      */
     public function setSeparators(array $separators): void
     {
         $this->separators = [];
-        foreach ($separators as $separator) {
-            $this->separators[$separator] = true;
+        foreach ($separators as $sep) {
+            $this->separators[$sep] = true;
         }
     }
 
@@ -246,12 +370,10 @@ class ParseOptions
         return $this->separators;
     }
 
-    /**
-     * @deprecated v3.0 — Use constructor param or factory method. Will be removed in v4.0.
-     */
-    public function setUseWhitespaceAsSeparator(bool $useWhitespaceAsSeparator): void
+    /** @deprecated v3.0 — Use constructor param or withUseWhitespaceAsSeparator(). Removed in v4.0. */
+    public function setUseWhitespaceAsSeparator(bool $value): void
     {
-        $this->useWhitespaceAsSeparator = $useWhitespaceAsSeparator;
+        $this->useWhitespaceAsSeparator = $value;
     }
 
     public function getUseWhitespaceAsSeparator(): bool
@@ -259,12 +381,10 @@ class ParseOptions
         return $this->useWhitespaceAsSeparator;
     }
 
-    /**
-     * @deprecated v3.0 — Pass LengthLimits to constructor. Will be removed in v4.0.
-     */
-    public function setLengthLimits(LengthLimits $lengthLimits): void
+    /** @deprecated v3.0 — Use constructor param or withLengthLimits(). Removed in v4.0. */
+    public function setLengthLimits(LengthLimits $limits): void
     {
-        $this->lengthLimits = $lengthLimits;
+        $this->lengthLimits = $limits;
     }
 
     public function getLengthLimits(): LengthLimits
@@ -272,13 +392,11 @@ class ParseOptions
         return $this->lengthLimits;
     }
 
-    /**
-     * @deprecated v3.0 — Pass LengthLimits to constructor. Will be removed in v4.0.
-     */
-    public function setMaxLocalPartLength(int $maxLocalPartLength): void
+    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
+    public function setMaxLocalPartLength(int $value): void
     {
         $this->lengthLimits = new LengthLimits(
-            $maxLocalPartLength,
+            $value,
             $this->lengthLimits->maxTotalLength,
             $this->lengthLimits->maxDomainLabelLength,
         );
@@ -289,14 +407,12 @@ class ParseOptions
         return $this->lengthLimits->maxLocalPartLength;
     }
 
-    /**
-     * @deprecated v3.0 — Pass LengthLimits to constructor. Will be removed in v4.0.
-     */
-    public function setMaxTotalLength(int $maxTotalLength): void
+    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
+    public function setMaxTotalLength(int $value): void
     {
         $this->lengthLimits = new LengthLimits(
             $this->lengthLimits->maxLocalPartLength,
-            $maxTotalLength,
+            $value,
             $this->lengthLimits->maxDomainLabelLength,
         );
     }
@@ -306,15 +422,13 @@ class ParseOptions
         return $this->lengthLimits->maxTotalLength;
     }
 
-    /**
-     * @deprecated v3.0 — Pass LengthLimits to constructor. Will be removed in v4.0.
-     */
-    public function setMaxDomainLabelLength(int $maxDomainLabelLength): void
+    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
+    public function setMaxDomainLabelLength(int $value): void
     {
         $this->lengthLimits = new LengthLimits(
             $this->lengthLimits->maxLocalPartLength,
             $this->lengthLimits->maxTotalLength,
-            $maxDomainLabelLength,
+            $value,
         );
     }
 

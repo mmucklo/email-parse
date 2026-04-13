@@ -13,30 +13,30 @@ Future plans by version. Items here are intent, not commitment — priority and 
 - [ ] Remove all `@deprecated` `ParseOptions` setters above.
 - [ ] Make remaining private fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) public readonly via constructor promotion.
 
-## v3.1 — Immutable Config, Error Codes, Typed Output
+## v3.1 — Immutable Config, Error Codes, Typed Output — shipped
 
 **Immutable `ParseOptions` with fluent builders:**
-- [ ] Make all 15 boolean rule properties `readonly` (PHP 8.1) to prevent accidental mutation of shared instances (e.g. via DI container).
-- [ ] Add fluent builder methods that return new instances:
+- [x] All 15 boolean rule properties are now `readonly` (PHP 8.1). The 4 state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) remain mutable via deprecated setters until v4.0.
+- [x] Fluent builder methods that return new instances:
   ```php
-  ParseOptions::rfc5322()->withBannedChars([...])->withSeparators([...]);
+  ParseOptions::rfc5322()->withBannedChars([...])->withSeparators([...])->withRequireFqdn(true);
   ```
-- Existing deprecated setters continue to work for backward compatibility.
+- Deprecated setters continue to work for backward compatibility.
 
 **Structured error codes:**
-- [ ] Add a `ParseErrorCode` backed enum (e.g. `InvalidLocalPart`, `InvalidDomain`, `MissingDomain`, `Utf8NotAllowed`, `LengthExceeded`).
-- [ ] Return `invalid_reason_code: ?ParseErrorCode` alongside the existing `invalid_reason` string — enables programmatic error handling without breaking existing consumers.
+- [x] `ParseErrorCode` backed enum — 46 cases grouped by category (structural, character, dot placement, local-part content, quoted-string, domain, IP literal, length, display-name).
+- [x] `invalid_reason_code: ?ParseErrorCode` on every parsed-address entry, populated alongside the existing `invalid_reason` string.
 
 **Typed output value objects (non-breaking):**
-- [ ] `ParsedEmailAddress` — readonly properties for all per-address fields (`address`, `localPart`, `localPartParsed`, `domain`, `domainAscii`, `ip`, `domainPart`, `invalid`, `invalidReason`, `invalidReasonCode`, `comments`, etc.).
-- [ ] `ParseResult` — readonly `success`, `reason`, `emailAddresses` (array of `ParsedEmailAddress`).
-- [ ] New methods: `parseSingle(string): ParsedEmailAddress`, `parseMultiple(string): ParseResult`.
-- Existing `parse()` stays for backward compatibility.
+- [x] `ParsedEmailAddress` — readonly properties for every per-address field with named-arg constructor and `fromArray()` factory.
+- [x] `ParseResult` — readonly `success`, `reason`, `emailAddresses` (array of `ParsedEmailAddress`).
+- [x] New methods: `Parse::parseSingle(string): ParsedEmailAddress`, `Parse::parseMultiple(string): ParseResult`.
+- Existing `parse()` stays unchanged for backward compatibility.
 
 **Additional validation rules:**
-- [ ] `validateDisplayNamePhrase: bool` — enforce RFC 5322 §3.4 phrase syntax for display names.
-- [ ] Stricter IDNA U-label validation for the `rfc6531()` preset (CONTEXTJ/CONTEXTO checks, Bidi rule per RFC 5891 §4 / RFC 5893). UTS#46 punycode conversion already done in v3.0.
-- [ ] Extended test coverage (currently 224 assertions; target 250+).
+- [x] `validateDisplayNamePhrase: bool` — enforce RFC 5322 §3.2.5 phrase syntax (atext + WSP only) for unquoted display names.
+- [x] `strictIdna: bool` — apply full IDNA2008 conformance (`IDNA_USE_STD3_RULES | IDNA_CHECK_BIDI | IDNA_CHECK_CONTEXTJ | IDNA_NONTRANSITIONAL_TO_ASCII`) per RFC 5891/5892/5893. Enabled by default in `rfc6531()`.
+- [x] Extended test coverage: 265 assertions (target: 250+).
 
 ## v3.2 — Streaming, Severity Levels, Obsolete Syntax
 
