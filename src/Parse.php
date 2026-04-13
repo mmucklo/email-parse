@@ -229,7 +229,10 @@ class Parse
      */
     public function parseMultiple(string $emails, string $encoding = 'UTF-8'): ParseResult
     {
-        return ParseResult::fromArray($this->parse($emails, true, $encoding));
+        /** @var array{success: bool, reason: ?string, email_addresses: array<int, array<string, mixed>>} $raw */
+        $raw = $this->parse($emails, true, $encoding);
+
+        return ParseResult::fromArray($raw);
     }
 
     /**
@@ -617,7 +620,8 @@ class Parse
                                 try {
                                     // Test by trying to encode the current character into Punycode
                                     // Punycode should match the traditional domain name subset of characters
-                                    if (preg_match('/[a-z0-9\-]/', idn_to_ascii($curChar))) {
+                                    $punycoded = idn_to_ascii($curChar);
+                                    if ($punycoded !== false && preg_match('/[a-z0-9\-]/', $punycoded)) {
                                         $emailAddress['domain'] .= $curChar;
                                     } else {
                                         $emailAddress['invalid'] = true;
@@ -1383,6 +1387,11 @@ class Parse
             $parts = mb_split('\\.', $domain);
             if ($origEncoding) {
                 mb_regex_encoding($origEncoding);
+            }
+            // mb_split() can return false on failure; treat that as a validation
+            // failure rather than iterating over a bogus value.
+            if ($parts === false) {
+                return ['valid' => false, 'reason' => 'Domain name could not be tokenized', 'code' => Err::DomainInvalid];
             }
             $maxLabelLen = $this->options->getLengthLimits()->maxDomainLabelLength;
             foreach ($parts as $part) {

@@ -26,7 +26,9 @@
     "friendsofphp/php-cs-fixer": "^3.65",
     "phpstan/phpstan": "^2.0",
     "phpunit/phpunit": "^9.6",
-    "symfony/yaml": "^6.4|^7.2"
+    "symfony/yaml": "^6.4|^7.2",
+    "infection/infection": "^0.29.8",
+    "phpbench/phpbench": "^1.4"
   },
   "require": {
     "php": "^8.1",
@@ -40,11 +42,15 @@
     }
   },
   "config": {
-    "bin-dir": "bin"
+    "bin-dir": "bin",
+    "allow-plugins": {
+      "infection/extension-installer": true
+    }
   },
   "autoload-dev": {
     "psr-4": {
-      "Email\\Tests\\": "tests/"
+      "Email\\Tests\\": "tests/",
+      "Email\\Benchmarks\\": "benchmarks/"
     }
   },
   "scripts": {
@@ -53,6 +59,8 @@
     "cs:check": "php-cs-fixer fix --dry-run --diff",
     "cs:fix": "php-cs-fixer fix",
     "stan": "phpstan analyse --memory-limit=512M",
+    "infect": "XDEBUG_MODE=coverage infection --threads=max",
+    "bench": "phpbench run --report=default",
     "ci": [
       "@cs:check",
       "@stan",

@@ -1,0 +1,28 @@
+{
+    // Infection mutation-testing configuration.
+    //
+    // Usage: `composer infect` (or `bin/infection`) runs the full mutation suite
+    // against the PHPUnit suite and reports the Mutation Score Indicator (MSI).
+    // MSI is the percentage of mutations that caused at least one test to fail.
+    //
+    // Thresholds are set just below the current baseline (74% MSI / 79%
+    // covered MSI) so future regressions fail CI, while the full 85% target
+    // is an ongoing aspiration tracked in ROADMAP.md. Raise these numbers as
+    // the test suite improves.
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"]
+    },
+    "logs": {
+        "text": "infection.log",
+        "summary": "infection-summary.log"
+    },
+    "tmpDir": ".infection-tmp",
+    "mutators": {
+        "@default": true
+    },
+    "minMsi": 74,
+    "minCoveredMsi": 79,
+    "timeout": 10,
+    "testFramework": "phpunit"
+}

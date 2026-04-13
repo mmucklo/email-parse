@@ -81,17 +81,17 @@ Non-breaking follow-on to v3.2.
 Not tied to a specific release; picked up as time allows.
 
 **Testing depth:**
-- [ ] Mutation testing with Infection. Surfaces tests whose assertions are too weak to catch small code mutations. Target ≥85% MSI (mutation score indicator).
+- [~] Mutation testing with Infection — wired in via `composer infect` with thresholds `minMsi=74`, `minCoveredMsi=79` (current baseline). Target remains ≥85% MSI / ≥85% covered MSI; raise thresholds as tests are strengthened.
 - [ ] Property-based testing (Eris or Pest plugin): generate random valid addresses, assert `parseSingle(parseSingle($x)->simpleAddress)` round-trips; perturb bytes and assert error codes.
 - [ ] Parse.php line coverage 86.69% → ≥95% — remaining gaps are obscure error branches and the "shouldn't ever get here" default case.
 - [ ] CI matrix: add PHP 8.5 once released.
 
 **Static analysis:**
-- [ ] PHPStan level 6 → 8 (or `max`) — tighter generics and inference on the state machine. Likely requires additional docblock array shapes.
+- [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.
 - [ ] Add Psalm alongside PHPStan for cross-tool coverage; keep both green.
 
 **Performance:**
-- [ ] PhpBench suite: parsing throughput for realistic inputs (single ASCII, multi-address batch, UTF-8, IDN, obs-route). Establishes a baseline before any optimization.
+- [x] PhpBench suite — `benchmarks/ParseBench.php` covers single ASCII, name-addr, UTF-8 local-part, IDN, obs-route, 10-address comma batch, 100-address `parseStream` batch, invalid inputs, and comment extraction. Run with `composer bench`.
 - [ ] Profile the state machine under mailing-list-sized inputs. Likely hot path: `mb_substr` in the main loop — investigate byte iteration for pure-ASCII inputs.
 
 **Community / documentation:**

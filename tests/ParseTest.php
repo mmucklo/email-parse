@@ -107,7 +107,9 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseEmailAddresses()
     {
-        $tests = \Symfony\Component\Yaml\Yaml::parse(file_get_contents(__DIR__.'/testspec.yml'));
+        $yaml = file_get_contents(__DIR__.'/testspec.yml');
+        $this->assertNotFalse($yaml, 'testspec.yml must be readable');
+        $tests = \Symfony\Component\Yaml\Yaml::parse($yaml);
 
         foreach ($tests as $testIndex => $test) {
             $emails = $test['emails'];
@@ -467,13 +469,63 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
     }
 
+    public function testLengthLimitsDefaultsMatchRfc(): void
+    {
+        // RFC 5321 §4.5.3.1: 64-octet local-part, RFC 3696 EID 1690: 254-octet
+        // total, RFC 1035 §2.3.4: 63-octet domain label. Assert the exact values
+        // so mutations to the constructor defaults or preset factories are caught.
+        $d = \Email\LengthLimits::createDefault();
+        $this->assertSame(64, $d->maxLocalPartLength);
+        $this->assertSame(254, $d->maxTotalLength);
+        $this->assertSame(63, $d->maxDomainLabelLength);
+
+        $r = \Email\LengthLimits::createRelaxed();
+        $this->assertSame(128, $r->maxLocalPartLength);
+        $this->assertSame(512, $r->maxTotalLength);
+        $this->assertSame(128, $r->maxDomainLabelLength);
+
+        // Default constructor without args matches createDefault().
+        $empty = new \Email\LengthLimits();
+        $this->assertSame(64, $empty->maxLocalPartLength);
+        $this->assertSame(254, $empty->maxTotalLength);
+        $this->assertSame(63, $empty->maxDomainLabelLength);
+    }
+
     public function testEveryErrorCodeHasASeverity(): void
     {
-        // Defensive: ensure no new ParseErrorCode is added without mapping its severity.
+        // Explicit mapping assertion — codes classified as Warning are structural
+        // violations that callers may reasonably accept in non-SMTP contexts;
+        // everything else is Critical. Adding a new ParseErrorCode without updating
+        // this mapping should fail the last assertion below.
+        $warning = [
+            \Email\ParseErrorCode::Utf8NotAllowedInLocalPart,
+            \Email\ParseErrorCode::C0ControlInLocalPart,
+            \Email\ParseErrorCode::C1ControlInLocalPart,
+            \Email\ParseErrorCode::C1ControlInQuotedString,
+            \Email\ParseErrorCode::EmptyQuotedLocalPart,
+            \Email\ParseErrorCode::FqdnRequired,
+            \Email\ParseErrorCode::IpNotInGlobalRange,
+            \Email\ParseErrorCode::Ipv6NotInGlobalRange,
+            \Email\ParseErrorCode::LocalPartTooLong,
+            \Email\ParseErrorCode::TotalLengthExceeded,
+            \Email\ParseErrorCode::DomainTooLong,
+            \Email\ParseErrorCode::DomainLabelTooLong,
+            \Email\ParseErrorCode::PunycodeConversionFailed,
+        ];
+
         foreach (\Email\ParseErrorCode::cases() as $code) {
-            $severity = $code->severity();
-            $this->assertInstanceOf(\Email\ValidationSeverity::class, $severity);
+            $expected = in_array($code, $warning, true)
+                ? \Email\ValidationSeverity::Warning
+                : \Email\ValidationSeverity::Critical;
+            $this->assertSame(
+                $expected,
+                $code->severity(),
+                "{$code->name} should be {$expected->value}",
+            );
         }
+
+        // Every Warning entry must be a real case (catches typos in the list above).
+        $this->assertCount(13, $warning);
     }
 
     public function testParseStreamYieldsTypedObjects(): void
@@ -706,6 +758,23 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('multiple_opening_angle', $decoded['invalid_reason_code']);
     }
 
+    public function testToJsonEmitsUnescapedUnicode(): void
+    {
+        // Asserts JSON_UNESCAPED_UNICODE is in the flag set — without it, "münchen"
+        // would become "m\u00fcnchen". Catches bitwise-or regressions in toJson().
+        $typed = Parse::getInstance()->parseSingle('user@münchen.de');
+        $this->assertStringContainsString('münchen', $typed->toJson());
+        $this->assertStringNotContainsString('\u00', $typed->toJson());
+    }
+
+    public function testToJsonPassesCallerFlagsThrough(): void
+    {
+        // Caller-supplied flags must reach json_encode (bitwise-or, not &).
+        $typed = Parse::getInstance()->parseSingle('user@example.com');
+        $pretty = $typed->toJson(JSON_PRETTY_PRINT);
+        $this->assertStringContainsString("\n", $pretty);
+    }
+
     public function testStringableReturnsSimpleAddressWhenValid(): void
     {
         $typed = Parse::getInstance()->parseSingle('"J Doe" <john@example.com>');
@@ -775,6 +844,19 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($decoded['success']);
         $this->assertCount(2, $decoded['email_addresses']);
         $this->assertSame('a', $decoded['email_addresses'][0]['local_part']);
+    }
+
+    public function testParseResultToJsonEmitsUnescapedUnicode(): void
+    {
+        $typed = Parse::getInstance()->parseMultiple('user@münchen.de');
+        $this->assertStringContainsString('münchen', $typed->toJson());
+        $this->assertStringNotContainsString('\u00', $typed->toJson());
+    }
+
+    public function testParseResultToJsonPassesCallerFlagsThrough(): void
+    {
+        $typed = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+        $this->assertStringContainsString("\n", $typed->toJson(JSON_PRETTY_PRINT));
     }
 
     public function testLocalPartNormalizerRewritesLocalPart(): void
