@@ -25,6 +25,14 @@ class Parse
     private const STATE_START = 11;
 
     /**
+     * Absorbs the obsolete source-route prefix inside angle-addr
+     * (RFC 5322 §4.4 obs-route: `"<" obs-domain-list ":" addr-spec ">"`).
+     * Consumes characters from the leading `@` up to the `:` terminator,
+     * then resumes normal addr-spec parsing.
+     */
+    private const STATE_OBS_ROUTE = 12;
+
+    /**
      * @var ?Parse
      */
     protected static ?Parse $instance = null;
@@ -224,6 +232,35 @@ class Parse
         return ParseResult::fromArray($this->parse($emails, true, $encoding));
     }
 
+    /**
+     * Lazily parse a batch of email address strings, yielding one
+     * {@see ParsedEmailAddress} per matched address.
+     *
+     * Use this when processing large batches (e.g. a CSV of mailing-list
+     * addresses) where holding every parsed result in memory is undesirable.
+     * Each item in `$input` is parsed with multi-address separator handling,
+     * so a single item may contain several comma- or whitespace-separated
+     * addresses.
+     *
+     *   foreach ($parser->parseStream($csvRows) as $addr) {
+     *       if ($addr->invalid) continue;
+     *       $repo->upsert($addr->simpleAddress);
+     *   }
+     *
+     * @param  iterable<string> $input    Each item is an address string (optionally multi-address).
+     * @param  string           $encoding Character encoding of the input strings.
+     * @return \Generator<ParsedEmailAddress>
+     */
+    public function parseStream(iterable $input, string $encoding = 'UTF-8'): \Generator
+    {
+        foreach ($input as $emails) {
+            $result = $this->parse((string) $emails, true, $encoding);
+            foreach ($result['email_addresses'] as $address) {
+                yield ParsedEmailAddress::fromArray($address);
+            }
+        }
+    }
+
     public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
         $emailAddresses = [];
@@ -318,25 +355,66 @@ class Parse
                     } elseif (' ' == $curChar ||
                           "\t" == $curChar || "\r" == $curChar ||
                           "\n" == $curChar) {
-                        // Handle Whitespace
-
-                        // Look ahead for comments after the address
+                        // RFC 5322 §3.2.2 CFWS — folding whitespace. Look ahead past the
+                        // WSP run to find the next significant character; that character
+                        // determines which kind of CFWS this is and whether it can be
+                        // silently absorbed or if it marks an end-of-address / error.
                         $foundComment = false;
+                        $lookAheadChar = null;
                         for ($j = ($i + 1); $j < $len; ++$j) {
-                            $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
-                            if ('(' == $lookAheadChar) {
+                            $c = mb_substr($emails, $j, 1, $encoding);
+                            if ('(' === $c) {
                                 $foundComment = true;
 
                                 break;
-                            } elseif (' ' != $lookAheadChar &&
-                                "\t" != $lookAheadChar &&
-                                "\r" != $lookAheadChar &&
-                                "\n" != $lookAheadChar) {
+                            }
+                            if (' ' !== $c && "\t" !== $c && "\r" !== $c && "\n" !== $c) {
+                                $lookAheadChar = $c;
+
                                 break;
                             }
                         }
-                        // Check if there's a comment found ahead
-                        if ($foundComment) {
+
+                        // CFWS absorption: whitespace is legal per RFC 5322 §3.2.3 at
+                        // dot-atom boundaries ("[CFWS] dot-atom-text [CFWS]") and per
+                        // §4.4 obs-angle-addr around the angle brackets. Detect the
+                        // position from subState + lookahead rather than emitting a
+                        // WhitespaceInAddress error.
+                        $cfwsAbsorbed = false;
+                        if (!$foundComment && $lookAheadChar !== null) {
+                            if (self::STATE_LOCAL_PART === $subState) {
+                                if ('@' === $lookAheadChar) {
+                                    // Trailing CFWS of the local-part dot-atom: "local @domain".
+                                    $cfwsAbsorbed = true;
+                                } elseif (
+                                    $emailAddress['in_angle_addr']
+                                    && $emailAddress['local_part_parsed'] === ''
+                                    && $emailAddress['address_temp'] === ''
+                                    && $emailAddress['quote_temp'] === ''
+                                ) {
+                                    // Leading CFWS inside angle-addr: "<  local@domain>".
+                                    $cfwsAbsorbed = true;
+                                }
+                            } elseif (self::STATE_DOMAIN === $subState) {
+                                if ($emailAddress['domain'] === '' && $emailAddress['ip'] === '') {
+                                    // Leading CFWS of the domain dot-atom: "local@ domain".
+                                    $cfwsAbsorbed = true;
+                                }
+                            } elseif (
+                                self::STATE_START === $subState
+                                && '@' === $lookAheadChar
+                                && $emailAddress['address_temp'] !== ''
+                            ) {
+                                // Top-level addr-spec with no angle-addr: "local @domain".
+                                // The accumulated address_temp IS the local-part; absorb the
+                                // whitespace as trailing CFWS before the `@`.
+                                $cfwsAbsorbed = true;
+                            }
+                        }
+
+                        if ($cfwsAbsorbed) {
+                            // Silently skip the whitespace character; state unchanged.
+                        } elseif ($foundComment) {
                             if (self::STATE_DOMAIN == $subState) {
                                 $subState = self::STATE_AFTER_DOMAIN;
                             } elseif (self::STATE_LOCAL_PART == $subState) {
@@ -344,10 +422,17 @@ class Parse
                                 $emailAddress['invalid_reason'] = 'Email address contains whitespace';
                                 $emailAddress['invalid_reason_code'] = Err::WhitespaceInAddress;
                             }
+                        } elseif (
+                            $emailAddress['in_angle_addr']
+                            && self::STATE_DOMAIN == $subState
+                            && $lookAheadChar === '>'
+                        ) {
+                            // Trailing CFWS inside angle-addr before `>`: "<local@domain >".
+                            // Absorb and transition as if we saw `>` next.
+                            $subState = self::STATE_AFTER_DOMAIN;
                         } elseif ($this->options->getUseWhitespaceAsSeparator() &&
                                   (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
-                            // If we're already in the domain part and whitespace is a separator,
-                            // this should be the end of the whole address
+                            // Already past `@` and whitespace-as-separator: end address.
                             $state = self::STATE_END_ADDRESS;
 
                             break;
@@ -357,7 +442,7 @@ class Parse
                                 $emailAddress['invalid_reason'] = 'Email address contains whitespace';
                                 $emailAddress['invalid_reason_code'] = Err::WhitespaceInAddress;
                             } else {
-                                // If the previous section was a quoted string, then use that for the name
+                                // Display-name phrase: absorb into name_parsed.
                                 $this->handleQuote($emailAddress);
                                 $emailAddress['name_parsed'] .= $curChar;
                             }
@@ -372,6 +457,7 @@ class Parse
                             // Here should be the start of the local part for sure everything else then is part of the name
                             $subState = self::STATE_LOCAL_PART;
                             $emailAddress['special_char_in_substate'] = null;
+                            $emailAddress['in_angle_addr'] = true;
                             $this->handleQuote($emailAddress);
                         }
                     } elseif ('>' == $curChar) {
@@ -382,6 +468,7 @@ class Parse
                             $emailAddress['invalid_reason_code'] = Err::MissingDomainBeforeClosingAngle;
                         } else {
                             $subState = self::STATE_AFTER_DOMAIN;
+                            $emailAddress['in_angle_addr'] = false;
                         }
                     } elseif ('"' == $curChar) {
                         // If we hit a quote - change to the quote state, unless it's in the domain, in which case it's error
@@ -406,6 +493,20 @@ class Parse
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$emailAddress['special_char_in_substate']}'";
                             $emailAddress['invalid_reason_code'] = Err::InvalidCharacterInLocalPart;
+                        } elseif (
+                            $this->options->allowObsRoute
+                            && $emailAddress['in_angle_addr']
+                            && $emailAddress['obs_route'] === ''
+                            && $emailAddress['local_part_parsed'] === ''
+                            && $emailAddress['quote_temp'] === ''
+                            && $emailAddress['address_temp'] === ''
+                        ) {
+                            // RFC 5322 §4.4 obs-route: first `@` seen inside `<...>` with no
+                            // preceding local-part starts the source-route prefix. Consume
+                            // the remainder until `:` via STATE_OBS_ROUTE, then resume
+                            // addr-spec parsing with local-part reset.
+                            $state = self::STATE_OBS_ROUTE;
+                            $emailAddress['obs_route'] = '@';
                         } else {
                             $subState = self::STATE_DOMAIN;
                             if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
@@ -598,6 +699,29 @@ class Parse
                         $state = self::STATE_ADDRESS;
                     } else {
                         $emailAddress['ip'] .= $curChar;
+                    }
+
+                    break;
+                case self::STATE_OBS_ROUTE:
+                    // RFC 5322 §4.4 obs-route absorption — consume the
+                    // `@host1,@host2:` source-route prefix inside angle-addr.
+                    // On `:` terminator, resume normal addr-spec parsing with
+                    // local-part state cleared. An unterminated obs-route
+                    // (end of input or `>` before `:`) is an invalid address.
+                    $emailAddress['original_address'] .= $curChar;
+                    if (':' == $curChar) {
+                        $state = self::STATE_ADDRESS;
+                        $subState = self::STATE_LOCAL_PART;
+                    } elseif ('>' == $curChar) {
+                        // `<@host>` without a colon — incomplete obs-route.
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = 'Incomplete obs-route: missing colon before closing angle-bracket';
+                        $emailAddress['invalid_reason_code'] = Err::IncompleteAddress;
+                        $emailAddress['in_angle_addr'] = false;
+                        $state = self::STATE_ADDRESS;
+                        $subState = self::STATE_AFTER_DOMAIN;
+                    } else {
+                        $emailAddress['obs_route'] .= $curChar;
                     }
 
                     break;
@@ -807,6 +931,13 @@ class Parse
             'special_char_in_substate' => null,
             'comment_temp' => '',
             'comments' => [],
+            // True while the parser is inside angle-addr (between `<` and `>`).
+            // Used to gate obs-route detection per RFC 5322 §4.4.
+            'in_angle_addr' => false,
+            // Accumulates the obs-route prefix (everything between `<` and the
+            // terminating `:`) when ParseOptions::$allowObsRoute is true.
+            // Empty string when no obs-route was seen.
+            'obs_route' => '',
         ];
     }
 
@@ -995,7 +1126,8 @@ class Parse
                         'invalid' => $emailAddress['invalid'],
                         'invalid_reason' => $emailAddress['invalid_reason'],
                         'invalid_reason_code' => $emailAddress['invalid_reason_code'],
-                        'comments' => $emailAddress['comments'], ];
+                        'comments' => $emailAddress['comments'],
+                        'obs_route' => $emailAddress['obs_route'] !== '' ? $emailAddress['obs_route'] : null, ];
 
         // Build the proper address by hand (has comments stripped out and should have quotes in the proper places)
         if (!$emailAddrDef['invalid']) {

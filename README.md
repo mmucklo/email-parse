@@ -45,6 +45,12 @@ if ($address->invalid) {
 
 $result = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
 foreach ($result->emailAddresses as $addr) { /* ... */ }
+
+// Streaming for large batches (v3.2+) — yields one address at a time.
+foreach (Parse::getInstance()->parseStream($csvRows) as $addr) {
+    if ($addr->invalid) continue;
+    // ...
+}
 ```
 
 ### Advanced Usage with ParseOptions
@@ -166,6 +172,7 @@ $parser = new Parse(null, $options);
 | `applyNfcNormalization` | `false` | Apply NFC Unicode normalization (RFC 6532 §3.1) |
 | `validateDisplayNamePhrase` | `false` | Enforce RFC 5322 §3.2.5 phrase syntax on unquoted display names |
 | `strictIdna` | `false` | Apply full IDNA2008 conformance on U-label domains (RFC 5891/5892/5893) |
+| `allowObsRoute` | `false` | Accept RFC 5322 §4.4 obs-route source-routes like `<@host1,@host2:user@host3>` |
 | **Length & Output** | | |
 | `enforceLengthLimits` | `true` | Enforce RFC 5321 length limits (64/254/63) |
 | `includeDomainAscii` | `false` | Include punycode `domain_ascii` in output |

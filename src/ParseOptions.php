@@ -42,6 +42,7 @@ class ParseOptions
      * @param bool              $includeDomainAscii        Emit punycode domain in output.
      * @param bool              $validateDisplayNamePhrase Enforce RFC 5322 §3.2.5 phrase syntax for unquoted display names (atext + WSP only).
      * @param bool              $strictIdna                Apply full IDNA2008 conformance on U-label domains (CONTEXTJ/O, Bidi rule, STD3, nontransitional mapping).
+     * @param bool              $allowObsRoute             Accept RFC 5322 §4.4 obs-route source-route prefix inside angle-addr (e.g. `<@host1,@host2:user@host3>`); the route is captured and the real addr-spec is used ("accept and discard" per spec).
      */
     public function __construct(
         array $bannedChars = [],
@@ -64,6 +65,7 @@ class ParseOptions
         public readonly bool $includeDomainAscii = false,
         public readonly bool $validateDisplayNamePhrase = false,
         public readonly bool $strictIdna = false,
+        public readonly bool $allowObsRoute = false,
     ) {
         foreach ($bannedChars as $char) {
             $this->bannedChars[$char] = true;
@@ -155,6 +157,7 @@ class ParseOptions
             applyNfcNormalization: false,
             enforceLengthLimits: true,
             includeDomainAscii: false,
+            allowObsRoute: true,
         );
     }
 
@@ -182,6 +185,7 @@ class ParseOptions
             applyNfcNormalization: false,
             enforceLengthLimits: true,
             includeDomainAscii: false,
+            allowObsRoute: true,
         );
     }
 
@@ -295,6 +299,11 @@ class ParseOptions
         return $this->cloneWith(['strictIdna' => $value]);
     }
 
+    public function withAllowObsRoute(bool $value): self
+    {
+        return $this->cloneWith(['allowObsRoute' => $value]);
+    }
+
     /**
      * Build a new ParseOptions preserving every current value except those
      * listed in $overrides.
@@ -326,6 +335,7 @@ class ParseOptions
             includeDomainAscii:         $get('includeDomainAscii', $this->includeDomainAscii),
             validateDisplayNamePhrase:  $get('validateDisplayNamePhrase', $this->validateDisplayNamePhrase),
             strictIdna:                 $get('strictIdna', $this->strictIdna),
+            allowObsRoute:              $get('allowObsRoute', $this->allowObsRoute),
         );
     }
 
