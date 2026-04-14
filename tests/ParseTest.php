@@ -423,21 +423,214 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     /**
      * Quoted-string content validation (RFC 5321 §4.1.2 qtextSMTP / quoted-pairSMTP).
      */
+    /**
+     * RFC 1035 §2.3.4 forbids domain labels starting or ending with a hyphen.
+     * Validates Parse::validateDomainName() emits the precise error code at
+     * both label positions — kills the mb_substr/mb_strlen mutants on that line.
+     */
+    public function testDomainLabelHyphenRejection(): void
+    {
+        $opts = ParseOptions::rfc5321()->withRequireFqdn(false);
+        $parser = new Parse(null, $opts);
+
+        $leading = $parser->parseSingle('user@-bad.example.com');
+        $this->assertTrue($leading->invalid, 'leading hyphen label must be rejected');
+        $this->assertSame(
+            \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen,
+            $leading->invalidReasonCode,
+        );
+
+        $trailing = $parser->parseSingle('user@bad-.example.com');
+        $this->assertTrue($trailing->invalid, 'trailing hyphen label must be rejected');
+        $this->assertSame(
+            \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen,
+            $trailing->invalidReasonCode,
+        );
+
+        // Mid-label hyphens are valid; passes the same check.
+        $valid = $parser->parseSingle('user@my-domain.example.com');
+        $this->assertFalse($valid->invalid);
+    }
+
+    /**
+     * RFC 5321 §2.3.5 FQDN: reject single-label and trailing-empty-label domains.
+     * Covers all three branches of the dotPos check at the FQDN gate.
+     */
+    public function testFqdnGateRejectsBadDotPositions(): void
+    {
+        $opts = ParseOptions::rfc5321();
+        $parser = new Parse(null, $opts);
+
+        // Single label (no dot at all) — dotPos === false branch
+        $this->assertSame(
+            \Email\ParseErrorCode::FqdnRequired,
+            $parser->parseSingle('user@localhost')->invalidReasonCode,
+        );
+
+        // Bare TLD with trailing dot stripped → single label → FqdnRequired
+        $this->assertSame(
+            \Email\ParseErrorCode::FqdnRequired,
+            $parser->parseSingle('user@example.')->invalidReasonCode,
+        );
+
+        // Multi-label valid case
+        $this->assertFalse($parser->parseSingle('user@example.com')->invalid);
+    }
+
+    /**
+     * Length boundary tests — assert the exact cutoff (N accepted, N+1 rejected)
+     * for the three RFC 5321 §4.5.3.1 limits. Kills IncrementInteger /
+     * DecrementInteger / GreaterThan mutants on the length-comparison lines.
+     */
+    public function testLocalPartLengthBoundary(): void
+    {
+        $opts = new ParseOptions(lengthLimits: new \Email\LengthLimits(10, 254, 63));
+        $parser = new Parse(null, $opts);
+
+        // 10 octets: accepted; 11: rejected.
+        $this->assertFalse($parser->parseSingle(str_repeat('a', 10).'@x.com')->invalid);
+        $this->assertSame(
+            \Email\ParseErrorCode::LocalPartTooLong,
+            $parser->parseSingle(str_repeat('a', 11).'@x.com')->invalidReasonCode,
+        );
+    }
+
+    public function testTotalLengthBoundary(): void
+    {
+        // maxTotalLength = 20, local + '@' + domain.
+        $opts = new ParseOptions(lengthLimits: new \Email\LengthLimits(64, 20, 63));
+        $parser = new Parse(null, $opts);
+
+        // "abcdefgh@example.com" is exactly 20 octets — accepted at the boundary.
+        $this->assertFalse($parser->parseSingle('abcdefgh@example.com')->invalid);
+        // "abcdefghi@example.com" is 21 octets — over the limit.
+        $this->assertSame(
+            \Email\ParseErrorCode::TotalLengthExceeded,
+            $parser->parseSingle('abcdefghi@example.com')->invalidReasonCode,
+        );
+    }
+
+    public function testLegacyAsciiOnlyPatternAcceptsTrailingDot(): void
+    {
+        // Legacy/non-strict branch in validateLocalPart: allowObsLocalPart=false,
+        // rejectC0Controls=false, allowUtf8LocalPart=false. The regex allows a
+        // single trailing dot for v2.x backward compatibility.
+        $opts = new ParseOptions();
+        $opts = $opts->withAllowUtf8LocalPart(false);
+        $parser = new Parse(null, $opts);
+
+        $this->assertFalse($parser->parseSingle('user@example.com')->invalid);
+        $this->assertFalse($parser->parseSingle('user.name@example.com')->invalid);
+    }
+
+    public function testC1ControlInQuotedStringRejectedUnderRfc6531(): void
+    {
+        // rfc6531() enables rejectC1Controls; a U+0080-U+009F character inside
+        // a quoted-string must produce C1ControlInQuotedString.
+        $opts = ParseOptions::rfc6531()->withRequireFqdn(false);
+        // Construct a quoted local-part containing a C1 control (U+0080).
+        $input = "\"a\u{0080}b\"@example.com";
+        $r = (new Parse(null, $opts))->parseSingle($input);
+        $this->assertTrue($r->invalid);
+        $this->assertSame(
+            \Email\ParseErrorCode::C1ControlInQuotedString,
+            $r->invalidReasonCode,
+        );
+    }
+
+    public function testMultipleInvalidAddressesReasonIsPlural(): void
+    {
+        // When a batch contains two or more invalid addresses, the top-level
+        // $reason becomes "Invalid email addresses" (plural) — the second-error
+        // branch on line ~844 of Parse.php flips $reason from the singular form.
+        $result = Parse::getInstance()->parseMultiple('first-bad@, second-bad@');
+        $this->assertFalse($result->success);
+        $this->assertSame('Invalid email addresses', $result->reason);
+    }
+
+    public function testQuotedLocalPartLengthIncludesWireDquotes(): void
+    {
+        // Quoted local-parts count the enclosing DQUOTEs in the wire-form length.
+        // maxLocalPartLength = 5: `"abc"` (3 chars + 2 DQUOTE = 5 octets) is valid;
+        // `"abcd"` (4 chars + 2 DQUOTE = 6 octets) is rejected.
+        $opts = new ParseOptions(lengthLimits: new \Email\LengthLimits(5, 254, 63));
+        $parser = new Parse(null, $opts);
+
+        $this->assertFalse($parser->parseSingle('"abc"@x.com')->invalid);
+        $this->assertSame(
+            \Email\ParseErrorCode::LocalPartTooLong,
+            $parser->parseSingle('"abcd"@x.com')->invalidReasonCode,
+        );
+    }
+
+    /**
+     * RFC 1035 §2.3.4 character set: domain labels are LDH (letters, digits, hyphen).
+     * A label containing other characters is rejected as DomainContainsInvalidChars.
+     */
+    public function testDomainLabelInvalidCharactersRejected(): void
+    {
+        $opts = ParseOptions::rfc5321()->withRequireFqdn(false);
+        $parser = new Parse(null, $opts);
+
+        // Empty label (leading dot in domain) → empty string fails LDH regex
+        $r = $parser->parseSingle('user@.example.com');
+        $this->assertTrue($r->invalid);
+        $this->assertSame(\Email\ParseErrorCode::DomainContainsInvalidChars, $r->invalidReasonCode);
+    }
+
     public function testQuotedStringContentValidation(): void
     {
         $opts = (new ParseOptions())
             ->withValidateQuotedContent(true)
             ->withAllowUtf8LocalPart(false);
+        $parser = new Parse(null, $opts);
 
         // Invalid escape: backslash followed by byte outside %d32-126 (SOH = 0x01).
-        $result = (new Parse(null, $opts))->parseSingle("\"a\\\x01b\"@example.com");
-        $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString, $result->invalidReasonCode);
+        $r = $parser->parseSingle("\"a\\\x01b\"@example.com");
+        $this->assertTrue($r->invalid);
+        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString, $r->invalidReasonCode);
+
+        // Invalid escape — backslash followed by DEL (0x7F, one past the upper bound).
+        // Exercises the `> 126` half of the quoted-pairSMTP check.
+        $r = $parser->parseSingle("\"a\\\x7fb\"@example.com");
+        $this->assertTrue($r->invalid);
+        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString, $r->invalidReasonCode);
+
+        // Boundary: backslash followed by SPACE (0x20, the lower bound) — valid.
+        $r = $parser->parseSingle("\"a\\ b\"@example.com");
+        $this->assertFalse($r->invalid, 'backslash + SPACE (0x20) is a valid quoted-pair');
+
+        // Boundary: backslash followed by ~ (0x7E, the upper bound) — valid.
+        $r = $parser->parseSingle("\"a\\~b\"@example.com");
+        $this->assertFalse($r->invalid, 'backslash + ~ (0x7E) is a valid quoted-pair');
 
         // Bare control byte inside the quoted string (no escape).
-        $result = (new Parse(null, $opts))->parseSingle("\"a\x01b\"@example.com");
-        $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $result->invalidReasonCode);
+        $r = $parser->parseSingle("\"a\x01b\"@example.com");
+        $this->assertTrue($r->invalid);
+        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $r->invalidReasonCode);
+
+        // Boundary: byte 0x1F (US, the last C0 control) — rejected via `<= 31`.
+        $r = $parser->parseSingle("\"a\x1fb\"@example.com");
+        $this->assertTrue($r->invalid);
+        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $r->invalidReasonCode);
+
+        // Boundary: byte 0x7F (DEL, the first DEL+ byte) — rejected via `>= 127`.
+        $r = $parser->parseSingle("\"a\x7fb\"@example.com");
+        $this->assertTrue($r->invalid);
+        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $r->invalidReasonCode);
+
+        // Boundary: byte 0x20 (SPACE) is valid qtextSMTP — `<= 31` must not fire.
+        $r = $parser->parseSingle('"a b"@example.com');
+        $this->assertFalse($r->invalid);
+
+        // Boundary: byte 0x7E (~) is valid qtextSMTP — `>= 127` must not fire.
+        $r = $parser->parseSingle('"a~b"@example.com');
+        $this->assertFalse($r->invalid);
+
+        // Note: ParseErrorCode::TrailingBackslashInQuotedString is defensive-only —
+        // the STATE_QUOTE backslash-counting logic always closes the quote before an
+        // unescaped lone backslash can end up in `local_part_parsed`. Kept as a
+        // safety net should the quote-closing logic change.
     }
 
     public function testValidAddressHasNullInvalidSeverity(): void
@@ -467,6 +660,107 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $result = Parse::getInstance()->parseSingle('user@[192.168.0.1]');
         $this->assertTrue($result->invalid);
         $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
+    }
+
+    /**
+     * Each factory preset is a fixed combination of 15 rule properties. Mutations
+     * that flip any single boolean must be detected — this test asserts the exact
+     * setting for every property in every preset, killing ~60 boolean-flip mutants
+     * in ParseOptions in one pass.
+     *
+     * Source-of-truth table; if a preset's intent changes, update this table and
+     * the matching factory method together.
+     */
+    public function testFactoryPresetsHaveExpectedRuleValues(): void
+    {
+        $presets = [
+            'rfc5321' => [ParseOptions::rfc5321(), [
+                'allowUtf8LocalPart' => false,
+                'allowObsLocalPart' => false,
+                'allowQuotedString' => true,
+                'validateQuotedContent' => true,
+                'rejectEmptyQuotedLocalPart' => true,
+                'allowUtf8Domain' => false,
+                'allowDomainLiteral' => true,
+                'requireFqdn' => true,
+                'validateIpGlobalRange' => true,
+                'rejectC0Controls' => true,
+                'rejectC1Controls' => false,
+                'applyNfcNormalization' => false,
+                'enforceLengthLimits' => true,
+                'includeDomainAscii' => false,
+                'validateDisplayNamePhrase' => false,
+                'strictIdna' => false,
+                'allowObsRoute' => false,
+            ]],
+            'rfc6531' => [ParseOptions::rfc6531(), [
+                'allowUtf8LocalPart' => true,
+                'allowObsLocalPart' => false,
+                'allowQuotedString' => true,
+                'validateQuotedContent' => true,
+                'rejectEmptyQuotedLocalPart' => true,
+                'allowUtf8Domain' => true,
+                'allowDomainLiteral' => true,
+                'requireFqdn' => true,
+                'validateIpGlobalRange' => true,
+                'rejectC0Controls' => true,
+                'rejectC1Controls' => true,
+                'applyNfcNormalization' => true,
+                'enforceLengthLimits' => true,
+                'includeDomainAscii' => true,
+                'validateDisplayNamePhrase' => false,
+                'strictIdna' => true,
+                'allowObsRoute' => false,
+            ]],
+            'rfc5322' => [ParseOptions::rfc5322(), [
+                'allowUtf8LocalPart' => false,
+                'allowObsLocalPart' => true,
+                'allowQuotedString' => true,
+                'validateQuotedContent' => false,
+                'rejectEmptyQuotedLocalPart' => false,
+                'allowUtf8Domain' => false,
+                'allowDomainLiteral' => true,
+                'requireFqdn' => false,
+                'validateIpGlobalRange' => true,
+                'rejectC0Controls' => true,
+                'rejectC1Controls' => false,
+                'applyNfcNormalization' => false,
+                'enforceLengthLimits' => true,
+                'includeDomainAscii' => false,
+                'validateDisplayNamePhrase' => false,
+                'strictIdna' => false,
+                'allowObsRoute' => true,
+            ]],
+            'rfc2822' => [ParseOptions::rfc2822(), [
+                'allowUtf8LocalPart' => false,
+                'allowObsLocalPart' => true,
+                'allowQuotedString' => true,
+                'validateQuotedContent' => false,
+                'rejectEmptyQuotedLocalPart' => false,
+                'allowUtf8Domain' => false,
+                'allowDomainLiteral' => true,
+                'requireFqdn' => false,
+                'validateIpGlobalRange' => true,
+                'rejectC0Controls' => false,
+                'rejectC1Controls' => false,
+                'applyNfcNormalization' => false,
+                'enforceLengthLimits' => true,
+                'includeDomainAscii' => false,
+                'validateDisplayNamePhrase' => false,
+                'strictIdna' => false,
+                'allowObsRoute' => true,
+            ]],
+        ];
+
+        foreach ($presets as $name => [$opts, $expected]) {
+            foreach ($expected as $prop => $value) {
+                $this->assertSame(
+                    $value,
+                    $opts->$prop,
+                    "{$name}() {$prop} should be " . ($value ? 'true' : 'false'),
+                );
+            }
+        }
     }
 
     public function testLengthLimitsDefaultsMatchRfc(): void

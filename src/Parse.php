@@ -1212,7 +1212,12 @@ class Parse
                         if ($nextByte < 32 || $nextByte > 126) {
                             return ['valid' => false, 'reason' => 'Invalid escaped character in quoted string', 'code' => Err::InvalidEscapedCharInQuotedString, 'normalized' => null];
                         }
-                        $i++; // skip the escaped character on the next iteration
+                        // Skip both the backslash and its escape target; they form one
+                        // quoted-pair and must not be re-checked against qtextSMTP below
+                        // (which would otherwise reject the backslash as byte 92).
+                        ++$i;
+
+                        continue;
                     }
 
                     // UTF-8 multibyte in quoted string (internationalized)

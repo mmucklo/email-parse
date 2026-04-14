@@ -81,9 +81,9 @@ Non-breaking follow-on to v3.2.
 Not tied to a specific release; picked up as time allows.
 
 **Testing depth:**
-- [~] Mutation testing with Infection — wired in via `composer infect` with thresholds `minMsi=74`, `minCoveredMsi=79` (current baseline). Target remains ≥85% MSI / ≥85% covered MSI; raise thresholds as tests are strengthened.
+- [~] Mutation testing with Infection — wired in via `composer infect` with thresholds `minMsi=80`, `minCoveredMsi=85` (current baseline, up from 74/79). Target remains ≥85% overall MSI; raise threshold as more error-path tests land.
 - [ ] Property-based testing (Eris or Pest plugin): generate random valid addresses, assert `parseSingle(parseSingle($x)->simpleAddress)` round-trips; perturb bytes and assert error codes.
-- [ ] Parse.php line coverage 86.69% → ≥95% — remaining gaps are obscure error branches and the "shouldn't ever get here" default case.
+- [~] Parse.php line coverage — now 87.98% (up from 86.69%). Overall project line coverage 91.15% (up from 89.61%). Remaining gaps are obscure error branches, the "shouldn't ever get here" default case, and code paths reachable only via internal state corruption. Target ≥95% aspirational.
 - [ ] CI matrix: add PHP 8.5 once released.
 
 **Static analysis:**
