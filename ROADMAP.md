@@ -82,7 +82,7 @@ Not tied to a specific release; picked up as time allows.
 
 **Testing depth:**
 - [~] Mutation testing with Infection — wired in via `composer infect` with thresholds `minMsi=80`, `minCoveredMsi=85` (current baseline, up from 74/79). Target remains ≥85% overall MSI; raise threshold as more error-path tests land.
-- [ ] Property-based testing (Eris or Pest plugin): generate random valid addresses, assert `parseSingle(parseSingle($x)->simpleAddress)` round-trips; perturb bytes and assert error codes.
+- [x] Property-based testing — `tests/PropertyTest.php` with 10 invariants across 200 random iterations each: no-crash on arbitrary bytes, determinism, reason+code consistency, severity classification, Stringable contract, toArray ↔ parse() round-trip, valid-address round-trip, and all-presets-never-crash. No extra dependency (native PHPUnit + `mt_rand`; deterministic via `SEED` envvar).
 - [~] Parse.php line coverage — now 87.98% (up from 86.69%). Overall project line coverage 91.15% (up from 89.61%). Remaining gaps are obscure error branches, the "shouldn't ever get here" default case, and code paths reachable only via internal state corruption. Target ≥95% aspirational.
 - [ ] CI matrix: add PHP 8.5 once released.
 
@@ -95,7 +95,7 @@ Not tied to a specific release; picked up as time allows.
 - [ ] Profile the state machine under mailing-list-sized inputs. Likely hot path: `mb_substr` in the main loop — investigate byte iteration for pure-ASCII inputs.
 
 **Community / documentation:**
-- [ ] `CONTRIBUTING.md` with dev setup, CI expectations, and commit-style guidance.
+- [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.
 - [ ] GitHub issue + pull-request templates.
 - [ ] `CODE_OF_CONDUCT.md`.
 - [ ] Examples directory or GitHub Pages cookbook (UTF-8 addresses, obs-route in practice, custom normalizers once they ship, Symfony/Laravel integration snippets).
