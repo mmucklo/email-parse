@@ -119,4 +119,26 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Run PHPStan
-        run: bin/phpstan analyse --error-format=github
+        run: bin/phpstan analyse --memory-limit=512M --error-format=github
+
+  psalm:
+    name: Static Analysis (Psalm)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run Psalm
+        run: bin/psalm --memory-limit=512M --output-format=github
