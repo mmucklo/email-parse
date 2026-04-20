@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files psalm-version="6.16.1@f1f5de594dc76faf8784e02d3dc4716c91c6f6ac">
+  <file src="src/LengthLimits.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[createRelaxed]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="src/Parse.php">
+    <InvalidScalarArgument>
+      <code><![CDATA[$origEncoding]]></code>
+    </InvalidScalarArgument>
+    <PossiblyInvalidArgument>
+      <code><![CDATA[$tempIp]]></code>
+    </PossiblyInvalidArgument>
+    <PossiblyInvalidCast>
+      <code><![CDATA[$tempIp]]></code>
+    </PossiblyInvalidCast>
+    <PossiblyUndefinedArrayOffset>
+      <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['invalid']]]></code>
+      <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
+      <code><![CDATA[$emailAddress['name_parsed']]]></code>
+      <code><![CDATA[$emailAddress['name_parsed']]]></code>
+    </PossiblyUndefinedArrayOffset>
+    <PossiblyUnusedMethod>
+      <code><![CDATA[getInstance]]></code>
+      <code><![CDATA[getOptions]]></code>
+      <code><![CDATA[parseMultiple]]></code>
+      <code><![CDATA[parseSingle]]></code>
+      <code><![CDATA[parseStream]]></code>
+      <code><![CDATA[setLogger]]></code>
+      <code><![CDATA[setOptions]]></code>
+    </PossiblyUnusedMethod>
+    <RedundantCondition>
+      <code><![CDATA[self::STATE_START == $subState]]></code>
+    </RedundantCondition>
+    <TypeDoesNotContainType>
+      <code><![CDATA[self::STATE_NAME == $subState]]></code>
+      <code><![CDATA[self::STATE_NAME == $subState]]></code>
+      <code><![CDATA[self::STATE_NAME === $subState]]></code>
+      <code><![CDATA[self::STATE_NAME === $subState]]></code>
+    </TypeDoesNotContainType>
+    <UnusedFunctionCall>
+      <code><![CDATA[mb_regex_encoding]]></code>
+      <code><![CDATA[mb_regex_encoding]]></code>
+    </UnusedFunctionCall>
+  </file>
+  <file src="src/ParseOptions.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[getMaxDomainLabelLength]]></code>
+      <code><![CDATA[getMaxLocalPartLength]]></code>
+      <code><![CDATA[getMaxTotalLength]]></code>
+      <code><![CDATA[rfc2822]]></code>
+      <code><![CDATA[rfc5321]]></code>
+      <code><![CDATA[rfc5322]]></code>
+      <code><![CDATA[rfc6531]]></code>
+      <code><![CDATA[setBannedChars]]></code>
+      <code><![CDATA[setLengthLimits]]></code>
+      <code><![CDATA[setMaxDomainLabelLength]]></code>
+      <code><![CDATA[setMaxLocalPartLength]]></code>
+      <code><![CDATA[setMaxTotalLength]]></code>
+      <code><![CDATA[setSeparators]]></code>
+      <code><![CDATA[setUseWhitespaceAsSeparator]]></code>
+      <code><![CDATA[withAllowDomainLiteral]]></code>
+      <code><![CDATA[withAllowObsLocalPart]]></code>
+      <code><![CDATA[withAllowObsRoute]]></code>
+      <code><![CDATA[withAllowQuotedString]]></code>
+      <code><![CDATA[withAllowUtf8Domain]]></code>
+      <code><![CDATA[withAllowUtf8LocalPart]]></code>
+      <code><![CDATA[withApplyNfcNormalization]]></code>
+      <code><![CDATA[withBannedChars]]></code>
+      <code><![CDATA[withEnforceLengthLimits]]></code>
+      <code><![CDATA[withIncludeDomainAscii]]></code>
+      <code><![CDATA[withLengthLimits]]></code>
+      <code><![CDATA[withLocalPartNormalizer]]></code>
+      <code><![CDATA[withRejectC0Controls]]></code>
+      <code><![CDATA[withRejectC1Controls]]></code>
+      <code><![CDATA[withRejectEmptyQuotedLocalPart]]></code>
+      <code><![CDATA[withRequireFqdn]]></code>
+      <code><![CDATA[withSeparators]]></code>
+      <code><![CDATA[withStrictIdna]]></code>
+      <code><![CDATA[withUseWhitespaceAsSeparator]]></code>
+      <code><![CDATA[withValidateDisplayNamePhrase]]></code>
+      <code><![CDATA[withValidateIpGlobalRange]]></code>
+      <code><![CDATA[withValidateQuotedContent]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="src/ParseResult.php">
+    <PossiblyUnusedMethod>
+      <code><![CDATA[toJson]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+  <file src="src/ParsedEmailAddress.php">
+    <MissingOverrideAttribute>
+      <code><![CDATA[public function __toString(): string]]></code>
+    </MissingOverrideAttribute>
+    <PossiblyUnusedMethod>
+      <code><![CDATA[canonical]]></code>
+      <code><![CDATA[invalidSeverity]]></code>
+      <code><![CDATA[toJson]]></code>
+    </PossiblyUnusedMethod>
+  </file>
+</files>

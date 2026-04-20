@@ -28,7 +28,8 @@
     "phpunit/phpunit": "^9.6",
     "symfony/yaml": "^6.4|^7.2",
     "infection/infection": "^0.29.8",
-    "phpbench/phpbench": "^1.4"
+    "phpbench/phpbench": "^1.4",
+    "vimeo/psalm": "^6.0"
   },
   "require": {
     "php": "^8.1",
@@ -59,6 +60,7 @@
     "cs:check": "php-cs-fixer fix --dry-run --diff",
     "cs:fix": "php-cs-fixer fix",
     "stan": "phpstan analyse --memory-limit=512M",
+    "psalm": "psalm --memory-limit=512M",
     "infect": "XDEBUG_MODE=coverage infection --threads=max",
     "bench": "phpbench run --report=default",
     "ci": [

@@ -88,7 +88,7 @@ Not tied to a specific release; picked up as time allows.
 
 **Static analysis:**
 - [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.
-- [ ] Add Psalm alongside PHPStan for cross-tool coverage; keep both green.
+- [x] Psalm alongside PHPStan — level 3 with baseline (66 entries, all false positives or duplicates of PHPStan findings). Found no genuinely new bugs vs PHPStan level 8; serves as a cross-check for future regressions. `composer psalm`.
 
 **Performance:**
 - [x] PhpBench suite — `benchmarks/ParseBench.php` covers single ASCII, name-addr, UTF-8 local-part, IDN, obs-route, 10-address comma batch, 100-address `parseStream` batch, invalid inputs, and comment extraction. Run with `composer bench`.
