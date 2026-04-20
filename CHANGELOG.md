@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.3.1]
+
+### Fixed
+- **Quoted-pair validation bug**: `validateQuotedContent` (enabled by default in `rfc5321()` and `rfc6531()` presets) incorrectly rejected valid backslash-escape sequences like `"a\ b"@example.com` with "Invalid character in quoted string: byte 92". A `continue` statement was mistakenly removed during a Scrutinizer cleanup in v3.0; the qtextSMTP byte check then ran against the backslash itself instead of skipping the already-validated quoted-pair. Restored the `continue` with a comment explaining why it is not redundant.
+
+### Added
+- Property-based tests (`tests/PropertyTest.php`): 10 randomized invariants (200 iterations each) verifying no-crash on arbitrary bytes, determinism, reason+code consistency, severity classification, Stringable contract, toArray round-trip, valid-address round-trip, and all-presets-never-crash. Deterministic via `SEED` envvar.
+- `CONTRIBUTING.md`: developer setup guide covering all `composer` scripts, test-case guidance, code-style rules, PHPStan level 8 expectations, and RFC citation conventions.
+- Infection mutation testing thresholds raised from 74%/79% to 80%/85% MSI after targeted test-strengthening (+100 assertions, −60 surviving mutants).
+- PHPBench performance baseline (`benchmarks/ParseBench.php`): 10 subjects covering ASCII, UTF-8, IDN, obs-route, batch, and streaming throughput.
+- PHPStan level bumped from 6 to 8; four nullable-return guards added to satisfy stricter inference.
+
 ## [3.3.0]
 
 Serialization and ergonomic polish for the typed value objects, a canonical display-form method, and an opt-in local-part normalizer callback. All additions are non-breaking for v3.2 callers.
