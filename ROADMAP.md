@@ -92,7 +92,9 @@ Not tied to a specific release; picked up as time allows.
 
 **Performance:**
 - [x] PhpBench suite — `benchmarks/ParseBench.php` covers single ASCII, name-addr, UTF-8 local-part, IDN, obs-route, 10-address comma batch, 100-address `parseStream` batch, invalid inputs, and comment extraction. Run with `composer bench`.
-- [ ] Profile the state machine under mailing-list-sized inputs. Likely hot path: `mb_substr` in the main loop — investigate byte iteration for pure-ASCII inputs.
+- [x] Benchmark baseline + regression comparison — `composer bench:baseline` records a tagged reference (5 iterations, 5% retry threshold for stable numbers); `composer bench:compare` diffs a run against it. Reference figures and host context in `benchmarks/BASELINE.md`. Local storage (`.phpbench/`) is git-ignored since wall-clock times are machine-specific.
+- [ ] Wire `bench:compare` into CI on the standard runner (record a runner-local baseline artifact) so regressions are flagged automatically.
+- [ ] Profile the state machine under mailing-list-sized inputs. Likely hot path: `mb_substr` in the main loop — investigate byte iteration for pure-ASCII inputs (baseline in `benchmarks/BASELINE.md` shows ≈134 μs/addr at batch scale).
 
 **Community / documentation:**
 - [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.

@@ -15,10 +15,11 @@ use Email\ParseOptions;
  * Use these to catch regressions across releases; absolute throughput
  * depends on the host PHP version and hardware.
  *
+ * Iteration/warmup/retry counts are governed centrally by phpbench.json so the
+ * baseline stays consistent across all subjects.
+ *
  * @BeforeMethods({"setUp"})
  * @Revs(1000)
- * @Iterations(3)
- * @Warmup(1)
  */
 class ParseBench
 {

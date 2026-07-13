@@ -3,7 +3,8 @@
     "runner.bootstrap": "autoload.php.dist",
     "runner.path": "benchmarks",
     "runner.file_pattern": "*Bench.php",
-    "runner.iterations": 3,
+    "runner.iterations": 5,
     "runner.revs": 1000,
-    "runner.warmup": 1
+    "runner.warmup": 2,
+    "runner.retry_threshold": 5.0
 }

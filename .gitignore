@@ -20,3 +20,6 @@ coverage.xml
 infection.log
 infection-summary.log
 .infection-tmp/
+
+# phpbench local storage (machine-specific wall-clock times; not portable)
+.phpbench/
