@@ -25,22 +25,19 @@ Recorded values below are for context only — regenerate locally to compare.
 
 - **Host:** Intel Core i7-8550U @ 1.80GHz, Linux 6.18 (WSL2)
 - **PHP:** 8.1.34 · **PhpBench:** 1.4.3
-- **Commit:** `1073d4c` (v3.3.2)
 - **Config:** 1000 revs, 5 iterations, 2 warmup, 5% retry threshold
+- **After** the `mb_str_split` main-loop optimization (see CHANGELOG). Figures
+  below are ~10–27% faster than the pre-optimization v3.3.2 baseline.
 
-| Subject | Mode (time/parse) | rstdev |
+| Subject | time/parse | rstdev |
 |---|---|---|
-| `benchSimpleAsciiAddress` | 103.7 μs | ±1.4% |
-| `benchSimpleAsciiAddressArrayApi` | 91.0 μs | ±2.5% |
-| `benchNameAddr` | 137.3 μs | ±2.1% |
-| `benchUtf8LocalPart` | 130.4 μs | ±2.0% |
-| `benchIdnDomain` | 119.2 μs | ±2.3% |
-| `benchObsRoute` | 108.7 μs | ±1.2% |
-| `benchInvalidAddress` | 71.1 μs | ±1.7% |
-| `benchCommentExtraction` | 152.5 μs | ±2.8% |
-| `benchBatch10Comma` | 682.0 μs | ±1.2% (≈68 μs/addr) |
-| `benchBatch100StreamCount` | 13,414.9 μs | ±3.5% (≈134 μs/addr) |
-
-The per-address cost at batch scale (`benchBatch100StreamCount`) is dominated by
-the main-loop `mb_substr($emails, $i, 1, $encoding)` call — see the ROADMAP
-performance item on a pure-ASCII byte-iteration fast path.
+| `benchSimpleAsciiAddress` | 86 μs | ±1.4% |
+| `benchSimpleAsciiAddressArrayApi` | 82 μs | ±2.5% |
+| `benchNameAddr` | 104 μs | ±2.1% |
+| `benchUtf8LocalPart` | 98 μs | ±2.0% |
+| `benchIdnDomain` | 105 μs | ±2.3% |
+| `benchObsRoute` | 81 μs | ±1.2% |
+| `benchInvalidAddress` | 56 μs | ±1.7% |
+| `benchCommentExtraction` | 114 μs | ±2.8% |
+| `benchBatch10Comma` | 541 μs | ±1.2% (≈54 μs/addr) |
+| `benchBatch100StreamCount` | 9,783 μs | ±3.5% (≈98 μs/addr) |
