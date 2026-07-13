@@ -715,6 +715,64 @@
     invalid_reason: "Domain invalid: Parts of the domain name '-bad-domain.com' can not start or end with '-'.  This part does: -bad-domain"
     comments: []
 -
+  emails: testing@baddomain-.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: testing@baddomain-.com
+    name: ''
+    name_parsed: ''
+    local_part: testing
+    local_part_parsed: testing
+    domain_part: 'baddomain-.com'
+    domain: 'baddomain-.com'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Parts of the domain name 'baddomain-.com' can not start or end with '-'.  This part does: baddomain-"
+    comments: []
+-
+  # Domain label containing a char outside [A-Za-z0-9-] reaches validateDomainName's
+  # per-label preg_match check (underscore survives the state machine but fails here).
+  emails: user@bad_domain.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: user@bad_domain.com
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 'bad_domain.com'
+    domain: 'bad_domain.com'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Domain name 'bad_domain.com' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part 'bad_domain' contains characters outside of that range."
+    comments: []
+-
+  # Domain exceeding RFC 5321 §4.5.3.1.2 total octet limit (256 > 255) trips the
+  # length guard before label splitting.
+  emails: user@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: user@aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com
+    name: ''
+    name_parsed: ''
+    local_part: user
+    local_part_parsed: user
+    domain_part: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com'
+    domain: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.com'
+    domain_ascii: null
+    ip: ''
+    invalid: true
+    invalid_reason: "Domain invalid: Domain name too long"
+    comments: []
+-
   emails: testing@192.168.0.1
   multiple: false
   result:

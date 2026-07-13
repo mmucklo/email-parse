@@ -84,7 +84,7 @@ Not tied to a specific release; picked up as time allows.
 - [~] Mutation testing with Infection — wired in via `composer infect` with thresholds `minMsi=80`, `minCoveredMsi=85` (current baseline, up from 74/79). Target remains ≥85% overall MSI; raise threshold as more error-path tests land.
 - [x] Property-based testing — `tests/PropertyTest.php` with 10 invariants across 200 random iterations each: no-crash on arbitrary bytes, determinism, reason+code consistency, severity classification, Stringable contract, toArray ↔ parse() round-trip, valid-address round-trip, and all-presets-never-crash. No extra dependency (native PHPUnit + `mt_rand`; deterministic via `SEED` envvar).
 - [~] Parse.php line coverage — now 87.98% (up from 86.69%). Overall project line coverage 91.15% (up from 89.61%). Remaining gaps are obscure error branches, the "shouldn't ever get here" default case, and code paths reachable only via internal state corruption. Target ≥95% aspirational.
-- [ ] CI matrix: add PHP 8.5 once released.
+- [x] CI matrix: PHP 8.5 added as a required job; PHP 8.6 added as an allowed-to-fail experimental (nightly) job until its stable release (~Nov 2026).
 
 **Static analysis:**
 - [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.

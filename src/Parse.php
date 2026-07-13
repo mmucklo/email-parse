@@ -1374,30 +1374,23 @@ class Parse
      *   - RFC 1123 §2.1 relaxed the original restriction that allowed labels starting
      *     with a letter only, permitting labels that start with a digit.
      *
-     * @param string $domain   The ASCII domain name to validate (after punycode conversion)
-     * @param string $encoding The encoding of the string (if not UTF-8)
+     * @param string $domain The ASCII domain name to validate (after punycode conversion)
      *
      * @return array{valid: bool, reason?: string, code?: ParseErrorCode}
      */
-    protected function validateDomainName(string $domain, string $encoding = 'UTF-8'): array
+    protected function validateDomainName(string $domain): array
     {
         // RFC 5321 §4.5.3.1.2: total domain length limit is in octets
         if (strlen($domain) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long', 'code' => Err::DomainTooLong];
         } else {
-            // mb_regex_encoding() can return false on failure; only restore when
-            // we got back a real encoding name.
-            $origEncoding = mb_regex_encoding();
-            mb_regex_encoding($encoding);
-            $parts = mb_split('\\.', $domain);
-            if ($origEncoding) {
-                mb_regex_encoding($origEncoding);
-            }
-            // mb_split() can return false on failure; treat that as a validation
-            // failure rather than iterating over a bogus value.
-            if ($parts === false) {
-                return ['valid' => false, 'reason' => 'Domain name could not be tokenized', 'code' => Err::DomainInvalid];
-            }
+            // $domain is always ASCII here (post-punycode, via normalizeDomainAscii),
+            // so a plain explode on the label separator is sufficient. This avoids
+            // mb_regex_encoding(), deprecated since PHP 8.6 (the underlying oniguruma
+            // library is no longer maintained). See GitHub issue #57.
+            // Labels are guaranteed non-empty: the state machine rejects consecutive
+            // and edge dots (ConsecutiveDots) before the domain validator runs.
+            $parts = explode('.', $domain);
             $maxLabelLen = $this->options->getLengthLimits()->maxDomainLabelLength;
             foreach ($parts as $part) {
                 if (strlen($part) > $maxLabelLen) {
@@ -1406,7 +1399,7 @@ class Parse
                 if (!preg_match('/^[a-zA-Z0-9\-]+$/', $part)) {
                     return ['valid' => false, 'reason' => "Domain name '{$domain}' can only contain letters a through z, numbers 0 through 9 and hyphen.  The part '{$part}' contains characters outside of that range.", 'code' => Err::DomainContainsInvalidChars];
                 }
-                if ('-' == mb_substr($part, 0, 1, $encoding) || '-' == mb_substr($part, mb_strlen($part) - 1, 1, $encoding)) {
+                if ('-' == substr($part, 0, 1) || '-' == substr($part, -1)) {
                     return ['valid' => false, 'reason' => "Parts of the domain name '{$domain}' can not start or end with '-'.  This part does: {$part}", 'code' => Err::DomainLabelStartsOrEndsWithHyphen];
                 }
             }

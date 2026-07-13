@@ -295,6 +295,140 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * The main-loop tokenizer walks the input with mb_substr($emails, $i, 1, $encoding),
+     * so a non-UTF-8 caller encoding must be honored: the ISO-8859-1 byte 0xF6 ("ö") is
+     * one character, not an invalid UTF-8 lead byte. Guards the encoding-threading path,
+     * which the YAML spec harness (always UTF-8) never exercises.
+     */
+    public function testNonUtf8EncodingIsHonoredByTokenizer(): void
+    {
+        // "Jörg <j@example.com>" with ö as the single ISO-8859-1 byte 0xF6.
+        $input = "J\xF6rg <j@example.com>";
+        $result = Parse::getInstance()->parseSingle($input, 'ISO-8859-1');
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame('j', $result->localPart);
+        $this->assertSame('example.com', $result->domain);
+        // The 0xF6 byte is preserved verbatim as one character in the display name.
+        $this->assertSame("J\xF6rg", $result->name);
+    }
+
+    /**
+     * Latin-1 is single-byte, so it does not exercise mb_substr's variable-width
+     * character indexing. Shift-JIS does: the kanji 日 is two bytes (0x93 0xFA) but
+     * one character, and the tokenizer must advance by character, not by byte.
+     */
+    public function testVariableWidthEncodingIsHonoredByTokenizer(): void
+    {
+        $input = mb_convert_encoding('日本 <j@example.com>', 'SJIS', 'UTF-8');
+        $result = Parse::getInstance()->parseSingle($input, 'SJIS');
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame('j', $result->localPart);
+        $this->assertSame('example.com', $result->domain);
+        // The two 2-byte kanji round-trip intact — proof the byte offsets never split a char.
+        $this->assertSame('日本', mb_convert_encoding($result->name, 'UTF-8', 'SJIS'));
+    }
+
+    /**
+     * Malformed UTF-8 in the local part (a lone 0x80 continuation byte). Whether the
+     * mb_check_encoding guard ever sees the bad byte depends on mbstring: PHP 8.1/8.2
+     * preserve it through mb_substr (so it is rejected as InvalidUtf8Encoding), while
+     * 8.3+ substitute it during tokenization (so it never reaches the guard). Probe the
+     * runtime behavior rather than the version, and require rejection only where the
+     * tokenizer preserves invalid bytes; everywhere else the parser must still return a
+     * deterministic, crash-free result.
+     */
+    public function testMalformedUtf8LocalPartHandling(): void
+    {
+        $loneByte = pack('C', 0x80); // a lone UTF-8 continuation byte
+        $input = 'us'.$loneByte.'er@example.com';
+        $result = Parse::getInstance()->parseSingle($input);
+
+        if (mb_substr($loneByte, 0, 1, 'UTF-8') === $loneByte) {
+            $this->assertTrue($result->invalid);
+            $this->assertSame(\Email\ParseErrorCode::InvalidUtf8Encoding, $result->invalidReasonCode);
+        } else {
+            // Byte sanitized before validation; result must be deterministic.
+            $this->assertSame($result->invalid, Parse::getInstance()->parseSingle($input)->invalid);
+        }
+    }
+
+    /**
+     * RFC 5321 §4.5.3.1 octet limits are exclusive upper bounds; verify each comparison
+     * accepts the exact maximum and rejects one octet past it (guards `>` vs `>=`):
+     *   - local part 64 (§4.5.3.1.1), domain label 63 (§4.5.3.1.2), whole address 254.
+     */
+    public function testLengthBoundariesAcceptMaxAndRejectOneOver(): void
+    {
+        $p = Parse::getInstance();
+        $Err = \Email\ParseErrorCode::class;
+
+        // Local part: 64 octets is the maximum; 65 is over.
+        $this->assertFalse($p->parseSingle(str_repeat('a', 64).'@example.com')->invalid);
+        $this->assertSame($Err::LocalPartTooLong, $p->parseSingle(str_repeat('a', 65).'@example.com')->invalidReasonCode);
+
+        // Domain label: 63 octets is the maximum; 64 is over.
+        $this->assertFalse($p->parseSingle('u@'.str_repeat('a', 63).'.com')->invalid);
+        $this->assertSame($Err::DomainLabelTooLong, $p->parseSingle('u@'.str_repeat('a', 64).'.com')->invalidReasonCode);
+
+        // Whole address: 254 octets is the maximum; 255 is over. Labels kept <= 63.
+        $at254 = str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 63).'.'.str_repeat('d', 61);
+        $this->assertSame(254, strlen($at254));
+        $this->assertFalse($p->parseSingle($at254)->invalid);
+        $at255 = str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 63).'.'.str_repeat('d', 62);
+        $this->assertSame($Err::TotalLengthExceeded, $p->parseSingle($at255)->invalidReasonCode);
+    }
+
+    /**
+     * When idn_to_ascii() cannot produce a valid A-label (here a U-label whose punycode
+     * expansion overflows the 63-octet limit), normalizeDomainAscii() returns null and
+     * the address is rejected with PunycodeConversionFailed rather than crashing.
+     */
+    public function testPunycodeConversionFailureIsReported(): void
+    {
+        $result = Parse::getInstance()->parseSingle('user@'.str_repeat('ä', 70).'.de');
+        $this->assertTrue($result->invalid);
+        $this->assertSame(\Email\ParseErrorCode::PunycodeConversionFailed, $result->invalidReasonCode);
+    }
+
+    /**
+     * IDN conversion assumes UTF-8. A non-ASCII domain supplied under a mismatched caller
+     * encoding (Shift-JIS bytes reinterpreted by idn_to_ascii) must fail gracefully — a
+     * clean invalid result, never an exception or warning.
+     */
+    public function testMismatchedEncodingDomainFailsGracefully(): void
+    {
+        $input = mb_convert_encoding('user@日本.com', 'SJIS', 'UTF-8');
+        $result = Parse::getInstance()->parseSingle($input, 'SJIS');
+        $this->assertTrue($result->invalid);
+        $this->assertNotNull($result->invalidReasonCode);
+    }
+
+    /**
+     * With NFC normalization enabled (rfc6531), Normalizer::normalize() runs before the
+     * mb_check_encoding guard and returns false on malformed UTF-8, so a preserved bad
+     * byte surfaces as LocalPartCannotBeNormalized (RFC 6532 §3.1) rather than
+     * InvalidUtf8Encoding. Gated on the same mbstring tokenizer behavior as
+     * testMalformedUtf8LocalPartHandling: 8.3+ substitutes the byte before it is reached.
+     */
+    public function testLocalPartNormalizationFailureIsReported(): void
+    {
+        $opts = ParseOptions::rfc6531()->withRequireFqdn(false);
+        $parser = new Parse(null, $opts);
+        $loneByte = pack('C', 0x80);
+        $input = 'us'.$loneByte.'er@example.com';
+        $result = $parser->parseSingle($input);
+
+        if (mb_substr($loneByte, 0, 1, 'UTF-8') === $loneByte) {
+            $this->assertTrue($result->invalid);
+            $this->assertSame(\Email\ParseErrorCode::LocalPartCannotBeNormalized, $result->invalidReasonCode);
+        } else {
+            $this->assertSame($result->invalid, $parser->parseSingle($input)->invalid);
+        }
+    }
+
+    /**
      * Exercises every `withX()` fluent builder. Each call must return a new
      * instance with the targeted field flipped and every other field preserved.
      */

@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **PHP 8.6 deprecation** ([#57](https://github.com/mmucklo/email-parse/issues/57)): `validateDomainName()` no longer calls `mb_regex_encoding()`/`mb_split()`, both of which emit `E_DEPRECATED` under PHP 8.6 (the underlying oniguruma library is unmaintained). The domain is already ASCII at that point (post-punycode, via `normalizeDomainAscii()`), so label splitting now uses a plain `explode('.', …)` — behavior is unchanged.
+
 ## [3.3.1]
 
 ### Fixed

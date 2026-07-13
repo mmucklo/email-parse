@@ -6,9 +6,6 @@
     </PossiblyUnusedMethod>
   </file>
   <file src="src/Parse.php">
-    <InvalidScalarArgument>
-      <code><![CDATA[$origEncoding]]></code>
-    </InvalidScalarArgument>
     <PossiblyInvalidArgument>
       <code><![CDATA[$tempIp]]></code>
     </PossiblyInvalidArgument>
@@ -42,10 +39,6 @@
       <code><![CDATA[self::STATE_NAME === $subState]]></code>
       <code><![CDATA[self::STATE_NAME === $subState]]></code>
     </TypeDoesNotContainType>
-    <UnusedFunctionCall>
-      <code><![CDATA[mb_regex_encoding]]></code>
-      <code><![CDATA[mb_regex_encoding]]></code>
-    </UnusedFunctionCall>
   </file>
   <file src="src/ParseOptions.php">
     <PossiblyUnusedMethod>

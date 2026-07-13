@@ -10,6 +10,7 @@ jobs:
   tests:
     name: Tests (PHP ${{ matrix.php-version }})
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
@@ -18,7 +19,17 @@ jobs:
           - '8.2'
           - '8.3'
           - '8.4'
-    
+          - '8.5'
+        experimental:
+          - false
+        # PHP 8.6 is not yet released (stable ~Nov 2026); test against nightly
+        # builds so removed/deprecated functions surface early, but allow it to
+        # fail — nightly breakage and PHPUnit 9.6's own deprecations must not
+        # block PRs.
+        include:
+          - php-version: '8.6'
+            experimental: true
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,11 +52,13 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-composer-
+          key: ${{ runner.os }}-composer-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-${{ matrix.php-version }}-
 
+      # Dev dependencies may not yet declare support for the unreleased PHP 8.6;
+      # ignore only the php upper-bound so the suite can still run there.
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer install --prefer-dist --no-progress ${{ matrix.experimental && '--ignore-platform-req=php+' || '' }}
 
       - name: Run test suite
         run: bin/phpunit
