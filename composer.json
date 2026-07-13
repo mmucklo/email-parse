@@ -63,6 +63,8 @@
     "psalm": "psalm --memory-limit=512M",
     "infect": "XDEBUG_MODE=coverage infection --threads=max",
     "bench": "phpbench run --report=default",
+    "bench:baseline": "phpbench run --store --tag=baseline --progress=none",
+    "bench:compare": "phpbench run --ref=baseline --report=default",
     "ci": [
       "@cs:check",
       "@stan",
