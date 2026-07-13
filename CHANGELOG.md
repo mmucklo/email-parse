@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 - **Performance**: the main parse loop splits the input once via `mb_str_split()` instead of calling `mb_substr($emails, $i, 1, $encoding)` on every character (and every look-ahead). For multi-byte encodings each `mb_substr` rescanned from the start of the string — O(n) per call, O(n²) over the loop; the single split is O(n). ~10–27% faster across the benchmark suite, with the largest gains on longer inputs (batch parsing, obs-route, comment extraction). No behavioral change.
+- **Performance**: hoisted the immutable separator, banned-character, and whitespace-separator config out of the per-character loop. These getters returned the same value on every character; fetching them once before the loop removes a method call (and its surrounding opcodes) per character — a further ~19% on a mixed-input micro-benchmark. No behavioral change.
 
 ## [3.3.2]
 
