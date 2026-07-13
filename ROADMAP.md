@@ -94,7 +94,8 @@ Not tied to a specific release; picked up as time allows.
 - [x] PhpBench suite — `benchmarks/ParseBench.php` covers single ASCII, name-addr, UTF-8 local-part, IDN, obs-route, 10-address comma batch, 100-address `parseStream` batch, invalid inputs, and comment extraction. Run with `composer bench`.
 - [x] Benchmark baseline + regression comparison — `composer bench:baseline` records a tagged reference (5 iterations, 5% retry threshold for stable numbers); `composer bench:compare` diffs a run against it. Reference figures and host context in `benchmarks/BASELINE.md`. Local storage (`.phpbench/`) is git-ignored since wall-clock times are machine-specific.
 - [x] Wire `bench:compare` into CI — a non-blocking `benchmarks` job records a baseline from the PR base's `src/` and compares the head against it on the same runner. Generous 50%-regression assertion (shared runners are noisy) and `continue-on-error`, so it reports without blocking.
-- [ ] Profile the state machine under mailing-list-sized inputs. Likely hot path: `mb_substr` in the main loop — investigate byte iteration for pure-ASCII inputs (baseline in `benchmarks/BASELINE.md` shows ≈134 μs/addr at batch scale).
+- [x] Main-loop hot path — replaced per-character `mb_substr($emails, $i, 1)` (O(n²) for multi-byte encodings, which rescan from the start each call) with a single `mb_str_split()` pass and array indexing. ~10–27% faster across the suite; biggest gains on longer inputs. Measured against the baseline via `composer bench:compare`.
+- [ ] Further profiling under mailing-list-sized inputs if needed — the `mb_str_split` array now dominates memory for very large batches; a streaming/chunked reader could bound that.
 
 **Community / documentation:**
 - [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.

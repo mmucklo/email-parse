@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- **Performance**: the main parse loop splits the input once via `mb_str_split()` instead of calling `mb_substr($emails, $i, 1, $encoding)` on every character (and every look-ahead). For multi-byte encodings each `mb_substr` rescanned from the start of the string — O(n) per call, O(n²) over the loop; the single split is O(n). ~10–27% faster across the benchmark suite, with the largest gains on longer inputs (batch parsing, obs-route, comment extraction). No behavioral change.
+
 ## [3.3.2]
 
 ### Fixed

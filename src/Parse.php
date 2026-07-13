@@ -281,7 +281,13 @@ class Parse
         $subState = self::STATE_START;
         $commentNestLevel = 0;
 
-        $len = mb_strlen($emails, $encoding);
+        // Split once into an array of characters rather than calling
+        // mb_substr($emails, $i, 1) on every iteration. For multi-byte encodings
+        // each mb_substr rescans from the start of the string (O(n) per call, so
+        // O(n^2) over the loop); mb_str_split does it in a single O(n) pass. The
+        // per-character and look-ahead accesses below become plain array indexing.
+        $chars = mb_str_split($emails, 1, $encoding);
+        $len = count($chars);
         if (0 == $len) {
             $success = false;
             $reason = 'No emails passed in';
@@ -289,7 +295,7 @@ class Parse
         $curChar = null;
         for ($i = 0; $i < $len; ++$i) {
             $prevChar = $curChar; // Previous Character
-            $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
+            $curChar = $chars[$i]; // Current Character
             switch ($state) {
                 case self::STATE_SKIP_AHEAD:
                     // Skip ahead is set when a bad email address is encountered
@@ -365,7 +371,7 @@ class Parse
                         $foundComment = false;
                         $lookAheadChar = null;
                         for ($j = ($i + 1); $j < $len; ++$j) {
-                            $c = mb_substr($emails, $j, 1, $encoding);
+                            $c = $chars[$j];
                             if ('(' === $c) {
                                 $foundComment = true;
 
@@ -739,7 +745,7 @@ class Parse
                         // means it is the real closing delimiter.
                         $backslashCount = 0;
                         for ($j = $i - 1; $j >= 0; --$j) {
-                            if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
+                            if ('\\' == $chars[$j]) {
                                 ++$backslashCount;
                             } else {
                                 break;
