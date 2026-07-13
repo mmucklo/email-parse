@@ -155,3 +155,39 @@ jobs:
 
       - name: Run Psalm
         run: bin/psalm --memory-limit=512M --output-format=github
+
+  benchmarks:
+    name: Benchmarks (vs base)
+    runs-on: ubuntu-latest
+    # Non-blocking: shared runners are noisy, so this reports a comparison and
+    # only flags catastrophic regressions (>50% slower) — it never blocks a PR.
+    if: github.event_name == 'pull_request'
+    continue-on-error: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # need the base commit to benchmark against
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      # Record the baseline from the PR base's library code, using this PR's
+      # benchmark harness/config, on this one runner — the only apples-to-apples
+      # comparison for machine-dependent wall-clock times.
+      - name: Record baseline from base commit
+        run: |
+          git checkout ${{ github.event.pull_request.base.sha }} -- src/
+          composer bench:baseline
+          git checkout HEAD -- src/
+
+      - name: Compare head against baseline
+        run: composer bench:compare -- --assert="mode(variant.time.avg) <= 1.5 * mode(baseline.time.avg)"
