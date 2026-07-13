@@ -6,8 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.3.2]
+
 ### Fixed
-- **PHP 8.6 deprecation** ([#57](https://github.com/mmucklo/email-parse/issues/57)): `validateDomainName()` no longer calls `mb_regex_encoding()`/`mb_split()`, both of which emit `E_DEPRECATED` under PHP 8.6 (the underlying oniguruma library is unmaintained). The domain is already ASCII at that point (post-punycode, via `normalizeDomainAscii()`), so label splitting now uses a plain `explode('.', …)` — behavior is unchanged.
+- **PHP 8.6 deprecation** ([#57](https://github.com/mmucklo/email-parse/issues/57)): `validateDomainName()` no longer calls `mb_regex_encoding()`/`mb_split()`, both of which emit `E_DEPRECATED` under PHP 8.6 (the underlying oniguruma library is unmaintained). The domain is already ASCII at that point (post-punycode, via `normalizeDomainAscii()`), so label splitting now uses a plain `explode('.', …)` and the hyphen-boundary checks use `substr()` instead of `mb_substr()`. The unused `$encoding` parameter was dropped — the sole caller never passed it. Behavior is unchanged.
+
+### Added
+- **CI matrix** extended to PHP 8.5 (required) and PHP 8.6 (experimental, `continue-on-error` against nightly with `--ignore-platform-req=php+`), so removed/deprecated functions surface early without nightly breakage blocking PRs.
+- **Regression tests** around the domain validator and the MB/encoding paths it sits in: trailing-hyphen and invalid-character domain labels, over-255-octet domains, non-UTF-8 (ISO-8859-1) and variable-width (Shift-JIS) tokenization, RFC 5321 §4.5.3.1 length boundaries (accept-at-max / reject-one-over), `PunycodeConversionFailed` and `LocalPartCannotBeNormalized` (neither previously triggered by a functional test), and graceful handling of a mismatched caller encoding. Malformed-UTF-8 assertions are gated on a runtime mbstring probe: PHP 8.1/8.2 preserve invalid bytes (rejected at the guard), 8.3+ substitute them during tokenization.
 
 ## [3.3.1]
 
