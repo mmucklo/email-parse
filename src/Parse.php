@@ -281,35 +281,23 @@ class Parse
         $subState = self::STATE_START;
         $commentNestLevel = 0;
 
-        // Split once into an array of characters rather than calling
-        // mb_substr($emails, $i, 1) on every iteration. For multi-byte encodings
-        // each mb_substr rescans from the start of the string (O(n) per call, so
-        // O(n^2) over the loop); mb_str_split does it in a single O(n) pass. The
-        // per-character and look-ahead accesses below become plain array indexing.
-        $chars = mb_str_split($emails, 1, $encoding);
-        $len = count($chars);
+        $len = mb_strlen($emails, $encoding);
         if (0 == $len) {
             $success = false;
             $reason = 'No emails passed in';
         }
-        // Hoist the immutable separator/banned-char config out of the per-character
-        // loop — these getters return the same value every iteration, so fetching
-        // them once avoids a method call (and array return) on every character.
-        $separators = $this->options->getSeparators();
-        $bannedChars = $this->options->getBannedChars();
-        $useWhitespaceAsSeparator = $this->options->getUseWhitespaceAsSeparator();
         $curChar = null;
         for ($i = 0; $i < $len; ++$i) {
             $prevChar = $curChar; // Previous Character
-            $curChar = $chars[$i]; // Current Character
+            $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
             switch ($state) {
                 case self::STATE_SKIP_AHEAD:
                     // Skip ahead is set when a bad email address is encountered
                     //  It's supposed to skip to the next delimiter and continue parsing from there
-                    $isWhitespaceSeparator = $useWhitespaceAsSeparator &&
+                    $isWhitespaceSeparator = $this->options->getUseWhitespaceAsSeparator() &&
                         (' ' == $curChar || "\r" == $curChar || "\n" == $curChar || "\t" == $curChar);
 
-                    if ($multiple && ($isWhitespaceSeparator || isset($separators[$curChar]))) {
+                    if ($multiple && ($isWhitespaceSeparator || isset($this->options->getSeparators()[$curChar]))) {
                         $state = self::STATE_END_ADDRESS;
                     } else {
                         $emailAddress['original_address'] .= $curChar;
@@ -340,7 +328,7 @@ class Parse
                     }
                     // no break
                 case self::STATE_ADDRESS:
-                    if (!isset($separators[$curChar]) || !$multiple) {
+                    if (!isset($this->options->getSeparators()[$curChar]) || !$multiple) {
                         $emailAddress['original_address'] .= $curChar;
                     }
 
@@ -350,7 +338,7 @@ class Parse
                         $commentNestLevel = 1;
 
                         break;
-                    } elseif (isset($separators[$curChar])) {
+                    } elseif (isset($this->options->getSeparators()[$curChar])) {
                         // Handle separator (comma, semicolon, etc.)
                         if ($multiple && (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
                             // If we're already in the domain part, this should be the end of the address
@@ -377,7 +365,7 @@ class Parse
                         $foundComment = false;
                         $lookAheadChar = null;
                         for ($j = ($i + 1); $j < $len; ++$j) {
-                            $c = $chars[$j];
+                            $c = mb_substr($emails, $j, 1, $encoding);
                             if ('(' === $c) {
                                 $foundComment = true;
 
@@ -445,7 +433,7 @@ class Parse
                             // Trailing CFWS inside angle-addr before `>`: "<local@domain >".
                             // Absorb and transition as if we saw `>` next.
                             $subState = self::STATE_AFTER_DOMAIN;
-                        } elseif ($useWhitespaceAsSeparator &&
+                        } elseif ($this->options->getUseWhitespaceAsSeparator() &&
                                   (self::STATE_DOMAIN == $subState || self::STATE_AFTER_DOMAIN == $subState)) {
                             // Already past `@` and whitespace-as-separator: end address.
                             $state = self::STATE_END_ADDRESS;
@@ -589,7 +577,7 @@ class Parse
                     } elseif (preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
                         // RFC 5322 §3.2.3: atext characters — valid in unquoted local-parts and display names
 
-                        if (isset($bannedChars[$curChar])) {
+                        if (isset($this->options->getBannedChars()[$curChar])) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
                             $emailAddress['invalid_reason_code'] = Err::CharacterNotAllowed;
@@ -751,7 +739,7 @@ class Parse
                         // means it is the real closing delimiter.
                         $backslashCount = 0;
                         for ($j = $i - 1; $j >= 0; --$j) {
-                            if ('\\' == $chars[$j]) {
+                            if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
                                 ++$backslashCount;
                             } else {
                                 break;

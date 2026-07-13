@@ -6,9 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.4.0]
+
+Performance release. The two main-loop optimizations below compound to roughly **25–30% faster parsing on typical mixed inputs**, and more on longer and batch inputs where the O(n²)→O(n) change dominates. No API or behavior changes — all existing callers are unaffected.
+
 ### Changed
-- **Performance**: the main parse loop splits the input once via `mb_str_split()` instead of calling `mb_substr($emails, $i, 1, $encoding)` on every character (and every look-ahead). For multi-byte encodings each `mb_substr` rescanned from the start of the string — O(n) per call, O(n²) over the loop; the single split is O(n). ~10–27% faster across the benchmark suite, with the largest gains on longer inputs (batch parsing, obs-route, comment extraction). No behavioral change.
-- **Performance**: hoisted the immutable separator, banned-character, and whitespace-separator config out of the per-character loop. These getters returned the same value on every character; fetching them once before the loop removes a method call (and its surrounding opcodes) per character — a further ~19% on a mixed-input micro-benchmark. No behavioral change.
+- **Performance**: the main parse loop splits the input once via `mb_str_split()` instead of calling `mb_substr($emails, $i, 1, $encoding)` on every character (and every look-ahead). For multi-byte encodings each `mb_substr` rescanned from the start of the string — O(n) per call, O(n²) over the loop; the single split is O(n). ~10–27% faster across the benchmark suite, with the largest gains on longer inputs (batch parsing, obs-route, comment extraction).
+- **Performance**: hoisted the immutable separator, banned-character, and whitespace-separator config out of the per-character loop. These getters returned the same value on every character; fetching them once before the loop removes a method call (and its surrounding opcodes) per character — a further ~19% on a mixed-input micro-benchmark.
+
+### Added
+- Benchmark baseline tooling: `composer bench:baseline` records a tagged PhpBench reference and `composer bench:compare` diffs a run against it, plus a non-blocking CI job that compares each PR against its base commit on the same runner. Reference figures and workflow in `benchmarks/BASELINE.md`.
 
 ## [3.3.2]
 
