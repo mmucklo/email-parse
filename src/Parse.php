@@ -321,6 +321,10 @@ class Parse
                         } elseif ('(' == $curChar) {
                             $emailAddress['original_address'] .= $curChar;
                             $state = self::STATE_COMMENT;
+                            // A leading comment opens at nest level 1 (matches the
+                            // STATE_ADDRESS entry); without this an unbalanced nested
+                            // comment like "((x)" would appear closed after one ")".
+                            $commentNestLevel = 1;
 
                             break;
                         }
@@ -330,6 +334,18 @@ class Parse
                 case self::STATE_ADDRESS:
                     if (!isset($this->options->getSeparators()[$curChar]) || !$multiple) {
                         $emailAddress['original_address'] .= $curChar;
+                    }
+
+                    if ($emailAddress['after_closing_quote']) {
+                        $emailAddress['after_closing_quote'] = false;
+                        // RFC 5322 §3.2.4: a quoted-string is a whole word. Only a dot
+                        // (obs word.word), '@', angle brackets, CFWS, or a separator may
+                        // follow it — atext or a second quote directly abutting it is invalid.
+                        if ('"' === $curChar || $curChar > "\x7f" || preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = 'A quoted string in the local part must be followed by a dot, "@", or the end — text or a second quote cannot immediately follow it';
+                            $emailAddress['invalid_reason_code'] = Err::AtextAfterQuotedString;
+                        }
                     }
 
                     if ('(' == $curChar) {
@@ -761,6 +777,7 @@ class Parse
                             // this flag from address_temp_quoted when '@' is reached.
                             $state = self::STATE_ADDRESS;
                             $emailAddress['local_part_quoted'] = true;
+                            $emailAddress['after_closing_quote'] = true;
                         }
                     } else {
                         $emailAddress['quote_temp'] .= $curChar;
@@ -835,14 +852,17 @@ class Parse
             }
         }
 
-        // End-of-input reached with an unclosed delimiter — mark invalid with a descriptive reason
-        if (!$emailAddress['invalid'] && $emailAddress['quote_temp']) {
+        // End-of-input reached still inside a delimiter (quote, comment, domain
+        // literal, or obs-route) — the construct was never closed. Keyed on the
+        // parser state rather than quote_temp, since bracket/comment content is
+        // buffered elsewhere (a closed delimiter always returns to STATE_ADDRESS).
+        if (!$emailAddress['invalid'] && in_array($state, [self::STATE_QUOTE, self::STATE_COMMENT, self::STATE_SQUARE_BRACKET, self::STATE_OBS_ROUTE], true)) {
             $emailAddress['invalid'] = true;
             [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = match ($state) {
                 self::STATE_QUOTE => ['No ending quote: \'"\'', Err::UnterminatedQuote],
                 self::STATE_COMMENT => ['No closing parenthesis: \')\'', Err::UnterminatedComment],
                 self::STATE_SQUARE_BRACKET => ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket],
-                default => ['Unterminated quoted section', Err::IncompleteAddress],
+                self::STATE_OBS_ROUTE => ['Incomplete obs-route: missing colon before end of input', Err::IncompleteAddress],
             };
         }
         if (!$emailAddress['invalid'] && ($emailAddress['address_temp'] || $emailAddress['quote_temp'])) {
@@ -941,6 +961,9 @@ class Parse
             'local_part_quoted' => false,
             'name_quoted' => false,
             'address_temp_quoted' => false,
+            // True for exactly the character after a closing quote, so atext / a
+            // second quote directly abutting a quoted-string can be rejected.
+            'after_closing_quote' => false,
             'quote_temp' => '',
             'address_temp' => '',
             'address_temp_period' => 0,

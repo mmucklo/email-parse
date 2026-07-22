@@ -530,14 +530,14 @@
         original_address: 't"na"me@[10.0.10.45]'
         name: ''
         name_parsed: ''
-        local_part: '"tname"'
-        local_part_parsed: tname
-        domain_part: '[10.0.10.45]'
+        local_part: '""'
+        local_part_parsed: ''
+        domain_part: ''
         domain: ''
         domain_ascii: null
-        ip: 10.0.10.45
+        ip: ''
         invalid: true
-        invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+        invalid_reason: 'A quoted string in the local part must be followed by a dot, "@", or the end — text or a second quote cannot immediately follow it'
         comments: []
       -
         address: tname@asdf.ghjkl.com
@@ -575,17 +575,17 @@
   result:
     address: ''
     simple_address: ''
-    original_address: 't"na"me@[10.0.10.45]'
+    original_address: 't"na"me@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'
     name: ''
     name_parsed: ''
-    local_part: '"tname"'
-    local_part_parsed: tname
-    domain_part: '[10.0.10.45]'
+    local_part: '""'
+    local_part_parsed: ''
+    domain_part: ''
     domain: ''
     domain_ascii: null
-    ip: 10.0.10.45
+    ip: ''
     invalid: true
-    invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+    invalid_reason: 'A quoted string in the local part must be followed by a dot, "@", or the end — text or a second quote cannot immediately follow it'
     comments: []
 -
   emails: 't(comment with spaces !!!)name@[10.0.10.45] tname@asdf.ghjkl.com, tname-test2@asdf.ghjkl.com'

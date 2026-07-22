@@ -339,6 +339,36 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         );
     }
 
+    /**
+     * Structural over-acceptance fixes surfaced by gold-standard differential
+     * testing (dominicsayers/isemail corpus). Each input is malformed and must be
+     * rejected; well-formed neighbours must stay valid.
+     */
+    public function testStructuralOverAcceptanceRejections(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        $Err = \Email\ParseErrorCode::class;
+
+        // Unclosed domain literal (no closing ']').
+        $this->assertSame($Err::UnterminatedSquareBracket, $p->parseSingle('test@[1.2.3.4')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('test@[1.2.3.4]')->invalid);
+
+        // Unbalanced nested comment ("((x)" is not closed by one ")").
+        $this->assertSame($Err::UnterminatedComment, $p->parseSingle('((comment)test@iana.org')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('(comment)test@iana.org')->invalid);      // leading CFWS ok
+        $this->assertFalse($p->parseSingle('test@iana.org(comment)')->invalid);      // trailing CFWS ok
+        $this->assertFalse($p->parseSingle('((a)(b))test@iana.org')->invalid);       // balanced nesting ok
+
+        // A quoted-string is a whole word: atext or a second quote may not abut it.
+        $this->assertSame($Err::AtextAfterQuotedString, $p->parseSingle('"test"test@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterQuotedString, $p->parseSingle('"test""test"@iana.org')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('"test".x@iana.org')->invalid);           // obs word.word ok
+        $this->assertFalse($p->parseSingle('"test"@iana.org')->invalid);
+
+        // Control character in the domain.
+        $this->assertTrue($p->parseSingle("test@\x07.org")->invalid);
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.
