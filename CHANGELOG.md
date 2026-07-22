@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.5.0]
+
+Local-part correctness and configurability. **Heads-up:** `rfc5322()` is now stricter about dot placement (see Changed) — a behavior change for callers relying on the previous permissive dot handling; the old behavior is one builder call away.
+
 ### Fixed
 - **Empty quoted local-part** (`""@domain`): the `rejectEmptyQuotedLocalPart` option (default `false`) now actually takes effect. Previously an empty quoted local-part was rejected as `incomplete_address` by the state machine before the option was consulted, because an empty quote leaves `quote_temp` empty and the `@` handler used content-emptiness as the "was quoted" signal. The closing-quote handler now records the quote explicitly (and a display-name quote resets it so the real local-part stays unquoted).
 
