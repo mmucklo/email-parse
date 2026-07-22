@@ -461,6 +461,10 @@ class Parse
                             $subState = self::STATE_LOCAL_PART;
                             $emailAddress['special_char_in_substate'] = null;
                             $emailAddress['in_angle_addr'] = true;
+                            // Any quote before `<` was the display name, not the local part;
+                            // clear the quoted flag the closing-quote handler set so the real
+                            // local-part inside the angle-addr starts unquoted.
+                            $emailAddress['local_part_quoted'] = false;
                             $this->handleQuote($emailAddress);
                         }
                     } elseif ('>' == $curChar) {
@@ -749,8 +753,14 @@ class Parse
                             // Odd number of backslashes = this quote is escaped
                             $emailAddress['quote_temp'] .= $curChar;
                         } else {
-                            // Even backslashes (or zero) = this is the real closing quote
+                            // Even backslashes (or zero) = this is the real closing quote.
+                            // Record that a quote was seen so an *empty* quoted local-part
+                            // (`""@domain`) is still recognised as quoted — quote_temp is
+                            // empty in that case, so the '@' handler below can't tell. A
+                            // display-name quote self-corrects: the real local-part resets
+                            // this flag from address_temp_quoted when '@' is reached.
                             $state = self::STATE_ADDRESS;
+                            $emailAddress['local_part_quoted'] = true;
                         }
                     } else {
                         $emailAddress['quote_temp'] .= $curChar;
@@ -848,8 +858,10 @@ class Parse
             }
         }
 
-        // Did we find no email addresses at all?
-        if (!$emailAddress['invalid'] && !count($emailAddresses) && (!$emailAddress['original_address'] || !$emailAddress['local_part_parsed'])) {
+        // Did we find no email addresses at all? An empty local-part only counts as
+        // "no address" when it is unquoted; `""@domain` is a legitimately-empty quoted
+        // local-part whose acceptance is decided later by rejectEmptyQuotedLocalPart.
+        if (!$emailAddress['invalid'] && !count($emailAddresses) && (!$emailAddress['original_address'] || (!$emailAddress['local_part_parsed'] && !$emailAddress['local_part_quoted']))) {
             $success = false;
             $reason = 'No email addresses found';
             if (!$multiple) {

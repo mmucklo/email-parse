@@ -276,6 +276,69 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($result->invalid);
     }
 
+    /**
+     * rfc5322() enforces dot-atom structure (§3.2.3) — leading, trailing, and
+     * consecutive dots in the local part are rejected, matching the actual
+     * obs-local-part ABNF (§4.4: `word *("." word)`, words non-empty). The
+     * maximally permissive dot placement lives in rfc2822()/withAllowObsLocalPart.
+     */
+    public function testRfc5322RejectsEdgeAndConsecutiveDotsWithLenientEscapeHatch(): void
+    {
+        $tight = new Parse(null, ParseOptions::rfc5322());
+        $lenient = new Parse(null, ParseOptions::rfc2822());
+        $optIn = new Parse(null, ParseOptions::rfc5322()->withAllowObsLocalPart(true));
+
+        foreach (['.a@example.com', 'a.@example.com', 'a..b@example.com'] as $addr) {
+            $this->assertTrue($tight->parseSingle($addr)->invalid, "rfc5322 should reject {$addr}");
+            $this->assertFalse($lenient->parseSingle($addr)->invalid, "rfc2822 should accept {$addr}");
+            $this->assertFalse($optIn->parseSingle($addr)->invalid, "obs opt-in should accept {$addr}");
+        }
+        // A well-formed dotted local part stays valid in the tight preset.
+        $this->assertFalse($tight->parseSingle('a.b.c@example.com')->invalid);
+    }
+
+    /**
+     * `""@domain` is a syntactically-empty quoted local-part (RFC 5321 §4.1.2).
+     * rejectEmptyQuotedLocalPart controls whether it is accepted; the default
+     * (false) accepts it. Guards the state-machine fix that recognises an empty
+     * quote as quoted (quote_temp is empty, so content-emptiness can't signal it).
+     */
+    public function testEmptyQuotedLocalPartAcceptanceIsConfigurable(): void
+    {
+        $accept = new Parse(null, ParseOptions::rfc5322()->withRejectEmptyQuotedLocalPart(false));
+        $reject = new Parse(null, ParseOptions::rfc5322()->withRejectEmptyQuotedLocalPart(true));
+
+        $ok = $accept->parseSingle('""@example.com');
+        $this->assertFalse($ok->invalid);
+        $this->assertSame('""@example.com', $ok->address);
+
+        $bad = $reject->parseSingle('""@example.com');
+        $this->assertTrue($bad->invalid);
+        $this->assertSame(\Email\ParseErrorCode::EmptyQuotedLocalPart, $bad->invalidReasonCode);
+
+        // A display-name quote must not leak the quoted flag onto the real local-part.
+        $named = $accept->parseSingle('"John Doe" <j@example.com>');
+        $this->assertFalse($named->invalid);
+        $this->assertSame('j', $named->localPart);
+    }
+
+    /**
+     * The RFC 5321 §4.5.3.1 octet limits can be turned off wholesale via
+     * enforceLengthLimits(false) — or raised via withLengthLimits() — for callers
+     * on systems that permit longer local parts than the 64-octet default.
+     */
+    public function testLengthLimitsCanBeDisabled(): void
+    {
+        $long = str_repeat('a', 65).'@example.com';
+        $this->assertSame(
+            \Email\ParseErrorCode::LocalPartTooLong,
+            (new Parse(null, ParseOptions::rfc5322()))->parseSingle($long)->invalidReasonCode,
+        );
+        $this->assertFalse(
+            (new Parse(null, ParseOptions::rfc5322()->withEnforceLengthLimits(false)))->parseSingle($long)->invalid,
+        );
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.
@@ -848,7 +911,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             ]],
             'rfc5322' => [ParseOptions::rfc5322(), [
                 'allowUtf8LocalPart' => false,
-                'allowObsLocalPart' => true,
+                'allowObsLocalPart' => false,
                 'allowQuotedString' => true,
                 'validateQuotedContent' => false,
                 'rejectEmptyQuotedLocalPart' => false,
