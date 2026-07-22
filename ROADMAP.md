@@ -86,6 +86,19 @@ Not tied to a specific release; picked up as time allows.
 - [~] Parse.php line coverage — now 87.98% (up from 86.69%). Overall project line coverage 91.15% (up from 89.61%). Remaining gaps are obscure error branches, the "shouldn't ever get here" default case, and code paths reachable only via internal state corruption. Target ≥95% aspirational.
 - [x] CI matrix: PHP 8.5 added as a required job; PHP 8.6 added as an allowed-to-fail experimental (nightly) job until its stable release (~Nov 2026).
 
+**RFC conformance (gold-standard differential):**
+
+Differential testing against the `dominicsayers/isemail` reference corpus (164 cases) and a reference RFC validator surfaced a set of over-acceptance edge cases — inputs the parser currently treats as valid that the reference standard rejects. Clustered by root cause, in rough priority order:
+
+- [ ] **Comment (CFWS) parsing** — unclosed comments (`((comment)test@`, `test@iana.org(comment\`) and atext after a comment in the local part (`test(comment)test@`) are wrongly accepted. RFC 5322 §3.2.2: a comment must be balanced, and CFWS may not sit between atext runs of a dot-atom.
+- [ ] **Quoted-string boundaries** — atext adjacent to a quoted string (`"test"test@`) and consecutive quoted strings (`"test""test"@`) are wrongly accepted. A quoted-string is a whole `word`; nothing may abut it without a separating dot.
+- [ ] **Unclosed domain literal** — `test@[1.2.3.4` (missing `]`) is wrongly accepted.
+- [ ] **CR/LF & folding-whitespace strictness** — trailing/embedded bare CR or LF and malformed CRLF folding (`test@iana.org\r`, `...\r\n\r\n`) are accepted. Partly intentional (the batch parser trims surrounding whitespace), so decide per-mode: strict presets should reject; the lenient/batch path may keep trimming. Document the chosen contract.
+- [ ] **Control character in domain** — a C0 control in the domain (`test@\x07.org`) should be rejected.
+- [ ] **Trailing domain dot** — `test@iana.org.` is accepted as the RFC 5321 §2.3.5 root-label dot; the reference corpus flags it. Likely keep (defensible), but confirm and document the divergence rather than leave it implicit.
+
+Approach: one PR per cluster, each adding the failing corpus cases as regression tests. The comparison harness is a local dev tool (not a CI gate) until the disagreements are triaged, since ~20 reference cases currently diverge.
+
 **Static analysis:**
 - [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.
 - [x] Psalm alongside PHPStan — level 3 with baseline (66 entries, all false positives or duplicates of PHPStan findings). Found no genuinely new bugs vs PHPStan level 8; serves as a cross-check for future regressions. `composer psalm`.
