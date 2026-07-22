@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+Structural over-acceptance bugs surfaced by gold-standard differential testing (dominicsayers/isemail corpus):
+- **Unclosed domain literal** — `test@[1.2.3.4` (no closing `]`) is now rejected (`UnterminatedSquareBracket`). The end-of-input unterminated-delimiter check is now keyed on the parser state rather than on `quote_temp`, so unclosed brackets, comments, and obs-routes are all caught.
+- **Unbalanced nested comment** — a leading comment now opens at nest level 1 (matching the in-address entry), so `((comment)test@…` is no longer treated as closed after a single `)`.
+- **atext/quote abutting a quoted-string** — `"test"test@…` and `"test""test"@…` are now rejected (`AtextAfterQuotedString`, a new `ParseErrorCode`); a quoted-string is a whole word (RFC 5322 §3.2.4). `"word".atom` (obs `word "." word`) stays valid.
+
 ## [3.5.0]
 
 Local-part correctness and configurability. **Heads-up:** `rfc5322()` is now stricter about dot placement (see Changed) — a behavior change for callers relying on the previous permissive dot handling; the old behavior is one builder call away.

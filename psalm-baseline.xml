@@ -16,7 +16,12 @@
       <code><![CDATA[$emailAddress['address_temp']]]></code>
       <code><![CDATA[$emailAddress['address_temp']]]></code>
       <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['address_temp']]]></code>
+      <code><![CDATA[$emailAddress['in_angle_addr']]]></code>
       <code><![CDATA[$emailAddress['invalid']]]></code>
+      <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
       <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
       <code><![CDATA[$emailAddress['name_parsed']]]></code>
       <code><![CDATA[$emailAddress['name_parsed']]]></code>
