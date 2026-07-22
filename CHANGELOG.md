@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- **Empty quoted local-part** (`""@domain`): the `rejectEmptyQuotedLocalPart` option (default `false`) now actually takes effect. Previously an empty quoted local-part was rejected as `incomplete_address` by the state machine before the option was consulted, because an empty quote leaves `quote_temp` empty and the `@` handler used content-emptiness as the "was quoted" signal. The closing-quote handler now records the quote explicitly (and a display-name quote resets it so the real local-part stays unquoted).
+
+### Changed
+- **`rfc5322()` dot-atom enforcement** (behavior change): the `rfc5322()` preset now rejects a leading, trailing, or consecutive dot in the local part (`.a@`, `a.@`, `a..b@`), enforcing dot-atom per §3.2.3. This matches the actual obs-local-part ABNF (§4.4: `word *("." word)`, words non-empty). The previous permissive behavior remains available via `rfc2822()` or `ParseOptions::rfc5322()->withAllowObsLocalPart(true)`.
+
+### Notes
+- The RFC 5321 §4.5.3.1 length limits (64-octet local part, etc.) can be disabled wholesale with `->withEnforceLengthLimits(false)`, or customized via `->withLengthLimits(new LengthLimits(...))`. Now covered by tests.
+
 ## [3.4.0]
 
 Performance release. The two main-loop optimizations below compound to roughly **25–30% faster parsing on typical mixed inputs**, and more on longer and batch inputs where the O(n²)→O(n) change dominates. No API or behavior changes — all existing callers are unaffected.

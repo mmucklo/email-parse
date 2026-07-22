@@ -138,15 +138,18 @@ class ParseOptions
     /**
      * RFC 5322 addr-spec — recommended default for new code.
      *
-     * Follows RFC 5322 §3.4.1 including obs-local-part (§4.4): permissive dot
-     * placement. Generators MUST NOT produce obs-local-part, but parsers MUST
-     * accept it. ASCII only; no UTF-8 in local-part or domain.
+     * Enforces dot-atom local-part structure per §3.2.3 (`1*atext *("." 1*atext)`):
+     * a leading, trailing, or consecutive dot is rejected. This matches the actual
+     * obs-local-part ABNF (§4.4: `word *("." word)`, words non-empty) — obs-local-part
+     * never permitted empty words either. For the maximally permissive dot placement
+     * some legacy systems emit, use rfc2822() or `->withAllowObsLocalPart(true)`.
+     * ASCII only; no UTF-8 in local-part or domain.
      */
     public static function rfc5322(): self
     {
         return new self(
             allowUtf8LocalPart: false,
-            allowObsLocalPart: true,
+            allowObsLocalPart: false,
             allowQuotedString: true,
             validateQuotedContent: false,
             rejectEmptyQuotedLocalPart: false,

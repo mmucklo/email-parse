@@ -4224,12 +4224,14 @@
 
 
 # NORMAL Mode Tests (RFC 5322 + obsolete syntax)
-# Test that obsolete syntax is accepted per RFC 5322 §4
+# Test that obsolete lenient dot placement is accepted by the relaxed (RFC 2822)
+# preset. rfc5322() enforces dot-atom (no leading/trailing/consecutive dots) per
+# the actual obs-local-part ABNF; use relaxed / withAllowObsLocalPart(true) for it.
 
 -
   emails: 'user..name@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: 'user..name@example.com'
@@ -4250,7 +4252,7 @@
 -
   emails: '.user@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: '.user@example.com'
@@ -4271,7 +4273,7 @@
 -
   emails: 'user.@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: 'user.@example.com'
@@ -4292,7 +4294,7 @@
 -
   emails: 'user...name@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: 'user...name@example.com'
@@ -4381,7 +4383,7 @@
 -
   emails: 'user....name@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: 'user....name@example.com'
@@ -4402,7 +4404,7 @@
 -
   emails: '..user@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: '..user@example.com'
@@ -4423,7 +4425,7 @@
 -
   emails: 'user..@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: 'user..@example.com'
@@ -4444,7 +4446,7 @@
 -
   emails: '.@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: '.@example.com'
@@ -4528,7 +4530,7 @@
 -
   emails: 'test.user..name@example.com'
   multiple: false
-  rfc_mode: normal
+  rfc_mode: relaxed
   allow_smtputf8: false
   result:
     address: 'test.user..name@example.com'
