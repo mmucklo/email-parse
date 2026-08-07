@@ -67,6 +67,7 @@
       <code><![CDATA[withAllowQuotedString]]></code>
       <code><![CDATA[withAllowUtf8Domain]]></code>
       <code><![CDATA[withAllowUtf8LocalPart]]></code>
+      <code><![CDATA[withAllowedWhitespace]]></code>
       <code><![CDATA[withApplyNfcNormalization]]></code>
       <code><![CDATA[withBannedChars]]></code>
       <code><![CDATA[withEnforceLengthLimits]]></code>
@@ -79,6 +80,7 @@
       <code><![CDATA[withRequireFqdn]]></code>
       <code><![CDATA[withSeparators]]></code>
       <code><![CDATA[withStrictIdna]]></code>
+      <code><![CDATA[withTrimSingleAddressWhitespace]]></code>
       <code><![CDATA[withUseWhitespaceAsSeparator]]></code>
       <code><![CDATA[withValidateDisplayNamePhrase]]></code>
       <code><![CDATA[withValidateIpGlobalRange]]></code>

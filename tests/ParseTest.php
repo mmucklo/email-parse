@@ -369,6 +369,35 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($p->parseSingle("test@\x07.org")->invalid);
     }
 
+    /**
+     * Single-address parsing rejects CR/LF surrounding an address by default (a lone
+     * addr-spec has no line endings); spaces/tabs are still trimmed. trimSingleAddress-
+     * Whitespace opts back into liberal trimming, and allowedWhitespace restricts the
+     * folding/separator set (e.g. allow LF but not a lone CR).
+     */
+    public function testWhitespacePolicy(): void
+    {
+        $strict = new Parse(null, ParseOptions::rfc5322());
+        $this->assertTrue($strict->parseSingle("test@iana.org\r\n")->invalid);
+        $this->assertTrue($strict->parseSingle("test@iana.org\r")->invalid);
+        $this->assertFalse($strict->parseSingle('test@iana.org ')->invalid);   // trailing space trims
+        $this->assertFalse($strict->parseSingle(" test@iana.org")->invalid);   // leading space trims
+
+        // Opt into liberal single-address whitespace trimming.
+        $lenient = new Parse(null, ParseOptions::rfc5322()->withTrimSingleAddressWhitespace(true));
+        $this->assertFalse($lenient->parseSingle("test@iana.org\r\n")->invalid);
+
+        // Multi-address: CR/LF act as separators regardless.
+        $multi = (new Parse(null, ParseOptions::rfc5322()))->parseMultiple("a@b.com\r\nc@d.com");
+        $this->assertCount(2, $multi->emailAddresses);
+        $this->assertFalse($multi->emailAddresses[0]->invalid);
+        $this->assertFalse($multi->emailAddresses[1]->invalid);
+
+        // Restrict the allowed set: permit LF but reject a lone CR.
+        $noCarriageReturn = new Parse(null, ParseOptions::rfc5322()->withAllowedWhitespace([' ', "\t", "\n"]));
+        $this->assertTrue($noCarriageReturn->parseMultiple("a@b.com\rc@d.com")->emailAddresses[0]->invalid);
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.
@@ -1236,8 +1265,11 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testCfwsFoldingWhitespace(): void
     {
-        // Folded whitespace (LF + WSP) is still whitespace per CFWS lookahead.
-        $result = Parse::getInstance()->parseSingle("local\n\t@domain.com");
+        // Folded whitespace (LF + WSP) is absorbed by the CFWS lookahead. Single-address
+        // parsing rejects CR/LF by default (a lone addr-spec has no line endings), so
+        // enable liberal whitespace trimming to accept obsolete internal folding.
+        $opts = (new ParseOptions())->withTrimSingleAddressWhitespace(true);
+        $result = (new Parse(null, $opts))->parseSingle("local\n\t@domain.com");
         $this->assertFalse($result->invalid);
         $this->assertSame('local', $result->localPart);
         $this->assertSame('domain.com', $result->domain);
