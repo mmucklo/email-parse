@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.6.0]
+
+RFC conformance and whitespace configurability. **Two behavior changes** for strict-mode callers: `parseSingle`/single-address parsing now rejects surrounding CR/LF by default (see Added → single-address whitespace strictness), and several previously-accepted malformed forms are now rejected (see Fixed). This release also **re-ships the v3.4.0 main-loop performance work** that was accidentally missing from 3.4.0 and 3.5.0.
+
 ### Fixed
 Structural over-acceptance bugs surfaced by gold-standard differential testing (dominicsayers/isemail corpus):
 - **Unclosed domain literal** — `test@[1.2.3.4` (no closing `]`) is now rejected (`UnterminatedSquareBracket`). The end-of-input unterminated-delimiter check is now keyed on the parser state rather than on `quote_temp`, so unclosed brackets, comments, and obs-routes are all caught.
