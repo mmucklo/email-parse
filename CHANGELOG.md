@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+Structural over-acceptance bugs surfaced by gold-standard differential testing (dominicsayers/isemail corpus):
+- **Unclosed domain literal** — `test@[1.2.3.4` (no closing `]`) is now rejected (`UnterminatedSquareBracket`). The end-of-input unterminated-delimiter check is now keyed on the parser state rather than on `quote_temp`, so unclosed brackets, comments, and obs-routes are all caught.
+- **Unbalanced nested comment** — a leading comment now opens at nest level 1 (matching the in-address entry), so `((comment)test@…` is no longer treated as closed after a single `)`.
+- **atext/quote abutting a quoted-string** — `"test"test@…` and `"test""test"@…` are now rejected (`AtextAfterQuotedString`, a new `ParseErrorCode`); a quoted-string is a whole word (RFC 5322 §3.2.4). `"word".atom` (obs `word "." word`) stays valid.
+- **Restored the v3.4.0 main-loop optimizations** — `mb_str_split()` single-pass tokenization and loop-invariant getter hoisting were accidentally reverted in the v3.4.0 release commit and shipped missing in 3.4.0/3.5.0. Reinstated.
+
+### Added
+- **Configurable whitespace policy.** `ParseOptions::$allowedWhitespace` (default `[' ', "\t", "\r", "\n"]`) defines which whitespace characters are treated as insignificant (folding/separators; trimmable); restrict it to enforce strictness (e.g. `[' ', "\t", "\n"]` to reject a lone CR). Builder: `withAllowedWhitespace()`.
+- **Single-address whitespace strictness.** In single-address parsing (`parseSingle` / `parse(..., multiple: false)`), CR and LF surrounding the address are now rejected by default — a lone addr-spec has no line endings; spaces/tabs still trim. `ParseOptions::$trimSingleAddressWhitespace` (`withTrimSingleAddressWhitespace(true)`) opts back into liberal trimming. Multi-address parsing is unchanged: CR/LF act as separators per the policy.
+
 ## [3.5.0]
 
 Local-part correctness and configurability. **Heads-up:** `rfc5322()` is now stricter about dot placement (see Changed) — a behavior change for callers relying on the previous permissive dot handling; the old behavior is one builder call away.

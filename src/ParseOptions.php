@@ -10,6 +10,15 @@ class ParseOptions
     private array $separators = [];
     private bool $useWhitespaceAsSeparator;
     private LengthLimits $lengthLimits;
+    /**
+     * Whitespace characters treated as insignificant (folding/separators in
+     * multi-address mode; trimmable). A whitespace character outside this set is
+     * an invalid character. In single-address parsing, CR and LF are always
+     * rejected regardless of this set — a lone addr-spec has no line endings.
+     *
+     * @var array<string, bool>
+     */
+    private array $allowedWhitespace = [];
 
     /**
      * Construct a parser configuration.
@@ -24,6 +33,7 @@ class ParseOptions
      *
      * @param array<string>     $bannedChars
      * @param array<string>     $separators
+     * @param array<string>     $allowedWhitespace
      * @param LengthLimits|null $lengthLimits       Email length limits; RFC defaults when null.
      *
      * @param bool              $allowUtf8LocalPart        Allow UTF-8 in local-part (RFC 6531 §3.3, 6532 §3.2).
@@ -50,6 +60,7 @@ class ParseOptions
         array $separators = [','],
         bool $useWhitespaceAsSeparator = true,
         ?LengthLimits $lengthLimits = null,
+        array $allowedWhitespace = [' ', "\t", "\r", "\n"],
         public readonly bool $allowUtf8LocalPart = true,
         public readonly bool $allowObsLocalPart = false,
         public readonly bool $allowQuotedString = true,
@@ -67,6 +78,7 @@ class ParseOptions
         public readonly bool $validateDisplayNamePhrase = false,
         public readonly bool $strictIdna = false,
         public readonly bool $allowObsRoute = false,
+        public readonly bool $trimSingleAddressWhitespace = false,
         public readonly ?\Closure $localPartNormalizer = null,
     ) {
         foreach ($bannedChars as $char) {
@@ -77,6 +89,15 @@ class ParseOptions
         }
         $this->useWhitespaceAsSeparator = $useWhitespaceAsSeparator;
         $this->lengthLimits = $lengthLimits ?? LengthLimits::createDefault();
+        foreach ($allowedWhitespace as $ws) {
+            $this->allowedWhitespace[$ws] = true;
+        }
+    }
+
+    /** @return array<string, bool> */
+    public function getAllowedWhitespace(): array
+    {
+        return $this->allowedWhitespace;
     }
 
     // ===== RFC Preset Factory Methods =====
@@ -224,6 +245,22 @@ class ParseOptions
         return $this->cloneWith(['lengthLimits' => $limits]);
     }
 
+    /**
+     * Set the whitespace characters treated as insignificant. Pass a subset to
+     * enforce strictness, e.g. `[' ', "\t", "\n"]` to reject a lone CR.
+     *
+     * @param array<string> $chars
+     */
+    public function withAllowedWhitespace(array $chars): self
+    {
+        return $this->cloneWith(['allowedWhitespace' => $chars]);
+    }
+
+    public function withTrimSingleAddressWhitespace(bool $value): self
+    {
+        return $this->cloneWith(['trimSingleAddressWhitespace' => $value]);
+    }
+
     public function withAllowUtf8LocalPart(bool $value): self
     {
         return $this->cloneWith(['allowUtf8LocalPart' => $value]);
@@ -347,6 +384,7 @@ class ParseOptions
             separators:                 $get('separators', array_keys($this->separators)),
             useWhitespaceAsSeparator:   $get('useWhitespaceAsSeparator', $this->useWhitespaceAsSeparator),
             lengthLimits:               $get('lengthLimits', $this->lengthLimits),
+            allowedWhitespace:          $get('allowedWhitespace', array_keys($this->allowedWhitespace)),
             allowUtf8LocalPart:         $get('allowUtf8LocalPart', $this->allowUtf8LocalPart),
             allowObsLocalPart:          $get('allowObsLocalPart', $this->allowObsLocalPart),
             allowQuotedString:          $get('allowQuotedString', $this->allowQuotedString),
@@ -364,6 +402,7 @@ class ParseOptions
             validateDisplayNamePhrase:  $get('validateDisplayNamePhrase', $this->validateDisplayNamePhrase),
             strictIdna:                 $get('strictIdna', $this->strictIdna),
             allowObsRoute:              $get('allowObsRoute', $this->allowObsRoute),
+            trimSingleAddressWhitespace: $get('trimSingleAddressWhitespace', $this->trimSingleAddressWhitespace),
             localPartNormalizer:        array_key_exists('localPartNormalizer', $overrides)
                 ? $overrides['localPartNormalizer']
                 : $this->localPartNormalizer,

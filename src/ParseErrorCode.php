@@ -136,6 +136,10 @@ enum ParseErrorCode: string
     /** C1 control character inside a quoted-string (RFC 6530 §10.1). */
     case C1ControlInQuotedString = 'c1_control_in_quoted_string';
 
+    /** atext or a second quoted-string immediately follows a quoted-string with no
+     *  separating dot — a quoted-string is a whole word (RFC 5322 §3.2.4). */
+    case AtextAfterQuotedString = 'atext_after_quoted_string';
+
     // --- Domain errors ---
 
     /** Empty domain after '@'. */
