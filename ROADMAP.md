@@ -88,16 +88,16 @@ Not tied to a specific release; picked up as time allows.
 
 **RFC conformance (gold-standard differential):**
 
-Differential testing against the `dominicsayers/isemail` reference corpus (164 cases) and a reference RFC validator surfaced a set of over-acceptance edge cases — inputs the parser currently treats as valid that the reference standard rejects. Clustered by root cause, in rough priority order:
+Differential testing against the `dominicsayers/isemail` reference corpus (164 cases) drove the strict-preset false-accept set from 29 down to **1** — the intentional trailing root dot, now toggleable. All clusters resolved:
 
-- [x] **Quoted-string boundaries** — atext adjacent to a quoted string (`"test"test@`) and consecutive quoted strings (`"test""test"@`) are now rejected (`AtextAfterQuotedString`). `"word".atom` (obs `word "." word`) stays valid.
-- [x] **Unclosed domain literal** — `test@[1.2.3.4` now rejected; the end-of-input unterminated-delimiter check is keyed on parser state, catching unclosed brackets/comments/obs-routes.
-- [x] **Control character in domain** — already rejected (a corpus artifact from the Unicode Control-Pictures encoding, not a real gap).
-- [~] **Comment (CFWS) parsing** — unbalanced nested comment (`((comment)test@`) now rejected. Remaining: backslash-escaped parens (`(comment\)test@` — `\)` is a quoted-pair, so the comment is still open) and atext directly after a mid-local-part comment (`test(comment)test@`). RFC 5322 §3.2.2.
-- [ ] **CR/LF & folding-whitespace — decision needed.** ~16 corpus cases: bare CR/LF (`test@iana.org\r`) and CRLF folding (`...\r\n\r\n`) leading/trailing an address are accepted because the parser treats CR/LF as whitespace and trims surrounding whitespace — **intentional for batch parsing** (addresses read from lines of a file). Options: (a) keep as-is and document the divergence, (b) reject bare CR/LF and malformed folding only in the strict presets (`rfc5321`/`rfc5322`) while the batch/lenient path keeps trimming. This changes core whitespace handling, so it needs a deliberate design call before implementing.
-- [ ] **Trailing domain dot** — `test@iana.org.` is accepted as the RFC 5321 §2.3.5 root-label dot; the corpus flags it. Intentional and defensible — keep, documented here.
+- [x] **Quoted-string boundaries** — `"test"test@` / `"test""test"@` rejected (`AtextAfterQuotedString`); `"word".atom` stays valid.
+- [x] **Unclosed domain literal** — `test@[1.2.3.4` rejected; end-of-input unterminated-delimiter check keyed on parser state.
+- [x] **Comment (CFWS) parsing** — unbalanced nested comment; backslash quoted-pair (`(comment\)test@` — `\)` no longer closes); C0 controls in comment content (`ControlCharInComment`); atext splitting one atom after a comment (`AtextAfterComment`).
+- [x] **Quoted-string content** — C0 controls (bare CR/LF) in a quoted string rejected under the strict presets.
+- [x] **CR/LF & folding-whitespace** — resolved via the whitespace policy: single-address mode rejects surrounding/dangling CR/LF by default (`withTrimSingleAddressWhitespace` loosens); multi-address mode stays loose by default with an opt-in `withStrictMultiWhitespace` for per-address strictness. Whitespace still separates addresses in batch mode.
+- [x] **Trailing domain dot** — `test@iana.org.` accepted by default (RFC 5321 §2.3.5); `withRejectTrailingDot(true)` rejects it. The one remaining corpus divergence, by design.
 
-Approach: the comparison harness stays a local dev tool (not a CI gate) since the CR/LF and trailing-dot cases are deliberate design choices, not bugs. Fixed clusters carry regression tests in `tests/ParseTest.php`.
+The comparison harness remains a local dev tool (not a CI gate). Every fixed cluster carries regression tests in `tests/ParseTest.php`.
 
 **Static analysis:**
 - [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.

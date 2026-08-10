@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+Further gold-standard conformance (dominicsayers/isemail corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot):
+- **Comment quoted-pairs** — a backslash inside a comment starts a quoted-pair (RFC 5322 §3.2.1), so `(comment\)test@…` no longer treats `\)` as the closing paren (correctly reported unterminated).
+- **Control characters in comments and quoted strings** — a bare CR/LF (or other C0 control) in comment content (`ControlCharInComment`) or a quoted string (`InvalidCharInQuotedString`) is rejected when `rejectC0Controls` is set (the strict presets).
+- **atext after a comment** — a comment may not split one unquoted local-part atom (RFC 5322 §3.2.3); `test(comment)test@…` is rejected (`AtextAfterComment`). Leading/trailing comments stay valid.
+- **Dangling trailing fold** — in single-address mode, trailing whitespace containing a character excluded from the effective whitespace set (e.g. a CR/LF after a space) is rejected instead of silently truncating the address.
+
+### Added
+- **`ParseOptions::$rejectTrailingDot`** (`withRejectTrailingDot()`) — reject the RFC 5321 §2.3.5 trailing root-label dot (`test@iana.org.`) instead of accepting/stripping it. Default `false` (unchanged behavior).
+- **`ParseOptions::$strictMultiWhitespace`** (`withStrictMultiWhitespace()`) — in multi-address mode, reject obsolete internal folding whitespace per-address (e.g. `local @domain`) while whitespace still separates addresses. Default `false` (multi stays loose, as before).
+
 ## [3.6.0]
 
 RFC conformance and whitespace configurability. **Two behavior changes** for strict-mode callers: `parseSingle`/single-address parsing now rejects surrounding CR/LF by default (see Added → single-address whitespace strictness), and several previously-accepted malformed forms are now rejected (see Fixed). This release also **re-ships the v3.4.0 main-loop performance work** that was accidentally missing from 3.4.0 and 3.5.0.

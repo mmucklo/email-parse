@@ -398,6 +398,60 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($noCarriageReturn->parseMultiple("a@b.com\rc@d.com")->emailAddresses[0]->invalid);
     }
 
+    /**
+     * Gold-standard conformance fixes (dominicsayers/isemail corpus): comment
+     * quoted-pairs and control chars, atext-after-comment, control chars in quoted
+     * strings, and dangling trailing folding whitespace in single-address mode.
+     */
+    public function testCorpusConformanceRejections(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        $Err = \Email\ParseErrorCode::class;
+
+        // "\)" is a quoted-pair, so the comment is never closed.
+        $this->assertSame($Err::UnterminatedComment, $p->parseSingle('(comment\\)test@iana.org')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('(a\\)b)test@iana.org')->invalid);   // escaped paren then real close
+        // Control chars in comments and quoted strings.
+        $this->assertSame($Err::ControlCharInComment, $p->parseSingle("(\r)test@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::InvalidCharInQuotedString, $p->parseSingle("\"\rx\"@iana.org")->invalidReasonCode);
+        // A comment may not split one unquoted atom.
+        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('test(comment)test@iana.org')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('(comment)test@iana.org')->invalid);     // leading CFWS ok
+        // Dangling trailing fold (space then CR/LF) in single mode.
+        $this->assertTrue($p->parseSingle("test@iana.org \r\n")->invalid);
+        $this->assertFalse($p->parseSingle('test@iana.org ')->invalid);             // plain trailing space ok
+    }
+
+    /**
+     * The trailing root-label dot (RFC 5321 §2.3.5) is accepted by default; the
+     * withRejectTrailingDot() option turns it into an error.
+     */
+    public function testRejectTrailingDotOption(): void
+    {
+        $this->assertFalse((new Parse(null, ParseOptions::rfc5322()))->parseSingle('test@iana.org.')->invalid);
+        $rej = new Parse(null, ParseOptions::rfc5322()->withRejectTrailingDot(true));
+        $this->assertSame(\Email\ParseErrorCode::TrailingDotNotAllowed, $rej->parseSingle('test@iana.org.')->invalidReasonCode);
+    }
+
+    /**
+     * strictMultiWhitespace makes multi-address parsing reject obsolete internal
+     * folding per-address, while whitespace still separates addresses.
+     */
+    public function testStrictMultiWhitespace(): void
+    {
+        // Loose (default): internal fold "local @domain" is absorbed → one valid address.
+        $loose = (new Parse(null, ParseOptions::rfc5322()))->parseMultiple('local @domain.com');
+        $this->assertCount(1, $loose->emailAddresses);
+        $this->assertFalse($loose->emailAddresses[0]->invalid);
+
+        // Strict: the internal fold is not absorbed → the address is rejected.
+        $strict = (new Parse(null, ParseOptions::rfc5322()->withStrictMultiWhitespace(true)))->parseMultiple('local @domain.com');
+        $this->assertFalse($strict->success);
+
+        // Between-address separation is unaffected in both modes.
+        $this->assertCount(2, (new Parse(null, ParseOptions::rfc5322()->withStrictMultiWhitespace(true)))->parseMultiple('a@b.com c@d.com')->emailAddresses);
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.
