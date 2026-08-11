@@ -417,10 +417,14 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // A comment may not split one unquoted local-part atom — rejected at '@'.
         $this->assertSame($Err::AtextAfterComment, $p->parseSingle('test(comment)test@iana.org')->invalidReasonCode);
         $this->assertSame($Err::AtextAfterComment, $p->parseSingle('<a(c)b@iana.org>')->invalidReasonCode);
-        // A comment cannot hide atext abutting a quoted-string either ("x"(c)y is as
-        // invalid as "x"y); but "x"(c).y (comment = trailing CFWS, dot separates) is fine.
+        // A comment cannot hide a token abutting a quoted-string — atext ("x"(c)y) or a
+        // second quoted-string ("x"(c)"y") is as invalid as without the comment; but
+        // "x"(c).y (comment = trailing CFWS, dot separates) is fine.
         $this->assertSame($Err::AtextAfterComment, $p->parseSingle('"x"(c)y@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('"x"(c)"y"@iana.org')->invalidReasonCode);
         $this->assertFalse($p->parseSingle('"x"(c).y@iana.org')->invalid);
+        // The same shape as a display-name phrase ("word CFWS word") stays valid.
+        $this->assertFalse($p->parseSingle('"x"(c)"y" <a@b.com>')->invalid);
         $this->assertFalse($p->parseSingle('(comment)test@iana.org')->invalid);     // leading CFWS ok
         $this->assertFalse($p->parseSingle('test(comment)@iana.org')->invalid);     // comment at boundary ok
         // DEL (0x7f) is excluded from ctext/qtext, like the C0 controls.

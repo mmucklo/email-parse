@@ -365,11 +365,11 @@ class Parse
 
                     if ($emailAddress['comment_after_local_atext']) {
                         $emailAddress['comment_after_local_atext'] = false;
-                        // atext resuming the atom after a comment. Defer the verdict: it is
-                        // only an error if this turns out to be an addr-spec local part
-                        // (resolved at '@'); in a display-name phrase "word CFWS word" is
-                        // legal and is cleared at '<'.
-                        if ($curChar > "\x7f" || preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
+                        // atext or a second quoted-string resuming the word after a comment.
+                        // Defer the verdict: it is only an error if this turns out to be an
+                        // addr-spec local part (resolved at '@'); in a display-name phrase
+                        // "word CFWS word" is legal and is cleared at '<'.
+                        if ('"' === $curChar || $curChar > "\x7f" || preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
                             $emailAddress['local_atom_split_by_comment'] = true;
                         }
                     }
