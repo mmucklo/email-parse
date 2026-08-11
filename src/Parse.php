@@ -871,11 +871,13 @@ class Parse
                                 $emailAddress['comment_temp'] = '';
                             }
                             $state = self::STATE_ADDRESS;
-                            // Flag a comment that closed mid-atom in the local part (before
-                            // `@`, with atext already accumulated), so atext resuming the same
-                            // atom can be rejected. Domain and display-name comments are excluded.
+                            // Flag a comment that closed mid-word in the local part (before
+                            // `@`), so a token resuming the word can be rejected. Covers a
+                            // preceding atext run (address_temp/local_part_parsed) or a
+                            // preceding quoted-string (local_part_quoted) — "x"(c)y is as
+                            // invalid as x(c)y. Domain and display-name comments are excluded.
                             if ((self::STATE_LOCAL_PART === $subState || self::STATE_START === $subState)
-                                && ('' !== $emailAddress['address_temp'] || '' !== $emailAddress['local_part_parsed'])) {
+                                && ('' !== $emailAddress['address_temp'] || '' !== $emailAddress['local_part_parsed'] || $emailAddress['local_part_quoted'])) {
                                 $emailAddress['comment_after_local_atext'] = true;
                             }
                         } else {
