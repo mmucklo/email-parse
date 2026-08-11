@@ -599,12 +599,17 @@ class Parse
                             $emailAddress['obs_route'] = '@';
                         } else {
                             $subState = self::STATE_DOMAIN;
+                            // A trailing quoted word after earlier words ("x"."y", x."y")
+                            // is the final word of an obs-local-part (RFC 5322 §3.4.1:
+                            // word *("." word), word = atom / quoted-string). Flush it onto
+                            // the accumulated local part, exactly as the dot handler flushes
+                            // earlier words — not a parser error.
                             if ($emailAddress['address_temp'] && $emailAddress['quote_temp']) {
-                                $emailAddress['invalid'] = true;
-                                $emailAddress['invalid_reason'] = 'Something went wrong during parsing.';
-                                $emailAddress['invalid_reason_code'] = Err::ParserConfusion;
-                                $this->log('error', "Email\\Parse->parse - Something went wrong during parsing:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}\n\$curChar: {$curChar}");
-                            } elseif ($emailAddress['quote_temp']) {
+                                $emailAddress['address_temp'] .= $emailAddress['quote_temp'];
+                                $emailAddress['address_temp_quoted'] = true;
+                                $emailAddress['quote_temp'] = '';
+                            }
+                            if ($emailAddress['quote_temp']) {
                                 $emailAddress['local_part_parsed'] = $emailAddress['quote_temp'];
                                 $emailAddress['quote_temp'] = '';
                                 $emailAddress['local_part_quoted'] = true;
@@ -617,13 +622,22 @@ class Parse
                             }
                         }
                     } elseif ('[' == $curChar) {
-                        // Setup square bracket special handling if appropriate
+                        // A domain literal ("[...]") is the entire domain (RFC 5322 §3.4.1),
+                        // so '[' is only valid at the start of the domain — not in the local
+                        // part, and not after domain characters or a first literal. Accepting
+                        // it mid-domain used to set both domain and ip and surface as an
+                        // internal "parser confusion" error.
                         if (self::STATE_DOMAIN != $subState) {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Invalid character '[' in email address";
                             $emailAddress['invalid_reason_code'] = Err::InvalidOpeningBracket;
+                        } elseif ('' !== $emailAddress['domain'] || '' !== $emailAddress['ip']) {
+                            $emailAddress['invalid'] = true;
+                            $emailAddress['invalid_reason'] = "A domain literal '[...]' must be the entire domain, not combined with other domain characters";
+                            $emailAddress['invalid_reason_code'] = Err::InvalidOpeningBracket;
+                        } else {
+                            $state = self::STATE_SQUARE_BRACKET;
                         }
-                        $state = self::STATE_SQUARE_BRACKET;
                     } elseif ('.' == $curChar) {
                         // Handle periods specially
                         if ('.' == $prevChar && !$this->options->allowObsLocalPart) {
@@ -899,6 +913,12 @@ class Parse
                     } elseif ($this->options->rejectC0Controls && 1 === strlen($curChar) && "\t" !== $curChar && (ord($curChar) < 32 || "\x7f" === $curChar)) {
                         // ctext (RFC 5322 §3.2.3) excludes C0 controls; a bare CR or LF
                         // inside a comment is not part of valid folding.
+                        $emailAddress['invalid'] = true;
+                        $emailAddress['invalid_reason'] = 'Control character in comment';
+                        $emailAddress['invalid_reason_code'] = Err::ControlCharInComment;
+                    } elseif ($this->options->rejectC1Controls && preg_match('/[\x{0080}-\x{009F}]/u', $curChar)) {
+                        // RFC 6532 §3.1: C1 controls (2-byte UTF-8) are prohibited in
+                        // internationalized content, comments included.
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'Control character in comment';
                         $emailAddress['invalid_reason_code'] = Err::ControlCharInComment;

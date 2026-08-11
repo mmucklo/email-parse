@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Fixed
+- **Quoted-string as a non-first local-part word** — `"x"."y"@`, `x."y"@`, `"a b"."c"@` are now accepted (valid `obs-local-part`, RFC 5322 §3.4.1: `word *("." word)`). They previously surfaced the internal `ParserConfusion` code. Abutment without a separating dot (`"x""y"@`) is still rejected.
+- **`ParserConfusion` no longer reaches callers.** The remaining path (a domain literal after domain characters, e.g. `user@a[1.2.3.4]`) is now rejected up front as an `InvalidOpeningBracket` — a domain literal is the entire domain, not appended to a dot-atom. A 500k-input fuzz confirms `ParserConfusion` is unreachable.
+- **C1 controls in comments** — U+0080–U+009F in comment content are rejected when `rejectC1Controls` is set (rfc6531), matching the existing local-part and quoted-string handling.
+
+### Fixed
 Further gold-standard conformance (dominicsayers/isemail corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot):
 - **Comment quoted-pairs** — a backslash inside a comment starts a quoted-pair (RFC 5322 §3.2.1), so `(comment\)test@…` no longer treats `\)` as the closing paren (correctly reported unterminated).
 - **Control characters in comments and quoted strings** — a bare CR/LF (or other C0 control) in comment content (`ControlCharInComment`) or a quoted string (`InvalidCharInQuotedString`) is rejected when `rejectC0Controls` is set (the strict presets).

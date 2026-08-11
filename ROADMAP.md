@@ -101,9 +101,9 @@ The comparison harness remains a local dev tool (not a CI gate). Every fixed clu
 
 **Pre-existing bugs (found during review; not in the isemail corpus, so not covered above):**
 - [x] **Angle-addr with a domain-literal rejected** — `<user@[1.2.3.4]>` was wrongly rejected; the `>` handler now accepts `STATE_AFTER_DOMAIN` (which `]` reaches) when a domain/IP is present. Fixed with a metamorphic angle-wrap property test.
-- [ ] **`word "." word` with quoted-string words over-rejected.** A quoted-string dot quoted-string (`"x"."y"@iana.org`) is a legal `obs-local-part` (RFC 5322 §3.4.1: `word *("." word)`, `word = atom / quoted-string`), but the parser rejects it. Present on `master`, unrelated to the conformance work. `"x".y` (quoted-string then atom) and `x."y"` (atom then quoted-string) are affected too.
-- [ ] **`ParserConfusion` error code leaks to users.** The `parser_confusion` reason/code is an internal "shouldn't happen" marker, but the over-rejection above surfaces it as a user-facing result. Whatever the resolution of the previous item, no valid-or-invalid *input* should ever produce `ParserConfusion` — replace these paths with a specific reason or fix the underlying handling.
-- [ ] **C1 controls (U+0080–U+009F) not rejected in comment content.** The ctext control-char check is single-byte only, so 2-byte-UTF-8 C1 controls slip through. No active gap under the current presets (`rejectC1Controls` is off in `rfc5322()`), but the check should honor `rejectC1Controls` for comments the way it already does for local parts and quoted strings.
+- [x] **`word "." word` with quoted-string words** — `"x"."y"@`, `x."y"@`, `"a b"."c"@` (a quoted-string as a non-first obs-local-part word) are now accepted; the final quoted word is flushed onto the local part like earlier words (RFC 5322 §3.4.1).
+- [x] **`ParserConfusion` no longer reaches callers** — the remaining path (`user@a[1.2.3.4]`, a domain literal after domain characters) is rejected up front as `InvalidOpeningBracket`. A 500k-input fuzz confirms the code is now unreachable.
+- [x] **C1 controls (U+0080–U+009F) in comment content** — now rejected when `rejectC1Controls` is set (rfc6531), matching local-part and quoted-string handling.
 
 **Static analysis:**
 - [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.
