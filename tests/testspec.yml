@@ -660,6 +660,67 @@
     comments:
       - 'comment with spaces !!!'
 -
+  # Valid comment (well-formed, correct position) but invalid IP: leading comment,
+  # private-range address literal — the comment is captured, the IP is rejected.
+  emails: '(comment)test@[10.0.10.45]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '(comment)test@[10.0.10.45]'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[10.0.10.45]'
+    domain: ''
+    domain_ascii: null
+    ip: 10.0.10.45
+    invalid: true
+    invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+    comments:
+      - 'comment'
+-
+  # Comment after a complete local part (valid position) with a private-range IP.
+  emails: 'test(comment)@[10.0.10.45]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: 'test(comment)@[10.0.10.45]'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[10.0.10.45]'
+    domain: ''
+    domain_ascii: null
+    ip: 10.0.10.45
+    invalid: true
+    invalid_reason: "IP address invalid: '10.0.10.45' does not appear to be a valid IP address in the global range"
+    comments:
+      - 'comment'
+-
+  # Valid leading comment with a syntactically malformed IP (octet > 255).
+  emails: '(lead)test@[999.0.0.1]'
+  multiple: false
+  result:
+    address: ''
+    simple_address: ''
+    original_address: '(lead)test@[999.0.0.1]'
+    name: ''
+    name_parsed: ''
+    local_part: test
+    local_part_parsed: test
+    domain_part: '[999.0.0.1]'
+    domain: ''
+    domain_ascii: null
+    ip: 999.0.0.1
+    invalid: true
+    invalid_reason: "IP address invalid: '999.0.0.1' does not appear to be a valid IP address"
+    comments:
+      - 'lead'
+-
   emails: testing@tūdaliņ.lv
   include_domain_ascii: true
   multiple: false
