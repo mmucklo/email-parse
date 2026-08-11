@@ -110,6 +110,11 @@ The comparison harness remains a local dev tool (not a CI gate). Every fixed clu
 - [x] Main-loop hot path — replaced per-character `mb_substr($emails, $i, 1)` (O(n²) for multi-byte encodings, which rescan from the start each call) with a single `mb_str_split()` pass and array indexing. ~10–27% faster across the suite; biggest gains on longer inputs. Measured against the baseline via `composer bench:compare`.
 - [ ] Further profiling under mailing-list-sized inputs if needed — the `mb_str_split` array now dominates memory for very large batches; a streaming/chunked reader could bound that.
 
+**Maintainability / readability:**
+- [ ] **Reorganize `Parse::parse()` for readability.** The main state machine has grown deeply nested (a `switch ($state)` with a nested `switch/if` on `$subState`, plus per-character CFWS/comment/quote handling), and several correctness fixes have added flags and edge branches that are hard to follow. Decompose the loop body into named per-state handlers (e.g. `handleTrim`/`handleAddress`/`handleQuote`/`handleComment`) so each state's logic is isolated and independently readable. Also fold the accumulated tracking flags (`after_closing_quote`, `comment_after_local_atext`, `comment_escaped`, …) into a clearer per-parse context object.
+  - **Hard constraint: no performance regression.** Benchmark before and after with `composer bench:baseline` (on the pre-refactor commit) then `composer bench:compare` on the refactor; every subject must stay within noise. A prior spike proved this is achievable — decomposing the switch into method-per-character dispatch dropped `parse()` cyclomatic complexity 168 → 23 with **no measurable slowdown** (PHP 8's method calls are cheap; smaller methods can even help I-cache). Prefer passing a context object over instance properties, to keep the parser reentrant (a user `localPartNormalizer` callback can re-enter `parse()`).
+  - Keep it behavior-preserving: it is a pure structural refactor, gated by the full test suite (currently 99 tests) + PHPStan level 8 + Psalm, with no changes to parsing logic, conditions, or ordering.
+
 **Community / documentation:**
 - [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.
 - [ ] GitHub issue + pull-request templates.
