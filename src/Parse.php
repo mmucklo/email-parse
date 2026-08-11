@@ -936,7 +936,12 @@ class Parse
                 $state = self::STATE_TRIM;
             }
 
-            if ($emailAddress['invalid']) {
+            // Fire once, on the transition into invalid: STATE_SKIP_AHEAD does not clear
+            // the flag, so without the state guard this block would re-run every remaining
+            // character — and interpolating the full $emails / original_address each time
+            // (even under a NullLogger, the argument is still built) makes malformed input
+            // O(n^2). See the DoS regression benchmark.
+            if ($emailAddress['invalid'] && self::STATE_SKIP_AHEAD !== $state) {
                 $this->log('debug', "Email\\Parse->parse - invalid - {$emailAddress['invalid_reason']}\n\$emailAddress['original_address'] {$emailAddress['original_address']}\n\$emails: {$emails}");
                 $state = self::STATE_SKIP_AHEAD;
             }

@@ -461,6 +461,26 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * Malformed input must not be O(n^2). The invalid → skip-ahead path once
+     * re-interpolated the full input on every remaining character; a large run of
+     * structural-error characters would take seconds. Guard both correctness (still
+     * invalid, no crash) and a generous linear-time budget.
+     */
+    public function testMalformedInputIsLinearTime(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        foreach (['@', '.', '<', '"'] as $char) {
+            $start = hrtime(true);
+            $result = $p->parseSingle(str_repeat($char, 200000));
+            $elapsedMs = (hrtime(true) - $start) / 1e6;
+            $this->assertTrue($result->invalid, "repeat({$char}) should be invalid");
+            // Linear is ~40ms here; the old O(n^2) took multiple seconds. 2s is a wide,
+            // non-flaky margin that still fails a quadratic regression.
+            $this->assertLessThan(2000, $elapsedMs, "repeat({$char}) took {$elapsedMs}ms — possible O(n^2) regression");
+        }
+    }
+
+    /**
      * strictMultiWhitespace makes multi-address parsing reject obsolete internal
      * folding per-address, while whitespace still separates addresses.
      */
