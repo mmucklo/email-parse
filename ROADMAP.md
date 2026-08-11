@@ -88,16 +88,22 @@ Not tied to a specific release; picked up as time allows.
 
 **RFC conformance (gold-standard differential):**
 
-Differential testing against the `dominicsayers/isemail` reference corpus (164 cases) and a reference RFC validator surfaced a set of over-acceptance edge cases — inputs the parser currently treats as valid that the reference standard rejects. Clustered by root cause, in rough priority order:
+Differential testing against the `dominicsayers/isemail` reference corpus (164 cases) drove the strict-preset false-accept set from 29 down to **1** — the intentional trailing root dot, now toggleable. All clusters resolved:
 
-- [x] **Quoted-string boundaries** — atext adjacent to a quoted string (`"test"test@`) and consecutive quoted strings (`"test""test"@`) are now rejected (`AtextAfterQuotedString`). `"word".atom` (obs `word "." word`) stays valid.
-- [x] **Unclosed domain literal** — `test@[1.2.3.4` now rejected; the end-of-input unterminated-delimiter check is keyed on parser state, catching unclosed brackets/comments/obs-routes.
-- [x] **Control character in domain** — already rejected (a corpus artifact from the Unicode Control-Pictures encoding, not a real gap).
-- [~] **Comment (CFWS) parsing** — unbalanced nested comment (`((comment)test@`) now rejected. Remaining: backslash-escaped parens (`(comment\)test@` — `\)` is a quoted-pair, so the comment is still open) and atext directly after a mid-local-part comment (`test(comment)test@`). RFC 5322 §3.2.2.
-- [ ] **CR/LF & folding-whitespace — decision needed.** ~16 corpus cases: bare CR/LF (`test@iana.org\r`) and CRLF folding (`...\r\n\r\n`) leading/trailing an address are accepted because the parser treats CR/LF as whitespace and trims surrounding whitespace — **intentional for batch parsing** (addresses read from lines of a file). Options: (a) keep as-is and document the divergence, (b) reject bare CR/LF and malformed folding only in the strict presets (`rfc5321`/`rfc5322`) while the batch/lenient path keeps trimming. This changes core whitespace handling, so it needs a deliberate design call before implementing.
-- [ ] **Trailing domain dot** — `test@iana.org.` is accepted as the RFC 5321 §2.3.5 root-label dot; the corpus flags it. Intentional and defensible — keep, documented here.
+- [x] **Quoted-string boundaries** — `"test"test@` / `"test""test"@` rejected (`AtextAfterQuotedString`); `"word".atom` stays valid.
+- [x] **Unclosed domain literal** — `test@[1.2.3.4` rejected; end-of-input unterminated-delimiter check keyed on parser state.
+- [x] **Comment (CFWS) parsing** — unbalanced nested comment; backslash quoted-pair (`(comment\)test@` — `\)` no longer closes); C0 controls in comment content (`ControlCharInComment`); atext splitting one atom after a comment (`AtextAfterComment`).
+- [x] **Quoted-string content** — C0 controls (bare CR/LF) in a quoted string rejected under the strict presets.
+- [x] **CR/LF & folding-whitespace** — resolved via the whitespace policy: single-address mode rejects surrounding/dangling CR/LF by default (`withTrimSingleAddressWhitespace` loosens); multi-address mode stays loose by default with an opt-in `withStrictMultiWhitespace` for per-address strictness. Whitespace still separates addresses in batch mode.
+- [x] **Trailing domain dot** — `test@iana.org.` accepted by default (RFC 5321 §2.3.5); `withRejectTrailingDot(true)` rejects it. The one remaining corpus divergence, by design.
 
-Approach: the comparison harness stays a local dev tool (not a CI gate) since the CR/LF and trailing-dot cases are deliberate design choices, not bugs. Fixed clusters carry regression tests in `tests/ParseTest.php`.
+The comparison harness remains a local dev tool (not a CI gate). Every fixed cluster carries regression tests in `tests/ParseTest.php`.
+
+**Pre-existing bugs (found during review; not in the isemail corpus, so not covered above):**
+- [x] **Angle-addr with a domain-literal rejected** — `<user@[1.2.3.4]>` was wrongly rejected; the `>` handler now accepts `STATE_AFTER_DOMAIN` (which `]` reaches) when a domain/IP is present. Fixed with a metamorphic angle-wrap property test.
+- [ ] **`word "." word` with quoted-string words over-rejected.** A quoted-string dot quoted-string (`"x"."y"@iana.org`) is a legal `obs-local-part` (RFC 5322 §3.4.1: `word *("." word)`, `word = atom / quoted-string`), but the parser rejects it. Present on `master`, unrelated to the conformance work. `"x".y` (quoted-string then atom) and `x."y"` (atom then quoted-string) are affected too.
+- [ ] **`ParserConfusion` error code leaks to users.** The `parser_confusion` reason/code is an internal "shouldn't happen" marker, but the over-rejection above surfaces it as a user-facing result. Whatever the resolution of the previous item, no valid-or-invalid *input* should ever produce `ParserConfusion` — replace these paths with a specific reason or fix the underlying handling.
+- [ ] **C1 controls (U+0080–U+009F) not rejected in comment content.** The ctext control-char check is single-byte only, so 2-byte-UTF-8 C1 controls slip through. No active gap under the current presets (`rejectC1Controls` is off in `rfc5322()`), but the check should honor `rejectC1Controls` for comments the way it already does for local parts and quoted strings.
 
 **Static analysis:**
 - [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.
@@ -109,6 +115,11 @@ Approach: the comparison harness stays a local dev tool (not a CI gate) since th
 - [x] Wire `bench:compare` into CI — a non-blocking `benchmarks` job records a baseline from the PR base's `src/` and compares the head against it on the same runner. Generous 50%-regression assertion (shared runners are noisy) and `continue-on-error`, so it reports without blocking.
 - [x] Main-loop hot path — replaced per-character `mb_substr($emails, $i, 1)` (O(n²) for multi-byte encodings, which rescan from the start each call) with a single `mb_str_split()` pass and array indexing. ~10–27% faster across the suite; biggest gains on longer inputs. Measured against the baseline via `composer bench:compare`.
 - [ ] Further profiling under mailing-list-sized inputs if needed — the `mb_str_split` array now dominates memory for very large batches; a streaming/chunked reader could bound that.
+
+**Maintainability / readability:**
+- [ ] **Reorganize `Parse::parse()` for readability.** The main state machine has grown deeply nested (a `switch ($state)` with a nested `switch/if` on `$subState`, plus per-character CFWS/comment/quote handling), and several correctness fixes have added flags and edge branches that are hard to follow. Decompose the loop body into named per-state handlers (e.g. `handleTrim`/`handleAddress`/`handleQuote`/`handleComment`) so each state's logic is isolated and independently readable. Also fold the accumulated tracking flags (`after_closing_quote`, `comment_after_local_atext`, `comment_escaped`, …) into a clearer per-parse context object.
+  - **Hard constraint: no performance regression.** Benchmark before and after with `composer bench:baseline` (on the pre-refactor commit) then `composer bench:compare` on the refactor; every subject must stay within noise. A prior spike proved this is achievable — decomposing the switch into method-per-character dispatch dropped `parse()` cyclomatic complexity 168 → 23 with **no measurable slowdown** (PHP 8's method calls are cheap; smaller methods can even help I-cache). Prefer passing a context object over instance properties, to keep the parser reentrant (a user `localPartNormalizer` callback can re-enter `parse()`).
+  - Keep it behavior-preserving: it is a pure structural refactor, gated by the full test suite (currently 99 tests) + PHPStan level 8 + Psalm, with no changes to parsing logic, conditions, or ordering.
 
 **Community / documentation:**
 - [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.
@@ -128,5 +139,6 @@ Approach: the comparison harness stays a local dev tool (not a CI gate) since th
 **New capabilities (genuinely breaking or late-binding):**
 - [ ] Optional DNS/MX validation via callback interface (`DnsValidator`). Breaking because the Parse constructor signature grows, and because synchronous DNS lookups change performance characteristics meaningfully.
 - [ ] Group syntax support (RFC 6854: `Group Name: addr1, addr2;`). Breaking because it introduces a new output-container shape for grouped results.
+- [ ] **Optional homoglyph / confusable-domain detection (opt-in, additive — could ship in a minor).** A domain like `аpple.com` (Cyrillic `а`, U+0430) is perfectly valid RFC syntax but a visual spoof of `apple.com`. This is a *security-policy* layer, not RFC parsing, so it must be opt-in (default off) and separate from validity — a suspicious domain is still syntactically valid. Feasible scope: single-string suspicion via the `intl` `Spoofchecker` (mixed-script / restriction-level / `isSuspicious()`), which is self-contained and uses the already-required `intl` extension; surface it as a `ParseOptions` flag plus a `ParsedEmailAddress` field/severity rather than an outright rejection. Out of scope / caller-dependent: full confusable-*against-a-target-list* matching (e.g. "looks like `paypal.com`") needs the caller to supply the brand/skeleton set. Note the false-positive risk — legitimate non-Latin-script domains are "mixed-script" and must not be rejected by default. (A reference RFC validator offers this as an optional strategy; parity, not a parsing gap.)
 
 *Note: `canonicalize()` and the local-part normalizer callback were moved to v3.3 as additive (non-breaking) features.*

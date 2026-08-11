@@ -21,6 +21,7 @@
       <code><![CDATA[$emailAddress['address_temp']]]></code>
       <code><![CDATA[$emailAddress['in_angle_addr']]]></code>
       <code><![CDATA[$emailAddress['invalid']]]></code>
+      <code><![CDATA[$emailAddress['local_atom_split_by_comment']]]></code>
       <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
       <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
       <code><![CDATA[$emailAddress['name_parsed']]]></code>
@@ -77,9 +78,11 @@
       <code><![CDATA[withRejectC0Controls]]></code>
       <code><![CDATA[withRejectC1Controls]]></code>
       <code><![CDATA[withRejectEmptyQuotedLocalPart]]></code>
+      <code><![CDATA[withRejectTrailingDot]]></code>
       <code><![CDATA[withRequireFqdn]]></code>
       <code><![CDATA[withSeparators]]></code>
       <code><![CDATA[withStrictIdna]]></code>
+      <code><![CDATA[withStrictMultiWhitespace]]></code>
       <code><![CDATA[withTrimSingleAddressWhitespace]]></code>
       <code><![CDATA[withUseWhitespaceAsSeparator]]></code>
       <code><![CDATA[withValidateDisplayNamePhrase]]></code>

@@ -79,6 +79,8 @@ class ParseOptions
         public readonly bool $strictIdna = false,
         public readonly bool $allowObsRoute = false,
         public readonly bool $trimSingleAddressWhitespace = false,
+        public readonly bool $strictMultiWhitespace = false,
+        public readonly bool $rejectTrailingDot = false,
         public readonly ?\Closure $localPartNormalizer = null,
     ) {
         foreach ($bannedChars as $char) {
@@ -261,6 +263,16 @@ class ParseOptions
         return $this->cloneWith(['trimSingleAddressWhitespace' => $value]);
     }
 
+    public function withStrictMultiWhitespace(bool $value): self
+    {
+        return $this->cloneWith(['strictMultiWhitespace' => $value]);
+    }
+
+    public function withRejectTrailingDot(bool $value): self
+    {
+        return $this->cloneWith(['rejectTrailingDot' => $value]);
+    }
+
     public function withAllowUtf8LocalPart(bool $value): self
     {
         return $this->cloneWith(['allowUtf8LocalPart' => $value]);
@@ -403,6 +415,8 @@ class ParseOptions
             strictIdna:                 $get('strictIdna', $this->strictIdna),
             allowObsRoute:              $get('allowObsRoute', $this->allowObsRoute),
             trimSingleAddressWhitespace: $get('trimSingleAddressWhitespace', $this->trimSingleAddressWhitespace),
+            strictMultiWhitespace:      $get('strictMultiWhitespace', $this->strictMultiWhitespace),
+            rejectTrailingDot:          $get('rejectTrailingDot', $this->rejectTrailingDot),
             localPartNormalizer:        array_key_exists('localPartNormalizer', $overrides)
                 ? $overrides['localPartNormalizer']
                 : $this->localPartNormalizer,

@@ -398,6 +398,116 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($noCarriageReturn->parseMultiple("a@b.com\rc@d.com")->emailAddresses[0]->invalid);
     }
 
+    /**
+     * Gold-standard conformance fixes (dominicsayers/isemail corpus): comment
+     * quoted-pairs and control chars, atext-after-comment, control chars in quoted
+     * strings, and dangling trailing folding whitespace in single-address mode.
+     */
+    public function testCorpusConformanceRejections(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        $Err = \Email\ParseErrorCode::class;
+
+        // "\)" is a quoted-pair, so the comment is never closed.
+        $this->assertSame($Err::UnterminatedComment, $p->parseSingle('(comment\\)test@iana.org')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('(a\\)b)test@iana.org')->invalid);   // escaped paren then real close
+        // Control chars in comments and quoted strings.
+        $this->assertSame($Err::ControlCharInComment, $p->parseSingle("(\r)test@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::InvalidCharInQuotedString, $p->parseSingle("\"\rx\"@iana.org")->invalidReasonCode);
+        // A comment may not split one unquoted local-part atom — rejected at '@'.
+        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('test(comment)test@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('<a(c)b@iana.org>')->invalidReasonCode);
+        // A comment cannot hide a token abutting a quoted-string — atext ("x"(c)y) or a
+        // second quoted-string ("x"(c)"y") is as invalid as without the comment; but
+        // "x"(c).y (comment = trailing CFWS, dot separates) is fine.
+        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('"x"(c)y@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('"x"(c)"y"@iana.org')->invalidReasonCode);
+        $this->assertFalse($p->parseSingle('"x"(c).y@iana.org')->invalid);
+        // The same shape as a display-name phrase ("word CFWS word") stays valid.
+        $this->assertFalse($p->parseSingle('"x"(c)"y" <a@b.com>')->invalid);
+        $this->assertFalse($p->parseSingle('(comment)test@iana.org')->invalid);     // leading CFWS ok
+        $this->assertFalse($p->parseSingle('test(comment)@iana.org')->invalid);     // comment at boundary ok
+        // DEL (0x7f) is excluded from ctext/qtext, like the C0 controls.
+        $this->assertSame($Err::ControlCharInComment, $p->parseSingle("(x\x7f)test@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::InvalidCharInQuotedString, $p->parseSingle("\"a\x7fb\"@iana.org")->invalidReasonCode);
+        // Dangling trailing fold (space then CR/LF) in single mode.
+        $this->assertTrue($p->parseSingle("test@iana.org \r\n")->invalid);
+        $this->assertFalse($p->parseSingle('test@iana.org ')->invalid);             // plain trailing space ok
+    }
+
+    /**
+     * A comment between two words of a display-name phrase is legal (RFC 5322
+     * §3.2.5: "word CFWS word"). The atext-after-comment check must defer its
+     * verdict to '@' vs '<' so it does not reject valid display names.
+     */
+    public function testCommentInDisplayNamePhraseIsValid(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        $this->assertFalse($p->parseSingle('John(comment)Doe <a@b.com>')->invalid);
+        $this->assertFalse($p->parseSingle('John (comment) Doe <a@b.com>')->invalid);
+        // But the same shape as a bare local part is still rejected.
+        $this->assertTrue($p->parseSingle('John(comment)Doe@b.com')->invalid);
+    }
+
+    /**
+     * The trailing root-label dot (RFC 5321 §2.3.5) is accepted by default; the
+     * withRejectTrailingDot() option turns it into an error.
+     */
+    public function testRejectTrailingDotOption(): void
+    {
+        $this->assertFalse((new Parse(null, ParseOptions::rfc5322()))->parseSingle('test@iana.org.')->invalid);
+        $rej = new Parse(null, ParseOptions::rfc5322()->withRejectTrailingDot(true));
+        $this->assertSame(\Email\ParseErrorCode::TrailingDotNotAllowed, $rej->parseSingle('test@iana.org.')->invalidReasonCode);
+    }
+
+    /**
+     * Malformed input must not be O(n^2). The invalid → skip-ahead path once
+     * re-interpolated the full input on every remaining character; a large run of
+     * structural-error characters would take seconds. Guard both correctness (still
+     * invalid, no crash) and a generous linear-time budget.
+     */
+    public function testMalformedInputIsLinearTime(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        foreach (['@', '.', '<', '"'] as $char) {
+            $start = hrtime(true);
+            $result = $p->parseSingle(str_repeat($char, 200000));
+            $elapsedMs = (hrtime(true) - $start) / 1e6;
+            $this->assertTrue($result->invalid, "repeat({$char}) should be invalid");
+            // Linear is ~40ms here; the old O(n^2) took multiple seconds. 2s is a wide,
+            // non-flaky margin that still fails a quadratic regression.
+            $this->assertLessThan(2000, $elapsedMs, "repeat({$char}) took {$elapsedMs}ms — possible O(n^2) regression");
+        }
+    }
+
+    /**
+     * strictMultiWhitespace makes multi-address parsing reject obsolete internal
+     * folding per-address, while whitespace still separates addresses.
+     */
+    public function testStrictMultiWhitespace(): void
+    {
+        // Loose (default): internal fold "local @domain" is absorbed → one valid address.
+        $loose = (new Parse(null, ParseOptions::rfc5322()))->parseMultiple('local @domain.com');
+        $this->assertCount(1, $loose->emailAddresses);
+        $this->assertFalse($loose->emailAddresses[0]->invalid);
+
+        // Strict: the internal fold is not absorbed → the address is rejected.
+        $strict = (new Parse(null, ParseOptions::rfc5322()->withStrictMultiWhitespace(true)))->parseMultiple('local @domain.com');
+        $this->assertFalse($strict->success);
+
+        // Between-address separation is unaffected in both modes — including whitespace
+        // flanking a separator ("a@b.com , c@d.com"), which must not fail the next address.
+        foreach ([false, true] as $strictMulti) {
+            $parser = new Parse(null, ParseOptions::rfc5322()->withStrictMultiWhitespace($strictMulti));
+            foreach (['a@b.com c@d.com', 'a@b.com , c@d.com', 'a@b.com ,c@d.com', 'a@b.com, c@d.com'] as $input) {
+                $result = $parser->parseMultiple($input);
+                $this->assertCount(2, $result->emailAddresses, "{$input} (strict=".($strictMulti ? '1' : '0').')');
+                $this->assertFalse($result->emailAddresses[0]->invalid, $input);
+                $this->assertFalse($result->emailAddresses[1]->invalid, $input);
+            }
+        }
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.
