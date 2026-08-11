@@ -10,8 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 Further gold-standard conformance (dominicsayers/isemail corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot):
 - **Comment quoted-pairs** — a backslash inside a comment starts a quoted-pair (RFC 5322 §3.2.1), so `(comment\)test@…` no longer treats `\)` as the closing paren (correctly reported unterminated).
 - **Control characters in comments and quoted strings** — a bare CR/LF (or other C0 control) in comment content (`ControlCharInComment`) or a quoted string (`InvalidCharInQuotedString`) is rejected when `rejectC0Controls` is set (the strict presets).
-- **atext after a comment** — a comment may not split one unquoted local-part atom (RFC 5322 §3.2.3); `test(comment)test@…` is rejected (`AtextAfterComment`). Leading/trailing comments stay valid.
+- **atext after a comment** — a comment may not split one unquoted local-part atom (RFC 5322 §3.2.3); `test(comment)test@…` is rejected (`AtextAfterComment`). The verdict is deferred to `@` vs `<`, so a comment between words of a **display-name phrase** (`John(comment)Doe <a@b.com>`, legal per §3.2.5) stays valid; leading/trailing comments stay valid.
+- **DEL (0x7f) in comments/quoted strings** — excluded from ctext/qtext alongside the C0 controls.
 - **Dangling trailing fold** — in single-address mode, trailing whitespace containing a character excluded from the effective whitespace set (e.g. a CR/LF after a space) is rejected instead of silently truncating the address.
+- **Whitespace flanking a separator** — `a@b.com , c@d.com` (space before/around a `,`) no longer fails the following address with a spurious "misplaced separator"; the whitespace is absorbed and the separator terminates the address. (Pre-existing bug; also required for `strictMultiWhitespace` to be usable.)
 
 ### Added
 - **`ParseOptions::$rejectTrailingDot`** (`withRejectTrailingDot()`) — reject the RFC 5321 §2.3.5 trailing root-label dot (`test@iana.org.`) instead of accepting/stripping it. Default `false` (unchanged behavior).
