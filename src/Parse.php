@@ -539,14 +539,20 @@ class Parse
                             $this->handleQuote($emailAddress);
                         }
                     } elseif ('>' == $curChar) {
-                        // should be end of domain part
-                        if (self::STATE_DOMAIN != $subState) {
+                        // Should be the end of the domain part. Accept STATE_DOMAIN
+                        // (normal dot-atom domain) and also STATE_AFTER_DOMAIN, which a
+                        // domain-literal (`<user@[1.2.3.4]>`, `]` transitions to AFTER_DOMAIN)
+                        // or trailing CFWS reaches — but only when a domain or IP is actually
+                        // present, so `<user@ >` / `<user@[]>` still fail.
+                        if (self::STATE_DOMAIN == $subState
+                            || (self::STATE_AFTER_DOMAIN == $subState
+                                && ('' !== $emailAddress['domain'] || '' !== $emailAddress['ip']))) {
+                            $subState = self::STATE_AFTER_DOMAIN;
+                            $emailAddress['in_angle_addr'] = false;
+                        } else {
                             $emailAddress['invalid'] = true;
                             $emailAddress['invalid_reason'] = "Did not find domain name before a closing '>'";
                             $emailAddress['invalid_reason_code'] = Err::MissingDomainBeforeClosingAngle;
-                        } else {
-                            $subState = self::STATE_AFTER_DOMAIN;
-                            $emailAddress['in_angle_addr'] = false;
                         }
                     } elseif ('"' == $curChar) {
                         // If we hit a quote - change to the quote state, unless it's in the domain, in which case it's error

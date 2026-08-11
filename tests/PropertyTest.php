@@ -219,4 +219,95 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
             }
         }
     }
+
+    /**
+     * Concatenate random "structural" fragments — the characters the state machine
+     * actually branches on (@ . < > ( ) " backslash [ ] :), atext, and a UTF-8 char.
+     * Unlike randomEmailLike() this heavily exercises the error/edge paths, where the
+     * real bugs live (an O(n^2) DoS on "@@@@…", comment/quote-boundary over-acceptance).
+     */
+    private function randomStructural(): string
+    {
+        static $frag = ['ab', 'x', '"q"', '"a b"', '(c)', '(c\\)', '(c1)(c2)', '.', '..', ' ', "\t",
+            '@', '<', '>', 'x.com', '[1.2.3.4]', '[', ']', '\\', "\xc3\xa9", ''];
+        $n = mt_rand(1, 8);
+        $s = '';
+        for ($i = 0; $i < $n; $i++) {
+            $s .= $frag[mt_rand(0, count($frag) - 1)];
+        }
+
+        return $s;
+    }
+
+    /**
+     * The core invariants (never-throws, determinism, reason+code) must also hold on
+     * the adversarial structural corpus, not just email-like input. This is the corpus
+     * that surfaces edge-path regressions.
+     */
+    public function testStructuralCorpusInvariants(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        for ($i = 0; $i < self::ITERATIONS * 5; $i++) {
+            $s = $this->randomStructural();
+            $r = $p->parseSingle($s);
+            // determinism
+            $this->assertSame($r->invalid, $p->parseSingle($s)->invalid, 'nondet: '.bin2hex($s));
+            // reason+code iff invalid
+            if ($r->invalid) {
+                $this->assertNotNull($r->invalidReason, 'no reason: '.bin2hex($s));
+                $this->assertNotNull($r->invalidReasonCode, 'no code: '.bin2hex($s));
+            } else {
+                $this->assertNull($r->invalidReasonCode, 'valid with code: '.bin2hex($s));
+                // a valid address must have a domain or an IP literal
+                $this->assertTrue('' !== $r->domain || '' !== $r->ip, 'valid without domain/ip: '.bin2hex($s));
+            }
+        }
+    }
+
+    /**
+     * Metamorphic: transforms that must preserve validity, checked over the
+     * structural corpus. Each found a real bug during development
+     * (single/multi divergence, angle-wrap rejecting domain-literals).
+     */
+    public function testMetamorphicInvariants(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        for ($i = 0; $i < self::ITERATIONS * 5; $i++) {
+            $s = $this->randomStructural();
+            $single = $p->parseSingle($s);
+
+            // 1. single vs multi consistency. CR/LF are excluded because single-mode is
+            //    strict about line endings while multi treats them as separators (by design);
+            //    the structural corpus contains no CR/LF, so no exclusion is needed here.
+            if (!str_contains($s, ',') && !str_contains($s, ';')) {
+                $multi = $p->parseMultiple($s);
+                if (count($multi->emailAddresses) === 1) {
+                    $this->assertSame(
+                        $single->invalid,
+                        $multi->emailAddresses[0]->invalid,
+                        'single/multi divergence: '.bin2hex($s),
+                    );
+                }
+            }
+
+            if (!$single->invalid) {
+                // 2. canonical() round-trip: a valid address re-parses as valid.
+                $canon = $single->canonical();
+                if ($canon !== '') {
+                    $this->assertFalse(
+                        $p->parseSingle($canon)->invalid,
+                        "canonical round-trip broke [{$s}] -> [{$canon}]",
+                    );
+                }
+                // 3. angle-wrap: a valid bare addr-spec stays valid wrapped in <>.
+                //    (Guards the domain-literal angle-addr fix.)
+                if (!str_contains($s, '<') && !str_contains($s, '>')) {
+                    $this->assertFalse(
+                        $p->parseSingle('<'.$single->simpleAddress.'>')->invalid,
+                        "angle-wrap broke valid: [{$single->simpleAddress}]",
+                    );
+                }
+            }
+        }
+    }
 }

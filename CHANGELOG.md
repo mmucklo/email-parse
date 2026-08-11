@@ -14,6 +14,11 @@ Further gold-standard conformance (dominicsayers/isemail corpus false-accepts 14
 - **DEL (0x7f) in comments/quoted strings** — excluded from ctext/qtext alongside the C0 controls.
 - **Dangling trailing fold** — in single-address mode, trailing whitespace containing a character excluded from the effective whitespace set (e.g. a CR/LF after a space) is rejected instead of silently truncating the address.
 - **Whitespace flanking a separator** — `a@b.com , c@d.com` (space before/around a `,`) no longer fails the following address with a spurious "misplaced separator"; the whitespace is absorbed and the separator terminates the address. (Pre-existing bug; also required for `strictMultiWhitespace` to be usable.)
+- **Angle-addr with a domain-literal** — `<user@[1.2.3.4]>` and `Name <user@[1.2.3.4]>` are now accepted (valid RFC 5322 name-addr). The `>` handler previously required `STATE_DOMAIN` and a closing `]` leaves `STATE_AFTER_DOMAIN`; it now also accepts `STATE_AFTER_DOMAIN` when a domain or IP is present (so `<user@ >` / `<user@[]>` still fail). Pre-existing bug, found by a metamorphic angle-wrap-preserves-validity property test.
+- **O(n²) on malformed input** — a long run of structural-error characters (`@@@@…`, `....`, `<<<<`, quotes) was quadratic because the invalid → skip-ahead path re-interpolated the full input into a log string every character (built even under a `NullLogger`). Now fires once on the transition to invalid; linear (~50× faster on pathological input).
+
+### Testing
+- Adversarial property tests (`tests/PropertyTest.php`): a structural-token generator that exercises the error/edge paths, plus metamorphic invariants (single/multi consistency, `canonical()` round-trip, angle-wrap preserves validity) and a linear-time guard for malformed input. Deterministic via `SEED`.
 
 ### Added
 - **`ParseOptions::$rejectTrailingDot`** (`withRejectTrailingDot()`) — reject the RFC 5321 §2.3.5 trailing root-label dot (`test@iana.org.`) instead of accepting/stripping it. Default `false` (unchanged behavior).
