@@ -552,6 +552,27 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertNotSame(\Email\ParseErrorCode::ControlCharInComment, (new Parse(null, ParseOptions::rfc5322()))->parseSingle($c1)->invalidReasonCode);
     }
 
+    /**
+     * An empty quoted local part must survive both `canonical()` (which must render
+     * `""`, not drop it) and its use inside an angle-addr (`<""@host>` is a real empty
+     * local part, not the "no local part" that starts an obs-route). Found by the
+     * canonical-round-trip property test.
+     */
+    public function testEmptyQuotedLocalPartRoundTrips(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+
+        $bare = $p->parseSingle('""@x.com');
+        $this->assertFalse($bare->invalid);
+        $this->assertSame('""@x.com', $bare->canonical());
+        $this->assertFalse($p->parseSingle($bare->canonical())->invalid, 'canonical must re-parse');
+
+        // Empty quoted local part inside angle brackets must not trigger obs-route.
+        $this->assertFalse($p->parseSingle('<""@x.com>')->invalid);
+        // A genuine obs-route (no local part) still works.
+        $this->assertFalse($p->parseSingle('<@host.com:user@example.com>')->invalid);
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.

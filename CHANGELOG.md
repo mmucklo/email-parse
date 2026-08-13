@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - **Quoted-string as a non-first local-part word** — `"x"."y"@`, `x."y"@`, `"a b"."c"@` are now accepted (valid `obs-local-part`, RFC 5322 §3.4.1: `word *("." word)`). They previously surfaced the internal `ParserConfusion` code. Abutment without a separating dot (`"x""y"@`) is still rejected.
 - **`ParserConfusion` no longer reaches callers.** The remaining path (a domain literal after domain characters, e.g. `user@a[1.2.3.4]`) is now rejected up front as an `InvalidOpeningBracket` — a domain literal is the entire domain, not appended to a dot-atom. A 500k-input fuzz confirms `ParserConfusion` is unreachable.
 - **C1 controls in comments** — U+0080–U+009F in comment content are rejected when `rejectC1Controls` is set (rfc6531), matching the existing local-part and quoted-string handling.
+- **Empty quoted local part round-trip** — `canonical()` now renders an empty local part as `""` (it dropped it, yielding an invalid `@domain`), and `<""@host>` (empty quoted local part inside angle brackets) is no longer mistaken for the "no local part" that begins an obs-route. Found by the canonical-round-trip property test.
 
 ### Fixed
 Further gold-standard conformance (dominicsayers/isemail corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot):

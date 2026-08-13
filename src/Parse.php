@@ -590,6 +590,9 @@ class Parse
                             && $emailAddress['local_part_parsed'] === ''
                             && $emailAddress['quote_temp'] === ''
                             && $emailAddress['address_temp'] === ''
+                            // An empty *quoted* local part (`<""@host>`) is a real local
+                            // part, not the "no local part" that starts an obs-route.
+                            && !$emailAddress['local_part_quoted']
                         ) {
                             // RFC 5322 §4.4 obs-route: first `@` seen inside `<...>` with no
                             // preceding local-part starts the source-route prefix. Consume
