@@ -83,7 +83,7 @@ final class ParsedEmailAddress implements \Stringable
      * Callers can use this to distinguish structural failures from policy
      * violations:
      *
-     *   if ($parsed->invalid && $parsed->invalidSeverity() === ValidationSeverity::Warning) {
+     *   if ($parsed->invalid && $parsed->invalidSeverity() === ValidationSeverity::Warning()) {
      *       // Well-formed but violates a configured rule — e.g. private-range IP
      *       // literal, non-FQDN domain, octet length over RFC 5321 §4.5.3.1.
      *       // Safe to accept in non-SMTP contexts.

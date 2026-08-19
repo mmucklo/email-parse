@@ -29,7 +29,8 @@
     "symfony/yaml": "^6.4|^7.2",
     "infection/infection": "^0.29.8",
     "phpbench/phpbench": "^1.4",
-    "vimeo/psalm": "^6.0"
+    "vimeo/psalm": "^6.0",
+    "rector/rector": "^2.3"
   },
   "require": {
     "php": "^8.1",

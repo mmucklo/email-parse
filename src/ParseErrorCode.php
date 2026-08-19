@@ -3,228 +3,373 @@
 namespace Email;
 
 /**
- * Structured error codes for invalid parsed email addresses.
- *
- * Each case corresponds to a distinct failure mode encountered during
- * parsing or validation. The human-readable message remains available
- * via the `invalid_reason` string field on parsed-address output; the
- * code enables programmatic handling without string matching.
- *
- * The backing string values are stable — treat them as part of the
- * public API once shipped.
+ * Structured error codes for parse failures (PHP 7.1 emulation of the 3.x backed
+ * enum — see {@see EnumEmulation}). Each case is a static accessor,
+ * e.g. ParseErrorCode::LocalPartTooLong(), returning a shared singleton; the
+ * backing string values are stable public API.
  */
-enum ParseErrorCode: string
+final class ParseErrorCode implements \JsonSerializable
 {
-    // --- Input and structural errors ---
+    use EnumEmulation;
 
-    /** Separator character appeared where a separator is not permitted in the current state. */
-    case SeparatorNotPermitted = 'separator_not_permitted';
+    public static function SeparatorNotPermitted(): self
+    {
+        return self::instance('SeparatorNotPermitted', 'separator_not_permitted');
+    }
 
-    /** Separator character misplaced, or '@' symbol missing from the address. */
-    case MisplacedSeparator = 'misplaced_separator';
+    public static function MisplacedSeparator(): self
+    {
+        return self::instance('MisplacedSeparator', 'misplaced_separator');
+    }
 
-    /** More than one unescaped '<' found in a single address. */
-    case MultipleOpeningAngle = 'multiple_opening_angle';
+    public static function MultipleOpeningAngle(): self
+    {
+        return self::instance('MultipleOpeningAngle', 'multiple_opening_angle');
+    }
 
-    /** Closing '>' encountered without a preceding domain. */
-    case MissingDomainBeforeClosingAngle = 'missing_domain_before_closing_angle';
+    public static function MissingDomainBeforeClosingAngle(): self
+    {
+        return self::instance('MissingDomainBeforeClosingAngle', 'missing_domain_before_closing_angle');
+    }
 
-    /** Unescaped '"' appeared in a position where a quote is not allowed. */
-    case MisplacedQuote = 'misplaced_quote';
+    public static function MisplacedQuote(): self
+    {
+        return self::instance('MisplacedQuote', 'misplaced_quote');
+    }
 
-    /** More than one '@' symbol in the address. */
-    case MultipleAtSymbols = 'multiple_at_symbols';
+    public static function MultipleAtSymbols(): self
+    {
+        return self::instance('MultipleAtSymbols', 'multiple_at_symbols');
+    }
 
-    /** Extra '@' symbol found after the domain. */
-    case StrayAtAfterDomain = 'stray_at_after_domain';
+    public static function StrayAtAfterDomain(): self
+    {
+        return self::instance('StrayAtAfterDomain', 'stray_at_after_domain');
+    }
 
-    /** End of input reached without a closing '"' for a quoted string. */
-    case UnterminatedQuote = 'unterminated_quote';
+    public static function UnterminatedQuote(): self
+    {
+        return self::instance('UnterminatedQuote', 'unterminated_quote');
+    }
 
-    /** End of input reached without a closing ')' for a comment. */
-    case UnterminatedComment = 'unterminated_comment';
+    public static function UnterminatedComment(): self
+    {
+        return self::instance('UnterminatedComment', 'unterminated_comment');
+    }
 
-    /** Control character in comment content — ctext excludes controls (RFC 5322 §3.2.2). */
-    case ControlCharInComment = 'control_char_in_comment';
+    public static function ControlCharInComment(): self
+    {
+        return self::instance('ControlCharInComment', 'control_char_in_comment');
+    }
 
-    /** End of input reached without a closing ']' for a domain-literal. */
-    case UnterminatedSquareBracket = 'unterminated_square_bracket';
+    public static function UnterminatedSquareBracket(): self
+    {
+        return self::instance('UnterminatedSquareBracket', 'unterminated_square_bracket');
+    }
 
-    /** Parser accumulated partial state with no complete address to commit. */
-    case IncompleteAddress = 'incomplete_address';
+    public static function IncompleteAddress(): self
+    {
+        return self::instance('IncompleteAddress', 'incomplete_address');
+    }
 
-    /** Unrecoverable internal parser state (should not occur in practice). */
-    case ParseError = 'parse_error';
+    public static function ParseError(): self
+    {
+        return self::instance('ParseError', 'parse_error');
+    }
 
-    /** Simultaneous `address_temp` and `quote_temp` when '@' was reached. */
-    case ParserConfusion = 'parser_confusion';
+    public static function ParserConfusion(): self
+    {
+        return self::instance('ParserConfusion', 'parser_confusion');
+    }
 
-    // --- Character-class errors ---
+    public static function WhitespaceInAddress(): self
+    {
+        return self::instance('WhitespaceInAddress', 'whitespace_in_address');
+    }
 
-    /** Whitespace inside an address outside of permitted positions. */
-    case WhitespaceInAddress = 'whitespace_in_address';
+    public static function InvalidCharacterInAddress(): self
+    {
+        return self::instance('InvalidCharacterInAddress', 'invalid_character_in_address');
+    }
 
-    /** Character invalid in any position within an email address. */
-    case InvalidCharacterInAddress = 'invalid_character_in_address';
+    public static function InvalidCharacterAtStart(): self
+    {
+        return self::instance('InvalidCharacterAtStart', 'invalid_character_at_start');
+    }
 
-    /** Character invalid at the beginning of an email address. */
-    case InvalidCharacterAtStart = 'invalid_character_at_start';
+    public static function InvalidCharacterInLocalPart(): self
+    {
+        return self::instance('InvalidCharacterInLocalPart', 'invalid_character_in_local_part');
+    }
 
-    /** Character invalid inside the local-part (before '@'). */
-    case InvalidCharacterInLocalPart = 'invalid_character_in_local_part';
+    public static function InvalidCharacterInDomain(): self
+    {
+        return self::instance('InvalidCharacterInDomain', 'invalid_character_in_domain');
+    }
 
-    /** Character invalid inside the domain (after '@'). */
-    case InvalidCharacterInDomain = 'invalid_character_in_domain';
+    public static function InvalidOpeningBracket(): self
+    {
+        return self::instance('InvalidOpeningBracket', 'invalid_opening_bracket');
+    }
 
-    /** Unexpected '[' outside a domain-literal position. */
-    case InvalidOpeningBracket = 'invalid_opening_bracket';
+    public static function CharacterNotAllowed(): self
+    {
+        return self::instance('CharacterNotAllowed', 'character_not_allowed');
+    }
 
-    /** Character present in the ParseOptions::$bannedChars list. */
-    case CharacterNotAllowed = 'character_not_allowed';
+    public static function ConsecutiveDots(): self
+    {
+        return self::instance('ConsecutiveDots', 'consecutive_dots');
+    }
 
-    // --- Dot placement errors ---
+    public static function LeadingDot(): self
+    {
+        return self::instance('LeadingDot', 'leading_dot');
+    }
 
-    /** Two or more consecutive dots in the local-part (RFC 5322 §3.2.3). */
-    case ConsecutiveDots = 'consecutive_dots';
+    public static function StrayPeriodAfterDomain(): self
+    {
+        return self::instance('StrayPeriodAfterDomain', 'stray_period_after_domain');
+    }
 
-    /** Dot at the start of the local-part (RFC 5322 §3.2.3). */
-    case LeadingDot = 'leading_dot';
+    public static function StrayPeriod(): self
+    {
+        return self::instance('StrayPeriod', 'stray_period');
+    }
 
-    /** Dot after the domain portion. */
-    case StrayPeriodAfterDomain = 'stray_period_after_domain';
+    public static function UnquotedPeriodInDisplayName(): self
+    {
+        return self::instance('UnquotedPeriodInDisplayName', 'unquoted_period_in_display_name');
+    }
 
-    /** Dot in an unexpected position (e.g. inside unquoted display name). */
-    case StrayPeriod = 'stray_period';
+    public static function Utf8NotAllowedInLocalPart(): self
+    {
+        return self::instance('Utf8NotAllowedInLocalPart', 'utf8_not_allowed_in_local_part');
+    }
 
-    /** Dot in an unquoted display name (RFC 5322 §3.4). */
-    case UnquotedPeriodInDisplayName = 'unquoted_period_in_display_name';
+    public static function C0ControlInLocalPart(): self
+    {
+        return self::instance('C0ControlInLocalPart', 'c0_control_in_local_part');
+    }
 
-    // --- Local-part content errors ---
+    public static function C1ControlInLocalPart(): self
+    {
+        return self::instance('C1ControlInLocalPart', 'c1_control_in_local_part');
+    }
 
-    /** UTF-8 bytes in local-part when `allowUtf8LocalPart = false`. */
-    case Utf8NotAllowedInLocalPart = 'utf8_not_allowed_in_local_part';
+    public static function InvalidUtf8Encoding(): self
+    {
+        return self::instance('InvalidUtf8Encoding', 'invalid_utf8_encoding');
+    }
 
-    /** C0 control character (U+0000-U+001F) in local-part (RFC 5321 §4.1.2). */
-    case C0ControlInLocalPart = 'c0_control_in_local_part';
+    public static function LocalPartCannotBeNormalized(): self
+    {
+        return self::instance('LocalPartCannotBeNormalized', 'local_part_cannot_be_normalized');
+    }
 
-    /** C1 control character (U+0080-U+009F) in local-part (RFC 6530 §10.1). */
-    case C1ControlInLocalPart = 'c1_control_in_local_part';
+    public static function LocalPartContainsInvalidChars(): self
+    {
+        return self::instance('LocalPartContainsInvalidChars', 'local_part_contains_invalid_chars');
+    }
 
-    /** Local-part bytes are not valid UTF-8 (after NFC normalization). */
-    case InvalidUtf8Encoding = 'invalid_utf8_encoding';
+    public static function LocalPartTooLong(): self
+    {
+        return self::instance('LocalPartTooLong', 'local_part_too_long');
+    }
 
-    /** Local-part could not be NFC-normalized (RFC 6532 §3.1). */
-    case LocalPartCannotBeNormalized = 'local_part_cannot_be_normalized';
+    public static function EmptyQuotedLocalPart(): self
+    {
+        return self::instance('EmptyQuotedLocalPart', 'empty_quoted_local_part');
+    }
 
-    /** Local-part fails the atext / dot-atom-text / obs-local-part pattern. */
-    case LocalPartContainsInvalidChars = 'local_part_contains_invalid_chars';
+    public static function TrailingBackslashInQuotedString(): self
+    {
+        return self::instance('TrailingBackslashInQuotedString', 'trailing_backslash_in_quoted_string');
+    }
 
-    /** Local-part exceeds the configured octet limit (RFC 5321 §4.5.3.1.1). */
-    case LocalPartTooLong = 'local_part_too_long';
+    public static function InvalidEscapedCharInQuotedString(): self
+    {
+        return self::instance('InvalidEscapedCharInQuotedString', 'invalid_escaped_char_in_quoted_string');
+    }
 
-    // --- Quoted-string errors ---
+    public static function InvalidCharInQuotedString(): self
+    {
+        return self::instance('InvalidCharInQuotedString', 'invalid_char_in_quoted_string');
+    }
 
-    /** Empty quoted local-part `""@domain` when rejected (RFC 5321 EID 5414). */
-    case EmptyQuotedLocalPart = 'empty_quoted_local_part';
+    public static function C1ControlInQuotedString(): self
+    {
+        return self::instance('C1ControlInQuotedString', 'c1_control_in_quoted_string');
+    }
 
-    /** Backslash at the end of a quoted-string with no character to escape. */
-    case TrailingBackslashInQuotedString = 'trailing_backslash_in_quoted_string';
+    public static function AtextAfterQuotedString(): self
+    {
+        return self::instance('AtextAfterQuotedString', 'atext_after_quoted_string');
+    }
 
-    /** Backslash-escaped character outside %d32-126 (RFC 5321 §4.1.2 quoted-pairSMTP). */
-    case InvalidEscapedCharInQuotedString = 'invalid_escaped_char_in_quoted_string';
+    public static function AtextAfterComment(): self
+    {
+        return self::instance('AtextAfterComment', 'atext_after_comment');
+    }
 
-    /** Character inside quoted-string violates qtextSMTP (RFC 5321 §4.1.2). */
-    case InvalidCharInQuotedString = 'invalid_char_in_quoted_string';
+    public static function MissingDomain(): self
+    {
+        return self::instance('MissingDomain', 'missing_domain');
+    }
 
-    /** C1 control character inside a quoted-string (RFC 6530 §10.1). */
-    case C1ControlInQuotedString = 'c1_control_in_quoted_string';
+    public static function DomainTooLong(): self
+    {
+        return self::instance('DomainTooLong', 'domain_too_long');
+    }
 
-    /** atext or a second quoted-string immediately follows a quoted-string with no
-     *  separating dot — a quoted-string is a whole word (RFC 5322 §3.2.4). */
-    case AtextAfterQuotedString = 'atext_after_quoted_string';
+    public static function DomainLabelTooLong(): self
+    {
+        return self::instance('DomainLabelTooLong', 'domain_label_too_long');
+    }
 
-    /** atext resumes an unquoted local-part atom after a comment, splitting one atom
-     *  with CFWS (RFC 5322 §3.2.3). */
-    case AtextAfterComment = 'atext_after_comment';
+    public static function DomainContainsInvalidChars(): self
+    {
+        return self::instance('DomainContainsInvalidChars', 'domain_contains_invalid_chars');
+    }
 
-    // --- Domain errors ---
+    public static function DomainLabelStartsOrEndsWithHyphen(): self
+    {
+        return self::instance('DomainLabelStartsOrEndsWithHyphen', 'domain_label_starts_or_ends_with_hyphen');
+    }
 
-    /** Empty domain after '@'. */
-    case MissingDomain = 'missing_domain';
+    public static function PunycodeConversionFailed(): self
+    {
+        return self::instance('PunycodeConversionFailed', 'punycode_conversion_failed');
+    }
 
-    /** Domain exceeds 255 octets (RFC 5321 §4.5.3.1.2). */
-    case DomainTooLong = 'domain_too_long';
+    public static function DomainInvalid(): self
+    {
+        return self::instance('DomainInvalid', 'domain_invalid');
+    }
 
-    /** Domain label exceeds configured octet limit (RFC 1035 §2.3.4). */
-    case DomainLabelTooLong = 'domain_label_too_long';
+    public static function TrailingDotNotAllowed(): self
+    {
+        return self::instance('TrailingDotNotAllowed', 'trailing_dot_not_allowed');
+    }
 
-    /** Domain label contains characters outside [A-Za-z0-9-] (RFC 1035 §2.3.4). */
-    case DomainContainsInvalidChars = 'domain_contains_invalid_chars';
+    public static function FqdnRequired(): self
+    {
+        return self::instance('FqdnRequired', 'fqdn_required');
+    }
 
-    /** Domain label starts or ends with a hyphen (RFC 1035 §2.3.4). */
-    case DomainLabelStartsOrEndsWithHyphen = 'domain_label_starts_or_ends_with_hyphen';
+    public static function IpNotInGlobalRange(): self
+    {
+        return self::instance('IpNotInGlobalRange', 'ip_not_in_global_range');
+    }
 
-    /** IDNA punycode conversion failed via idn_to_ascii(). */
-    case PunycodeConversionFailed = 'punycode_conversion_failed';
+    public static function Ipv6NotInGlobalRange(): self
+    {
+        return self::instance('Ipv6NotInGlobalRange', 'ipv6_not_in_global_range');
+    }
 
-    /** Domain invalid for an unknown reason (fallback). */
-    case DomainInvalid = 'domain_invalid';
+    public static function InvalidIpAddress(): self
+    {
+        return self::instance('InvalidIpAddress', 'invalid_ip_address');
+    }
 
-    /** Trailing root-label dot present with rejectTrailingDot enabled (RFC 5321 §2.3.5). */
-    case TrailingDotNotAllowed = 'trailing_dot_not_allowed';
+    public static function TotalLengthExceeded(): self
+    {
+        return self::instance('TotalLengthExceeded', 'total_length_exceeded');
+    }
 
-    /** Fully-qualified domain name required (RFC 5321 §2.3.5) but only one label found. */
-    case FqdnRequired = 'fqdn_required';
-
-    // --- IP-literal errors ---
-
-    /** IPv4 address-literal not in global range (rejects loopback, private, RFC 5736/5737). */
-    case IpNotInGlobalRange = 'ip_not_in_global_range';
-
-    /** IPv6 address-literal not in global range. */
-    case Ipv6NotInGlobalRange = 'ipv6_not_in_global_range';
-
-    /** String between square brackets is not a valid IPv4 or IPv6 address. */
-    case InvalidIpAddress = 'invalid_ip_address';
-
-    // --- Length errors ---
-
-    /** Total wire length exceeds configured octet limit (RFC 3696 EID 1690). */
-    case TotalLengthExceeded = 'total_length_exceeded';
-
-    // --- Display-name errors ---
-
-    /** Unquoted display name contains characters outside atext + WSP (RFC 5322 §3.2.5 phrase). */
-    case InvalidDisplayNamePhrase = 'invalid_display_name_phrase';
+    public static function InvalidDisplayNamePhrase(): self
+    {
+        return self::instance('InvalidDisplayNamePhrase', 'invalid_display_name_phrase');
+    }
 
     /**
-     * Classify this error by severity.
+     * All cases, in declaration order (native enum cases()).
      *
-     * Critical: the input is structurally unparseable or violates a fundamental
-     * RFC 5322 / 5321 syntax rule — the address is not valid in any interpretation.
-     *
-     * Warning: the address is well-formed but was rejected by a configured
-     * validation rule (UTF-8 gating, FQDN requirement, IP range check, length
-     * limits, C0/C1 control policy, empty-quoted rejection, punycode conversion).
-     * Callers may choose to accept Warning-level failures depending on context.
+     * @return array<int, self>
+     */
+    public static function cases(): array
+    {
+        return [
+            self::SeparatorNotPermitted(),
+            self::MisplacedSeparator(),
+            self::MultipleOpeningAngle(),
+            self::MissingDomainBeforeClosingAngle(),
+            self::MisplacedQuote(),
+            self::MultipleAtSymbols(),
+            self::StrayAtAfterDomain(),
+            self::UnterminatedQuote(),
+            self::UnterminatedComment(),
+            self::ControlCharInComment(),
+            self::UnterminatedSquareBracket(),
+            self::IncompleteAddress(),
+            self::ParseError(),
+            self::ParserConfusion(),
+            self::WhitespaceInAddress(),
+            self::InvalidCharacterInAddress(),
+            self::InvalidCharacterAtStart(),
+            self::InvalidCharacterInLocalPart(),
+            self::InvalidCharacterInDomain(),
+            self::InvalidOpeningBracket(),
+            self::CharacterNotAllowed(),
+            self::ConsecutiveDots(),
+            self::LeadingDot(),
+            self::StrayPeriodAfterDomain(),
+            self::StrayPeriod(),
+            self::UnquotedPeriodInDisplayName(),
+            self::Utf8NotAllowedInLocalPart(),
+            self::C0ControlInLocalPart(),
+            self::C1ControlInLocalPart(),
+            self::InvalidUtf8Encoding(),
+            self::LocalPartCannotBeNormalized(),
+            self::LocalPartContainsInvalidChars(),
+            self::LocalPartTooLong(),
+            self::EmptyQuotedLocalPart(),
+            self::TrailingBackslashInQuotedString(),
+            self::InvalidEscapedCharInQuotedString(),
+            self::InvalidCharInQuotedString(),
+            self::C1ControlInQuotedString(),
+            self::AtextAfterQuotedString(),
+            self::AtextAfterComment(),
+            self::MissingDomain(),
+            self::DomainTooLong(),
+            self::DomainLabelTooLong(),
+            self::DomainContainsInvalidChars(),
+            self::DomainLabelStartsOrEndsWithHyphen(),
+            self::PunycodeConversionFailed(),
+            self::DomainInvalid(),
+            self::TrailingDotNotAllowed(),
+            self::FqdnRequired(),
+            self::IpNotInGlobalRange(),
+            self::Ipv6NotInGlobalRange(),
+            self::InvalidIpAddress(),
+            self::TotalLengthExceeded(),
+            self::InvalidDisplayNamePhrase(),
+        ];
+    }
+
+    /**
+     * Classify this error by severity. Warning = well-formed but policy-rejected;
+     * Critical = structurally invalid.
      */
     public function severity(): ValidationSeverity
     {
-        return match ($this) {
-            self::Utf8NotAllowedInLocalPart,
-            self::C0ControlInLocalPart,
-            self::C1ControlInLocalPart,
-            self::C1ControlInQuotedString,
-            self::EmptyQuotedLocalPart,
-            self::FqdnRequired,
-            self::IpNotInGlobalRange,
-            self::Ipv6NotInGlobalRange,
-            self::LocalPartTooLong,
-            self::TotalLengthExceeded,
-            self::DomainTooLong,
-            self::DomainLabelTooLong,
-            self::PunycodeConversionFailed => ValidationSeverity::Warning,
-            default => ValidationSeverity::Critical,
-        };
+        switch ($this->value) {
+            case 'utf8_not_allowed_in_local_part':
+            case 'c0_control_in_local_part':
+            case 'c1_control_in_local_part':
+            case 'c1_control_in_quoted_string':
+            case 'empty_quoted_local_part':
+            case 'fqdn_required':
+            case 'ip_not_in_global_range':
+            case 'ipv6_not_in_global_range':
+            case 'local_part_too_long':
+            case 'total_length_exceeded':
+            case 'domain_too_long':
+            case 'domain_label_too_long':
+            case 'punycode_conversion_failed':
+                return ValidationSeverity::Warning();
+            default:
+                return ValidationSeverity::Critical();
+        }
     }
 }

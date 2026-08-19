@@ -192,7 +192,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $result = Parse::getInstance()->parseSingle('foo@bar@baz.com');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::MultipleAtSymbols, $result->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::MultipleAtSymbols(), $result->invalidReasonCode);
     }
 
     public function testParseMultipleReturnsTypedResult(): void
@@ -265,7 +265,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $opts = (new ParseOptions())->withValidateDisplayNamePhrase(true);
         $result = (new Parse(null, $opts))->parseSingle('Jöhn <john@example.com>');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidDisplayNamePhrase, $result->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::InvalidDisplayNamePhrase(), $result->invalidReasonCode);
     }
 
     public function testDisplayNamePhraseValidationAllowsQuotedNames(): void
@@ -314,7 +314,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
         $bad = $reject->parseSingle('""@example.com');
         $this->assertTrue($bad->invalid);
-        $this->assertSame(\Email\ParseErrorCode::EmptyQuotedLocalPart, $bad->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::EmptyQuotedLocalPart(), $bad->invalidReasonCode);
 
         // A display-name quote must not leak the quoted flag onto the real local-part.
         $named = $accept->parseSingle('"John Doe" <j@example.com>');
@@ -331,7 +331,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $long = str_repeat('a', 65).'@example.com';
         $this->assertSame(
-            \Email\ParseErrorCode::LocalPartTooLong,
+            \Email\ParseErrorCode::LocalPartTooLong(),
             (new Parse(null, ParseOptions::rfc5322()))->parseSingle($long)->invalidReasonCode,
         );
         $this->assertFalse(
@@ -350,18 +350,18 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $Err = \Email\ParseErrorCode::class;
 
         // Unclosed domain literal (no closing ']').
-        $this->assertSame($Err::UnterminatedSquareBracket, $p->parseSingle('test@[1.2.3.4')->invalidReasonCode);
+        $this->assertSame($Err::UnterminatedSquareBracket(), $p->parseSingle('test@[1.2.3.4')->invalidReasonCode);
         $this->assertFalse($p->parseSingle('test@[1.2.3.4]')->invalid);
 
         // Unbalanced nested comment ("((x)" is not closed by one ")").
-        $this->assertSame($Err::UnterminatedComment, $p->parseSingle('((comment)test@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::UnterminatedComment(), $p->parseSingle('((comment)test@iana.org')->invalidReasonCode);
         $this->assertFalse($p->parseSingle('(comment)test@iana.org')->invalid);      // leading CFWS ok
         $this->assertFalse($p->parseSingle('test@iana.org(comment)')->invalid);      // trailing CFWS ok
         $this->assertFalse($p->parseSingle('((a)(b))test@iana.org')->invalid);       // balanced nesting ok
 
         // A quoted-string is a whole word: atext or a second quote may not abut it.
-        $this->assertSame($Err::AtextAfterQuotedString, $p->parseSingle('"test"test@iana.org')->invalidReasonCode);
-        $this->assertSame($Err::AtextAfterQuotedString, $p->parseSingle('"test""test"@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterQuotedString(), $p->parseSingle('"test"test@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterQuotedString(), $p->parseSingle('"test""test"@iana.org')->invalidReasonCode);
         $this->assertFalse($p->parseSingle('"test".x@iana.org')->invalid);           // obs word.word ok
         $this->assertFalse($p->parseSingle('"test"@iana.org')->invalid);
 
@@ -409,27 +409,27 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $Err = \Email\ParseErrorCode::class;
 
         // "\)" is a quoted-pair, so the comment is never closed.
-        $this->assertSame($Err::UnterminatedComment, $p->parseSingle('(comment\\)test@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::UnterminatedComment(), $p->parseSingle('(comment\\)test@iana.org')->invalidReasonCode);
         $this->assertFalse($p->parseSingle('(a\\)b)test@iana.org')->invalid);   // escaped paren then real close
         // Control chars in comments and quoted strings.
-        $this->assertSame($Err::ControlCharInComment, $p->parseSingle("(\r)test@iana.org")->invalidReasonCode);
-        $this->assertSame($Err::InvalidCharInQuotedString, $p->parseSingle("\"\rx\"@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::ControlCharInComment(), $p->parseSingle("(\r)test@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::InvalidCharInQuotedString(), $p->parseSingle("\"\rx\"@iana.org")->invalidReasonCode);
         // A comment may not split one unquoted local-part atom — rejected at '@'.
-        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('test(comment)test@iana.org')->invalidReasonCode);
-        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('<a(c)b@iana.org>')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment(), $p->parseSingle('test(comment)test@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment(), $p->parseSingle('<a(c)b@iana.org>')->invalidReasonCode);
         // A comment cannot hide a token abutting a quoted-string — atext ("x"(c)y) or a
         // second quoted-string ("x"(c)"y") is as invalid as without the comment; but
         // "x"(c).y (comment = trailing CFWS, dot separates) is fine.
-        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('"x"(c)y@iana.org')->invalidReasonCode);
-        $this->assertSame($Err::AtextAfterComment, $p->parseSingle('"x"(c)"y"@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment(), $p->parseSingle('"x"(c)y@iana.org')->invalidReasonCode);
+        $this->assertSame($Err::AtextAfterComment(), $p->parseSingle('"x"(c)"y"@iana.org')->invalidReasonCode);
         $this->assertFalse($p->parseSingle('"x"(c).y@iana.org')->invalid);
         // The same shape as a display-name phrase ("word CFWS word") stays valid.
         $this->assertFalse($p->parseSingle('"x"(c)"y" <a@b.com>')->invalid);
         $this->assertFalse($p->parseSingle('(comment)test@iana.org')->invalid);     // leading CFWS ok
         $this->assertFalse($p->parseSingle('test(comment)@iana.org')->invalid);     // comment at boundary ok
         // DEL (0x7f) is excluded from ctext/qtext, like the C0 controls.
-        $this->assertSame($Err::ControlCharInComment, $p->parseSingle("(x\x7f)test@iana.org")->invalidReasonCode);
-        $this->assertSame($Err::InvalidCharInQuotedString, $p->parseSingle("\"a\x7fb\"@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::ControlCharInComment(), $p->parseSingle("(x\x7f)test@iana.org")->invalidReasonCode);
+        $this->assertSame($Err::InvalidCharInQuotedString(), $p->parseSingle("\"a\x7fb\"@iana.org")->invalidReasonCode);
         // Dangling trailing fold (space then CR/LF) in single mode.
         $this->assertTrue($p->parseSingle("test@iana.org \r\n")->invalid);
         $this->assertFalse($p->parseSingle('test@iana.org ')->invalid);             // plain trailing space ok
@@ -457,7 +457,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $this->assertFalse((new Parse(null, ParseOptions::rfc5322()))->parseSingle('test@iana.org.')->invalid);
         $rej = new Parse(null, ParseOptions::rfc5322()->withRejectTrailingDot(true));
-        $this->assertSame(\Email\ParseErrorCode::TrailingDotNotAllowed, $rej->parseSingle('test@iana.org.')->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::TrailingDotNotAllowed(), $rej->parseSingle('test@iana.org.')->invalidReasonCode);
     }
 
     /**
@@ -520,7 +520,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             $this->assertFalse($p->parseSingle($addr)->invalid, $addr);
         }
         // Abutment without a separating dot is still invalid.
-        $this->assertSame(\Email\ParseErrorCode::AtextAfterQuotedString, $p->parseSingle('"x""y"@iana.org')->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::AtextAfterQuotedString(), $p->parseSingle('"x""y"@iana.org')->invalidReasonCode);
     }
 
     /**
@@ -534,8 +534,8 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($p->parseSingle('user@[1.2.3.4]')->invalid);
         foreach (['user@a[1.2.3.4]', 'user@x[1.2.3.4]', 'user@[1.2.3.4][5.6.7.8]'] as $addr) {
             $r = $p->parseSingle($addr);
-            $this->assertSame(\Email\ParseErrorCode::InvalidOpeningBracket, $r->invalidReasonCode, $addr);
-            $this->assertNotSame(\Email\ParseErrorCode::ParserConfusion, $r->invalidReasonCode);
+            $this->assertSame(\Email\ParseErrorCode::InvalidOpeningBracket(), $r->invalidReasonCode, $addr);
+            $this->assertNotSame(\Email\ParseErrorCode::ParserConfusion(), $r->invalidReasonCode);
         }
     }
 
@@ -547,9 +547,9 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $c1 = "(x\xc2\x85)test@iana.org"; // U+0085 NEL inside a comment
         $strict = new Parse(null, ParseOptions::rfc6531()->withRequireFqdn(false));
-        $this->assertSame(\Email\ParseErrorCode::ControlCharInComment, $strict->parseSingle($c1)->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::ControlCharInComment(), $strict->parseSingle($c1)->invalidReasonCode);
         // rfc5322 leaves rejectC1Controls off, so it is not rejected on that account.
-        $this->assertNotSame(\Email\ParseErrorCode::ControlCharInComment, (new Parse(null, ParseOptions::rfc5322()))->parseSingle($c1)->invalidReasonCode);
+        $this->assertNotSame(\Email\ParseErrorCode::ControlCharInComment(), (new Parse(null, ParseOptions::rfc5322()))->parseSingle($c1)->invalidReasonCode);
     }
 
     /**
@@ -644,7 +644,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
         if (mb_substr($loneByte, 0, 1, 'UTF-8') === $loneByte) {
             $this->assertTrue($result->invalid);
-            $this->assertSame(\Email\ParseErrorCode::InvalidUtf8Encoding, $result->invalidReasonCode);
+            $this->assertSame(\Email\ParseErrorCode::InvalidUtf8Encoding(), $result->invalidReasonCode);
         } else {
             // Byte sanitized before validation; result must be deterministic.
             $this->assertSame($result->invalid, Parse::getInstance()->parseSingle($input)->invalid);
@@ -663,18 +663,18 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
         // Local part: 64 octets is the maximum; 65 is over.
         $this->assertFalse($p->parseSingle(str_repeat('a', 64).'@example.com')->invalid);
-        $this->assertSame($Err::LocalPartTooLong, $p->parseSingle(str_repeat('a', 65).'@example.com')->invalidReasonCode);
+        $this->assertSame($Err::LocalPartTooLong(), $p->parseSingle(str_repeat('a', 65).'@example.com')->invalidReasonCode);
 
         // Domain label: 63 octets is the maximum; 64 is over.
         $this->assertFalse($p->parseSingle('u@'.str_repeat('a', 63).'.com')->invalid);
-        $this->assertSame($Err::DomainLabelTooLong, $p->parseSingle('u@'.str_repeat('a', 64).'.com')->invalidReasonCode);
+        $this->assertSame($Err::DomainLabelTooLong(), $p->parseSingle('u@'.str_repeat('a', 64).'.com')->invalidReasonCode);
 
         // Whole address: 254 octets is the maximum; 255 is over. Labels kept <= 63.
         $at254 = str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 63).'.'.str_repeat('d', 61);
         $this->assertSame(254, strlen($at254));
         $this->assertFalse($p->parseSingle($at254)->invalid);
         $at255 = str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 63).'.'.str_repeat('d', 62);
-        $this->assertSame($Err::TotalLengthExceeded, $p->parseSingle($at255)->invalidReasonCode);
+        $this->assertSame($Err::TotalLengthExceeded(), $p->parseSingle($at255)->invalidReasonCode);
     }
 
     /**
@@ -686,7 +686,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $result = Parse::getInstance()->parseSingle('user@'.str_repeat('ä', 70).'.de');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::PunycodeConversionFailed, $result->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::PunycodeConversionFailed(), $result->invalidReasonCode);
     }
 
     /**
@@ -719,7 +719,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
         if (mb_substr($loneByte, 0, 1, 'UTF-8') === $loneByte) {
             $this->assertTrue($result->invalid);
-            $this->assertSame(\Email\ParseErrorCode::LocalPartCannotBeNormalized, $result->invalidReasonCode);
+            $this->assertSame(\Email\ParseErrorCode::LocalPartCannotBeNormalized(), $result->invalidReasonCode);
         } else {
             $this->assertSame($result->invalid, $parser->parseSingle($input)->invalid);
         }
@@ -826,11 +826,11 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testStructuralParseErrorsCarryExpectedCode(): void
     {
         $cases = [
-            ['<<a@x.com>',         \Email\ParseErrorCode::MultipleOpeningAngle],
-            ['<local>',            \Email\ParseErrorCode::MissingDomainBeforeClosingAngle],
-            ['a@[1.2.3.4]@y.com',  \Email\ParseErrorCode::StrayAtAfterDomain],
-            ['[a@x.com',           \Email\ParseErrorCode::InvalidOpeningBracket],
-            ['/foo@x.com',         \Email\ParseErrorCode::InvalidCharacterAtStart],
+            ['<<a@x.com>',         \Email\ParseErrorCode::MultipleOpeningAngle()],
+            ['<local>',            \Email\ParseErrorCode::MissingDomainBeforeClosingAngle()],
+            ['a@[1.2.3.4]@y.com',  \Email\ParseErrorCode::StrayAtAfterDomain()],
+            ['[a@x.com',           \Email\ParseErrorCode::InvalidOpeningBracket()],
+            ['/foo@x.com',         \Email\ParseErrorCode::InvalidCharacterAtStart()],
         ];
 
         foreach ($cases as [$input, $expected]) {
@@ -848,7 +848,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $opts = ParseOptions::rfc5321();
         $result = (new Parse(null, $opts))->parseSingle('user@localhost');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::FqdnRequired, $result->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::FqdnRequired(), $result->invalidReasonCode);
     }
 
     /**
@@ -867,14 +867,14 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $leading = $parser->parseSingle('user@-bad.example.com');
         $this->assertTrue($leading->invalid, 'leading hyphen label must be rejected');
         $this->assertSame(
-            \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen,
+            \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen(),
             $leading->invalidReasonCode,
         );
 
         $trailing = $parser->parseSingle('user@bad-.example.com');
         $this->assertTrue($trailing->invalid, 'trailing hyphen label must be rejected');
         $this->assertSame(
-            \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen,
+            \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen(),
             $trailing->invalidReasonCode,
         );
 
@@ -894,13 +894,13 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
         // Single label (no dot at all) — dotPos === false branch
         $this->assertSame(
-            \Email\ParseErrorCode::FqdnRequired,
+            \Email\ParseErrorCode::FqdnRequired(),
             $parser->parseSingle('user@localhost')->invalidReasonCode,
         );
 
         // Bare TLD with trailing dot stripped → single label → FqdnRequired
         $this->assertSame(
-            \Email\ParseErrorCode::FqdnRequired,
+            \Email\ParseErrorCode::FqdnRequired(),
             $parser->parseSingle('user@example.')->invalidReasonCode,
         );
 
@@ -921,7 +921,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // 10 octets: accepted; 11: rejected.
         $this->assertFalse($parser->parseSingle(str_repeat('a', 10).'@x.com')->invalid);
         $this->assertSame(
-            \Email\ParseErrorCode::LocalPartTooLong,
+            \Email\ParseErrorCode::LocalPartTooLong(),
             $parser->parseSingle(str_repeat('a', 11).'@x.com')->invalidReasonCode,
         );
     }
@@ -936,7 +936,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($parser->parseSingle('abcdefgh@example.com')->invalid);
         // "abcdefghi@example.com" is 21 octets — over the limit.
         $this->assertSame(
-            \Email\ParseErrorCode::TotalLengthExceeded,
+            \Email\ParseErrorCode::TotalLengthExceeded(),
             $parser->parseSingle('abcdefghi@example.com')->invalidReasonCode,
         );
     }
@@ -964,7 +964,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $r = (new Parse(null, $opts))->parseSingle($input);
         $this->assertTrue($r->invalid);
         $this->assertSame(
-            \Email\ParseErrorCode::C1ControlInQuotedString,
+            \Email\ParseErrorCode::C1ControlInQuotedString(),
             $r->invalidReasonCode,
         );
     }
@@ -989,7 +989,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
         $this->assertFalse($parser->parseSingle('"abc"@x.com')->invalid);
         $this->assertSame(
-            \Email\ParseErrorCode::LocalPartTooLong,
+            \Email\ParseErrorCode::LocalPartTooLong(),
             $parser->parseSingle('"abcd"@x.com')->invalidReasonCode,
         );
     }
@@ -1006,7 +1006,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Empty label (leading dot in domain) → empty string fails LDH regex
         $r = $parser->parseSingle('user@.example.com');
         $this->assertTrue($r->invalid);
-        $this->assertSame(\Email\ParseErrorCode::DomainContainsInvalidChars, $r->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::DomainContainsInvalidChars(), $r->invalidReasonCode);
     }
 
     public function testQuotedStringContentValidation(): void
@@ -1019,13 +1019,13 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Invalid escape: backslash followed by byte outside %d32-126 (SOH = 0x01).
         $r = $parser->parseSingle("\"a\\\x01b\"@example.com");
         $this->assertTrue($r->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString, $r->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString(), $r->invalidReasonCode);
 
         // Invalid escape — backslash followed by DEL (0x7F, one past the upper bound).
         // Exercises the `> 126` half of the quoted-pairSMTP check.
         $r = $parser->parseSingle("\"a\\\x7fb\"@example.com");
         $this->assertTrue($r->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString, $r->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::InvalidEscapedCharInQuotedString(), $r->invalidReasonCode);
 
         // Boundary: backslash followed by SPACE (0x20, the lower bound) — valid.
         $r = $parser->parseSingle("\"a\\ b\"@example.com");
@@ -1038,17 +1038,17 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Bare control byte inside the quoted string (no escape).
         $r = $parser->parseSingle("\"a\x01b\"@example.com");
         $this->assertTrue($r->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $r->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString(), $r->invalidReasonCode);
 
         // Boundary: byte 0x1F (US, the last C0 control) — rejected via `<= 31`.
         $r = $parser->parseSingle("\"a\x1fb\"@example.com");
         $this->assertTrue($r->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $r->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString(), $r->invalidReasonCode);
 
         // Boundary: byte 0x7F (DEL, the first DEL+ byte) — rejected via `>= 127`.
         $r = $parser->parseSingle("\"a\x7fb\"@example.com");
         $this->assertTrue($r->invalid);
-        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString, $r->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::InvalidCharInQuotedString(), $r->invalidReasonCode);
 
         // Boundary: byte 0x20 (SPACE) is valid qtextSMTP — `<= 31` must not fire.
         $r = $parser->parseSingle('"a b"@example.com');
@@ -1058,7 +1058,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $r = $parser->parseSingle('"a~b"@example.com');
         $this->assertFalse($r->invalid);
 
-        // Note: ParseErrorCode::TrailingBackslashInQuotedString is defensive-only —
+        // Note: ParseErrorCode::TrailingBackslashInQuotedString() is defensive-only —
         // the STATE_QUOTE backslash-counting logic always closes the quote before an
         // unescaped lone backslash can end up in `local_part_parsed`. Kept as a
         // safety net should the quote-closing logic change.
@@ -1076,7 +1076,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Missing '@' — structural failure, unparseable.
         $result = Parse::getInstance()->parseSingle('not-an-email');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ValidationSeverity::Critical, $result->invalidSeverity());
+        $this->assertSame(\Email\ValidationSeverity::Critical(), $result->invalidSeverity());
     }
 
     public function testPolicyFailureIsWarningSeverity(): void
@@ -1085,12 +1085,12 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $opts = ParseOptions::rfc5321();
         $result = (new Parse(null, $opts))->parseSingle('user@localhost');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
+        $this->assertSame(\Email\ValidationSeverity::Warning(), $result->invalidSeverity());
 
         // Private-range IP literal is syntactically valid but rejected by the global-range rule.
         $result = Parse::getInstance()->parseSingle('user@[192.168.0.1]');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
+        $this->assertSame(\Email\ValidationSeverity::Warning(), $result->invalidSeverity());
     }
 
     /**
@@ -1223,25 +1223,25 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // everything else is Critical. Adding a new ParseErrorCode without updating
         // this mapping should fail the last assertion below.
         $warning = [
-            \Email\ParseErrorCode::Utf8NotAllowedInLocalPart,
-            \Email\ParseErrorCode::C0ControlInLocalPart,
-            \Email\ParseErrorCode::C1ControlInLocalPart,
-            \Email\ParseErrorCode::C1ControlInQuotedString,
-            \Email\ParseErrorCode::EmptyQuotedLocalPart,
-            \Email\ParseErrorCode::FqdnRequired,
-            \Email\ParseErrorCode::IpNotInGlobalRange,
-            \Email\ParseErrorCode::Ipv6NotInGlobalRange,
-            \Email\ParseErrorCode::LocalPartTooLong,
-            \Email\ParseErrorCode::TotalLengthExceeded,
-            \Email\ParseErrorCode::DomainTooLong,
-            \Email\ParseErrorCode::DomainLabelTooLong,
-            \Email\ParseErrorCode::PunycodeConversionFailed,
+            \Email\ParseErrorCode::Utf8NotAllowedInLocalPart(),
+            \Email\ParseErrorCode::C0ControlInLocalPart(),
+            \Email\ParseErrorCode::C1ControlInLocalPart(),
+            \Email\ParseErrorCode::C1ControlInQuotedString(),
+            \Email\ParseErrorCode::EmptyQuotedLocalPart(),
+            \Email\ParseErrorCode::FqdnRequired(),
+            \Email\ParseErrorCode::IpNotInGlobalRange(),
+            \Email\ParseErrorCode::Ipv6NotInGlobalRange(),
+            \Email\ParseErrorCode::LocalPartTooLong(),
+            \Email\ParseErrorCode::TotalLengthExceeded(),
+            \Email\ParseErrorCode::DomainTooLong(),
+            \Email\ParseErrorCode::DomainLabelTooLong(),
+            \Email\ParseErrorCode::PunycodeConversionFailed(),
         ];
 
         foreach (\Email\ParseErrorCode::cases() as $code) {
             $expected = in_array($code, $warning, true)
-                ? \Email\ValidationSeverity::Warning
-                : \Email\ValidationSeverity::Critical;
+                ? \Email\ValidationSeverity::Warning()
+                : \Email\ValidationSeverity::Critical();
             $this->assertSame(
                 $expected,
                 $code->severity(),
@@ -1370,7 +1370,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $result = (new Parse(null, ParseOptions::rfc5322()))
             ->parseSingle('<@host>');
         $this->assertTrue($result->invalid);
-        $this->assertSame(\Email\ParseErrorCode::IncompleteAddress, $result->invalidReasonCode);
+        $this->assertSame(\Email\ParseErrorCode::IncompleteAddress(), $result->invalidReasonCode);
     }
 
     public function testObsRouteWithEmptyAddrSpecIsInvalid(): void

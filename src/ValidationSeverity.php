@@ -3,39 +3,40 @@
 namespace Email;
 
 /**
- * Severity levels attached to parse failures.
- *
- * Each {@see ParseErrorCode} maps to exactly one severity via
- * {@see ParseErrorCode::severity()}. Callers can use the severity to decide
- * whether a given failure is acceptable for their use case: for example, a
- * mail-storage system may choose to accept `Warning` addresses (syntactically
- * valid but policy-violating) while rejecting `Critical` ones (unparseable).
- *
- * The backing string values are stable public API.
+ * Severity levels attached to parse failures (PHP 7.1 emulation of the 3.x
+ * backed enum — see {@see EnumEmulation}). Each {@see ParseErrorCode} maps to
+ * exactly one severity via {@see ParseErrorCode::severity()}. The backing
+ * string values are stable public API.
  */
-enum ValidationSeverity: string
+final class ValidationSeverity implements \JsonSerializable
 {
-    /**
-     * The address cannot be parsed or structurally violates RFC 5322 / 5321
-     * (missing '@', unterminated delimiters, invalid characters, bad IP
-     * syntax, etc.). A Critical failure means the input is not a valid
-     * address in any interpretation.
-     */
-    case Critical = 'critical';
+    use EnumEmulation;
+
+    /** The address cannot be parsed or structurally violates RFC 5322 / 5321. */
+    public static function Critical(): self
+    {
+        return self::instance('Critical', 'critical');
+    }
+
+    /** The address is well-formed but violates a configured validation rule. */
+    public static function Warning(): self
+    {
+        return self::instance('Warning', 'warning');
+    }
+
+    /** Informational only — reserved for future non-blocking advisories. */
+    public static function Info(): self
+    {
+        return self::instance('Info', 'info');
+    }
 
     /**
-     * The address is syntactically well-formed but violates a configured
-     * validation rule — for example, UTF-8 rejected in an ASCII-only preset,
-     * a non-FQDN domain when `requireFqdn` is set, a private-range IP
-     * literal when `validateIpGlobalRange` is set, or an octet-length limit
-     * from RFC 5321 §4.5.3.1. Callers may choose to accept Warning
-     * failures depending on context.
+     * All cases, in declaration order (native enum cases()).
+     *
+     * @return array<int, self>
      */
-    case Warning = 'warning';
-
-    /**
-     * Informational only — currently unused; reserved for future
-     * deprecation hints and non-blocking advisory messages.
-     */
-    case Info = 'info';
+    public static function cases(): array
+    {
+        return [self::Critical(), self::Warning(), self::Info()];
+    }
 }
