@@ -6,29 +6,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Fixed
-- **Quoted-string as a non-first local-part word** — `"x"."y"@`, `x."y"@`, `"a b"."c"@` are now accepted (valid `obs-local-part`, RFC 5322 §3.4.1: `word *("." word)`). They previously surfaced the internal `ParserConfusion` code. Abutment without a separating dot (`"x""y"@`) is still rejected.
-- **`ParserConfusion` no longer reaches callers.** The remaining path (a domain literal after domain characters, e.g. `user@a[1.2.3.4]`) is now rejected up front as an `InvalidOpeningBracket` — a domain literal is the entire domain, not appended to a dot-atom. A 500k-input fuzz confirms `ParserConfusion` is unreachable.
-- **C1 controls in comments** — U+0080–U+009F in comment content are rejected when `rejectC1Controls` is set (rfc6531), matching the existing local-part and quoted-string handling.
-- **Empty quoted local part round-trip** — `canonical()` now renders an empty local part as `""` (it dropped it, yielding an invalid `@domain`), and `<""@host>` (empty quoted local part inside angle brackets) is no longer mistaken for the "no local part" that begins an obs-route. Found by the canonical-round-trip property test.
+## [3.7.0]
 
-### Fixed
-Further gold-standard conformance (dominicsayers/isemail corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot):
-- **Comment quoted-pairs** — a backslash inside a comment starts a quoted-pair (RFC 5322 §3.2.1), so `(comment\)test@…` no longer treats `\)` as the closing paren (correctly reported unterminated).
-- **Control characters in comments and quoted strings** — a bare CR/LF (or other C0 control) in comment content (`ControlCharInComment`) or a quoted string (`InvalidCharInQuotedString`) is rejected when `rejectC0Controls` is set (the strict presets).
-- **atext after a comment** — a comment may not split one unquoted local-part atom (RFC 5322 §3.2.3); `test(comment)test@…` is rejected (`AtextAfterComment`). The verdict is deferred to `@` vs `<`, so a comment between words of a **display-name phrase** (`John(comment)Doe <a@b.com>`, legal per §3.2.5) stays valid; leading/trailing comments stay valid.
-- **DEL (0x7f) in comments/quoted strings** — excluded from ctext/qtext alongside the C0 controls.
-- **Dangling trailing fold** — in single-address mode, trailing whitespace containing a character excluded from the effective whitespace set (e.g. a CR/LF after a space) is rejected instead of silently truncating the address.
-- **Whitespace flanking a separator** — `a@b.com , c@d.com` (space before/around a `,`) no longer fails the following address with a spurious "misplaced separator"; the whitespace is absorbed and the separator terminates the address. (Pre-existing bug; also required for `strictMultiWhitespace` to be usable.)
-- **Angle-addr with a domain-literal** — `<user@[1.2.3.4]>` and `Name <user@[1.2.3.4]>` are now accepted (valid RFC 5322 name-addr). The `>` handler previously required `STATE_DOMAIN` and a closing `]` leaves `STATE_AFTER_DOMAIN`; it now also accepts `STATE_AFTER_DOMAIN` when a domain or IP is present (so `<user@ >` / `<user@[]>` still fail). Pre-existing bug, found by a metamorphic angle-wrap-preserves-validity property test.
-- **O(n²) on malformed input** — a long run of structural-error characters (`@@@@…`, `....`, `<<<<`, quotes) was quadratic because the invalid → skip-ahead path re-interpolated the full input into a log string every character (built even under a `NullLogger`). Now fires once on the transition to invalid; linear (~50× faster on pathological input).
-
-### Testing
-- Adversarial property tests (`tests/PropertyTest.php`): a structural-token generator that exercises the error/edge paths, plus metamorphic invariants (single/multi consistency, `canonical()` round-trip, angle-wrap preserves validity) and a linear-time guard for malformed input. Deterministic via `SEED`.
+RFC-conformance and robustness release, driven by differential testing against the `dominicsayers/isemail` corpus and by adversarial/metamorphic fuzzing (strict-preset corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot). **Heads-up:** several previously-accepted malformed forms are now rejected (see Fixed) — a behavior change for callers that relied on the old leniency. Also fixes an O(n²) denial-of-service on malformed input.
 
 ### Added
 - **`ParseOptions::$rejectTrailingDot`** (`withRejectTrailingDot()`) — reject the RFC 5321 §2.3.5 trailing root-label dot (`test@iana.org.`) instead of accepting/stripping it. Default `false` (unchanged behavior).
 - **`ParseOptions::$strictMultiWhitespace`** (`withStrictMultiWhitespace()`) — in multi-address mode, reject obsolete internal folding whitespace per-address (e.g. `local @domain`) while whitespace still separates addresses. Default `false` (multi stays loose, as before).
+
+### Fixed
+Conformance (over-acceptance now correctly rejected under the strict presets):
+- **Comment quoted-pairs** — a backslash inside a comment starts a quoted-pair (RFC 5322 §3.2.1), so `(comment\)test@…` no longer treats `\)` as the closing paren (correctly reported unterminated).
+- **Control characters in comments and quoted strings** — a bare CR/LF or other C0 control in comment content (`ControlCharInComment`) or a quoted string (`InvalidCharInQuotedString`) is rejected when `rejectC0Controls` is set; **DEL (0x7f)** is excluded alongside them; **C1 controls** (U+0080–U+009F) in comments are rejected when `rejectC1Controls` is set (rfc6531).
+- **atext after a comment** — a comment may not split one unquoted local-part atom (RFC 5322 §3.2.3); `test(comment)test@…` is rejected (`AtextAfterComment`). The verdict is deferred to `@` vs `<`, so a comment between words of a **display-name phrase** (`John(comment)Doe <a@b.com>`, legal per §3.2.5) stays valid.
+- **Quoted-string boundaries** — a token abutting a quoted-string with no separating dot (`"x"y@`, `"x"(c)y@`, `"x"(c)"y"@`) is rejected (`AtextAfterQuotedString`).
+- **Unclosed domain literal** — `test@[1.2.3.4` (no `]`) is rejected.
+- **Dangling trailing fold** — in single-address mode, trailing whitespace containing a character excluded from the effective set (e.g. a CR/LF after a space) is rejected instead of silently truncating.
+
+Correctness (previously-rejected valid input now accepted, or wrong error corrected):
+- **Quoted-string as a non-first local-part word** — `"x"."y"@`, `x."y"@`, `"a b"."c"@` are accepted (valid `obs-local-part`); they used to surface the internal `ParserConfusion` code.
+- **`ParserConfusion` no longer reaches callers** — the remaining path (a domain literal after domain characters, `user@a[1.2.3.4]`) is rejected up front as `InvalidOpeningBracket`. A 500k-input fuzz confirms the code is unreachable.
+- **Angle-addr with a domain-literal** — `<user@[1.2.3.4]>` / `Name <user@[1.2.3.4]>` are accepted (`<user@ >` / `<user@[]>` still fail).
+- **Empty quoted local part round-trip** — `canonical()` renders an empty local part as `""` (it dropped it), and `<""@host>` is no longer mistaken for the "no local part" that begins an obs-route.
+- **Whitespace flanking a separator** — `a@b.com , c@d.com` no longer fails the following address with a spurious "misplaced separator".
+
+Robustness:
+- **O(n²) on malformed input** — a long run of structural-error characters (`@@@@…`, `....`, quotes) was quadratic because the invalid → skip-ahead path re-interpolated the full input into a log string every character (built even under a `NullLogger`). Now fires once on the transition to invalid; linear (~50× faster on pathological input).
+
+### Testing
+- Adversarial property tests (`tests/PropertyTest.php`): a structural-token generator that exercises the error/edge paths, plus metamorphic invariants (single/multi consistency, `canonical()` round-trip, angle-wrap preserves validity) and a linear-time guard for malformed input. Deterministic via `SEED`.
 
 ## [3.6.0]
 
