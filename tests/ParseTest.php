@@ -39,7 +39,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
      * full-input log interpolation); backported the mb_str_split pass and the
      * skip-ahead log guard. Assert a wide, non-flaky linear-time budget.
      */
-    public function testMalformedInputIsLinearTime()
+    public function testMalformedInputIsLinearTime(): void
     {
         $parser = Parse::getInstance();
         foreach (['@', '.', '<', '"'] as $char) {
