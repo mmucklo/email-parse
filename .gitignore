@@ -15,3 +15,7 @@ bin/*
 coverage/
 coverage.xml
 .phpunit.cache/
+
+# infection artifacts
+.infection-tmp/
+infection.log
