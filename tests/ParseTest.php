@@ -508,6 +508,71 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         }
     }
 
+    /**
+     * A quoted-string may be any word of an obs-local-part, not just the first
+     * (RFC 5322 §3.4.1: `word *("." word)`, `word = atom / quoted-string`). These
+     * used to surface the internal `ParserConfusion` code.
+     */
+    public function testQuotedStringAsNonFirstWord(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        foreach (['"x"."y"@iana.org', 'x."y"@iana.org', '"x".y@iana.org', '"a b"."c"@iana.org', '"x"."y"."z"@iana.org'] as $addr) {
+            $this->assertFalse($p->parseSingle($addr)->invalid, $addr);
+        }
+        // Abutment without a separating dot is still invalid.
+        $this->assertSame(\Email\ParseErrorCode::AtextAfterQuotedString, $p->parseSingle('"x""y"@iana.org')->invalidReasonCode);
+    }
+
+    /**
+     * A domain literal is the entire domain — `[` after domain characters (or a
+     * second literal) is rejected with a specific reason, not the internal
+     * `ParserConfusion` marker.
+     */
+    public function testDomainLiteralPositionRejectedCleanly(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+        $this->assertFalse($p->parseSingle('user@[1.2.3.4]')->invalid);
+        foreach (['user@a[1.2.3.4]', 'user@x[1.2.3.4]', 'user@[1.2.3.4][5.6.7.8]'] as $addr) {
+            $r = $p->parseSingle($addr);
+            $this->assertSame(\Email\ParseErrorCode::InvalidOpeningBracket, $r->invalidReasonCode, $addr);
+            $this->assertNotSame(\Email\ParseErrorCode::ParserConfusion, $r->invalidReasonCode);
+        }
+    }
+
+    /**
+     * C1 controls (U+0080–U+009F, 2-byte UTF-8) in comment content are rejected
+     * when rejectC1Controls is set (rfc6531), matching local-part/quoted-string.
+     */
+    public function testC1ControlInCommentHonorsOption(): void
+    {
+        $c1 = "(x\xc2\x85)test@iana.org"; // U+0085 NEL inside a comment
+        $strict = new Parse(null, ParseOptions::rfc6531()->withRequireFqdn(false));
+        $this->assertSame(\Email\ParseErrorCode::ControlCharInComment, $strict->parseSingle($c1)->invalidReasonCode);
+        // rfc5322 leaves rejectC1Controls off, so it is not rejected on that account.
+        $this->assertNotSame(\Email\ParseErrorCode::ControlCharInComment, (new Parse(null, ParseOptions::rfc5322()))->parseSingle($c1)->invalidReasonCode);
+    }
+
+    /**
+     * An empty quoted local part must survive both `canonical()` (which must render
+     * `""`, not drop it) and its use inside an angle-addr (`<""@host>` is a real empty
+     * local part, not the "no local part" that starts an obs-route). Found by the
+     * canonical-round-trip property test.
+     */
+    public function testEmptyQuotedLocalPartRoundTrips(): void
+    {
+        $p = new Parse(null, ParseOptions::rfc5322());
+
+        $bare = $p->parseSingle('""@x.com');
+        $this->assertFalse($bare->invalid);
+        $this->assertSame('""@x.com', $bare->canonical());
+        $this->assertFalse($p->parseSingle($bare->canonical())->invalid, 'canonical must re-parse');
+
+        // Empty quoted local part inside angle brackets must not trigger obs-route.
+        $this->assertFalse($p->parseSingle('<""@x.com>')->invalid);
+        // A genuine obs-route (no local part) still works.
+        $this->assertFalse($p->parseSingle('<@host.com:user@example.com>')->invalid);
+    }
+
     public function testStrictIdnaAcceptsValidIdn(): void
     {
         // "bücher.de" is a well-formed IDNA label — valid under strict IDNA2008.

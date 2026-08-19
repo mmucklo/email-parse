@@ -161,9 +161,15 @@ final class ParsedEmailAddress implements \Stringable
             return '';
         }
 
-        $local = self::isAtextDotAtom($this->localPartParsed) || $this->localPartParsed === ''
-            ? $this->localPartParsed
-            : '"' . addcslashes($this->localPartParsed, '"\\') . '"';
+        // An empty local part is only valid as an empty quoted-string (`""@domain`);
+        // rendering it bare would produce `@domain`, which is invalid.
+        if ($this->localPartParsed === '') {
+            $local = '""';
+        } elseif (self::isAtextDotAtom($this->localPartParsed)) {
+            $local = $this->localPartParsed;
+        } else {
+            $local = '"' . addcslashes($this->localPartParsed, '"\\') . '"';
+        }
 
         $addrSpec = $local . '@' . $this->domainPart;
 
