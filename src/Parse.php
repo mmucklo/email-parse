@@ -279,7 +279,13 @@ class Parse
         $subState = self::STATE_START;
         $commentNestLevel = 0;
 
-        $len = mb_strlen($emails, $encoding);
+        // Split once into a character array instead of calling mb_substr($emails, $i, 1)
+        // on every iteration: for multi-byte encodings each mb_substr rescans from the
+        // start of the string (O(n) per call, O(n^2) over the loop) — a denial-of-service
+        // vector on long malformed input. mb_str_split does it in a single O(n) pass
+        // (polyfilled on PHP < 7.4 by symfony/polyfill-mbstring).
+        $chars = mb_str_split($emails, 1, $encoding);
+        $len = count($chars);
         if (0 == $len) {
             $success = false;
             $reason = 'No emails passed in';
@@ -287,7 +293,7 @@ class Parse
         $curChar = null;
         for ($i = 0; $i < $len; ++$i) {
             $prevChar = $curChar; // Previous Charater
-            $curChar = mb_substr($emails, $i, 1, $encoding); // Current Character
+            $curChar = $chars[$i]; // Current Character
             switch ($state) {
                 case self::STATE_SKIP_AHEAD:
                     // Skip ahead is set when a bad email address is encountered
@@ -360,7 +366,7 @@ class Parse
                         // Look ahead for comments after the address
                         $foundComment = false;
                         for ($j = ($i + 1); $j < $len; ++$j) {
-                            $lookAheadChar = mb_substr($emails, $j, 1, $encoding);
+                            $lookAheadChar = $chars[$j];
                             if ('(' == $lookAheadChar) {
                                 $foundComment = true;
 
@@ -583,7 +589,7 @@ class Parse
                     if ('"' == $curChar) {
                         $backslashCount = 0;
                         for ($j = $i; $j >= 0; --$j) {
-                            if ('\\' == mb_substr($emails, $j, 1, $encoding)) {
+                            if ('\\' == $chars[$j]) {
                                 ++$backslashCount;
                             } else {
                                 break;
@@ -647,7 +653,11 @@ class Parse
                 $state = self::STATE_TRIM;
             }
 
-            if ($emailAddress['invalid']) {
+            // Fire once, on the transition into invalid. STATE_SKIP_AHEAD does not clear
+            // the flag, so without the state guard this ran every remaining character,
+            // interpolating the full $emails / original_address each time (built even
+            // under a NullLogger) — making malformed input O(n^2). See issue backport.
+            if ($emailAddress['invalid'] && self::STATE_SKIP_AHEAD !== $state) {
                 $this->log('debug', "Email\\Parse->parse - invalid - {$emailAddress['invalid_reason']}\n\$emailAddress['original_address'] {$emailAddress['original_address']}\n\$emails: {$emails}");
                 $state = self::STATE_SKIP_AHEAD;
             }
@@ -893,10 +903,11 @@ class Parse
         if (mb_strlen($domain, $encoding) > 255) {
             return ['valid' => false, 'reason' => 'Domain name too long'];
         } else {
-            $origEncoding = mb_regex_encoding();
-            mb_regex_encoding($encoding);
-            $parts = mb_split('\\.', $domain);
-            mb_regex_encoding($origEncoding);
+            // Split on the label separator with explode() rather than mb_split():
+            // mb_regex_encoding() is deprecated as of PHP 8.6 (the underlying oniguruma
+            // library is unmaintained), and splitting on the ASCII '.' is encoding-safe
+            // (0x2E cannot appear inside a multi-byte sequence). Fixes issue #62.
+            $parts = explode('.', $domain);
             foreach ($parts as $part) {
                 if (mb_strlen($part, $encoding) > 63) {
                     return ['valid' => false, 'reason' => "Domain name part '{$part}' too long"];
