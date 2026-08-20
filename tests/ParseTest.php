@@ -174,6 +174,11 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             unset($actual['obs_route']);
         }
 
+        // domain_is_suspicious — same opt-in pattern (detectConfusableDomain).
+        if (!array_key_exists('domain_is_suspicious', $expected)) {
+            unset($actual['domain_is_suspicious']);
+        }
+
         return [$expected, $actual];
     }
 
@@ -458,6 +463,34 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse((new Parse(null, ParseOptions::rfc5322()))->parseSingle('test@iana.org.')->invalid);
         $rej = new Parse(null, ParseOptions::rfc5322()->withRejectTrailingDot(true));
         $this->assertSame(\Email\ParseErrorCode::TrailingDotNotAllowed(), $rej->parseSingle('test@iana.org.')->invalidReasonCode);
+    }
+
+    /**
+     * detectConfusableDomain flags mixed-script/homograph domains via the intl
+     * Spoofchecker (opt-in, security policy — the address stays valid). Legitimate
+     * single-script international domains are not flagged.
+     */
+    public function testConfusableDomainDetection(): void
+    {
+        if (!class_exists('Spoofchecker')) {
+            $this->markTestSkipped('intl Spoofchecker not available');
+        }
+
+        $off = new Parse(null, ParseOptions::rfc6531()->withRequireFqdn(false));
+        $on = new Parse(null, ParseOptions::rfc6531()->withRequireFqdn(false)->withDetectConfusableDomain(true));
+
+        // Cyrillic "а" (U+0430) spoofing Latin "a" in an otherwise-Latin domain.
+        $homograph = "user@\u{0430}pple.com";
+        $flagged = $on->parseSingle($homograph);
+        $this->assertFalse($flagged->invalid, 'a confusable domain is still syntactically valid');
+        $this->assertTrue($flagged->domainIsSuspicious);
+        $this->assertFalse($off->parseSingle($homograph)->domainIsSuspicious);
+
+        // Legitimate domains — ASCII and single-script international — are not flagged.
+        $this->assertFalse($on->parseSingle('user@apple.com')->domainIsSuspicious);
+        $this->assertFalse($on->parseSingle("user@\u{043F}\u{043E}\u{0447}\u{0442}\u{0430}.\u{0440}\u{0444}")->domainIsSuspicious); // почта.рф
+        $this->assertFalse($on->parseSingle('user@münchen.de')->domainIsSuspicious);
+        $this->assertFalse($on->parseSingle('user@[192.0.2.1]')->domainIsSuspicious);
     }
 
     /**

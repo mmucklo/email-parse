@@ -125,6 +125,11 @@ class ParseOptions
     public $rejectTrailingDot;
 
     /**
+     * @var bool
+     */
+    public $detectConfusableDomain;
+
+    /**
      * @var ?\Closure
      * @readonly
      */
@@ -212,6 +217,7 @@ class ParseOptions
         bool $trimSingleAddressWhitespace = false,
         bool $strictMultiWhitespace = false,
         bool $rejectTrailingDot = false,
+        bool $detectConfusableDomain = false,
         ?\Closure $localPartNormalizer = null
     ) {
         $this->allowUtf8LocalPart = $allowUtf8LocalPart;
@@ -234,6 +240,7 @@ class ParseOptions
         $this->trimSingleAddressWhitespace = $trimSingleAddressWhitespace;
         $this->strictMultiWhitespace = $strictMultiWhitespace;
         $this->rejectTrailingDot = $rejectTrailingDot;
+        $this->detectConfusableDomain = $detectConfusableDomain;
         $this->localPartNormalizer = $localPartNormalizer;
         foreach ($bannedChars as $char) {
             $this->bannedChars[$char] = true;
@@ -379,6 +386,14 @@ class ParseOptions
     public function withRejectTrailingDot($value): self
     {
         return $this->cloneWith(['rejectTrailingDot' => $value]);
+    }
+
+    /**
+     * @param bool $value
+     */
+    public function withDetectConfusableDomain($value): self
+    {
+        return $this->cloneWith(['detectConfusableDomain' => $value]);
     }
 
     /**
@@ -579,6 +594,7 @@ class ParseOptions
             $get('trimSingleAddressWhitespace', $this->trimSingleAddressWhitespace),
             $get('strictMultiWhitespace', $this->strictMultiWhitespace),
             $get('rejectTrailingDot', $this->rejectTrailingDot),
+            $get('detectConfusableDomain', $this->detectConfusableDomain),
             array_key_exists('localPartNormalizer', $overrides)
                 ? $overrides['localPartNormalizer']
                 : $this->localPartNormalizer

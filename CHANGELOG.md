@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.8.0.71]
+
+PHP 7.1–8.0 build of the native 3.8.0 feature set (this line uses the `<native-version>.71` four-segment scheme). Adds the opt-in homoglyph / confusable-domain detection from 3.8.0.
+
+### Added
+- **Optional homoglyph / confusable-domain detection.** `ParseOptions::withDetectConfusableDomain(true)` flags mixed-script "look-alike" domains (e.g. `аpple.com` with a Cyrillic `а`) via the intl `Spoofchecker`. Security-policy signal, not RFC validity: the address stays valid and the result carries `ParsedEmailAddress::$domainIsSuspicious` (`domain_is_suspicious` in the array API). Off by default; single-script international domains (`почта.рф`, `münchen.de`) are not flagged.
+
 ## [3.7.0]
 
 RFC-conformance and robustness release, driven by differential testing against the `dominicsayers/isemail` corpus and by adversarial/metamorphic fuzzing (strict-preset corpus false-accepts 14 → 1, the last being the intentional, now-toggleable trailing root dot). **Heads-up:** several previously-accepted malformed forms are now rejected (see Fixed) — a behavior change for callers that relied on the old leniency. Also fixes an O(n²) denial-of-service on malformed input.

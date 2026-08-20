@@ -92,6 +92,11 @@ final class ParsedEmailAddress
      */
     public $obsRoute;
     /**
+     * @var bool
+     * @readonly
+     */
+    public $domainIsSuspicious;
+    /**
      * @param string              $address           Canonical address, comments stripped (e.g. `"J Doe" <j@x.com>`).
      * @param string              $originalAddress   Raw address as given, comments included.
      * @param string              $simpleAddress     local-part@domain-part (no display name).
@@ -109,7 +114,7 @@ final class ParsedEmailAddress
      * @param array<int, string>  $comments          RFC 5322 comments extracted from the address.
      * @param ?string             $obsRoute          RFC 5322 §4.4 obs-route prefix if one was stripped from inside angle-addr (e.g. `@host1,@host2`); `null` otherwise. Only populated when {@see ParseOptions::$allowObsRoute} is enabled.
      */
-    public function __construct(string $address, string $originalAddress, string $simpleAddress, string $name, string $nameParsed, string $localPart, string $localPartParsed, string $domain, ?string $domainAscii, string $ip, string $domainPart, bool $invalid, ?string $invalidReason, ?ParseErrorCode $invalidReasonCode, array $comments, ?string $obsRoute = null)
+    public function __construct(string $address, string $originalAddress, string $simpleAddress, string $name, string $nameParsed, string $localPart, string $localPartParsed, string $domain, ?string $domainAscii, string $ip, string $domainPart, bool $invalid, ?string $invalidReason, ?ParseErrorCode $invalidReasonCode, array $comments, ?string $obsRoute = null, bool $domainIsSuspicious = false)
     {
         $this->address = $address;
         $this->originalAddress = $originalAddress;
@@ -127,6 +132,7 @@ final class ParsedEmailAddress
         $this->invalidReasonCode = $invalidReasonCode;
         $this->comments = $comments;
         $this->obsRoute = $obsRoute;
+        $this->domainIsSuspicious = $domainIsSuspicious;
     }
     /**
      * Build from the array shape produced by {@see Parse::parse()}.
@@ -151,7 +157,8 @@ final class ParsedEmailAddress
             $arr['invalid_reason'],
             $arr['invalid_reason_code'],
             $arr['comments'],
-            $arr['obs_route'] ?? null
+            $arr['obs_route'] ?? null,
+            $arr['domain_is_suspicious'] ?? false
         );
     }
     /**
@@ -199,6 +206,7 @@ final class ParsedEmailAddress
             'invalid_reason_code' => $this->invalidReasonCode,
             'comments' => $this->comments,
             'obs_route' => $this->obsRoute,
+            'domain_is_suspicious' => $this->domainIsSuspicious,
         ];
     }
     /**
