@@ -81,7 +81,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
                     ['%', '!'],
                     $separators,
                     $useWhitespaceAsSeparator,
-                    $lengthLimits,
+                    $lengthLimits
                 );
                 if (!$allowSmtpUtf8) {
                     $options = $options
@@ -246,10 +246,10 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testReadonlyRulePropertiesRejectDirectMutation(): void
     {
-        $opts = new ParseOptions();
-        $this->expectException(\Error::class);
-        /** @phpstan-ignore-next-line — intentionally mutating a readonly property to assert it throws */
-        $opts->requireFqdn = true;
+        // `readonly` is a PHP 8.1 language feature; on this 7.1 build the rule
+        // properties are plain public properties (immutability is by convention,
+        // not enforced by the runtime), so there is nothing to assert here.
+        $this->markTestSkipped('readonly enforcement requires PHP 8.1 (php7.1 build)');
     }
 
     public function testDisplayNamePhraseValidationAcceptsAtext(): void
@@ -332,10 +332,10 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $long = str_repeat('a', 65).'@example.com';
         $this->assertSame(
             \Email\ParseErrorCode::LocalPartTooLong(),
-            (new Parse(null, ParseOptions::rfc5322()))->parseSingle($long)->invalidReasonCode,
+            (new Parse(null, ParseOptions::rfc5322()))->parseSingle($long)->invalidReasonCode
         );
         $this->assertFalse(
-            (new Parse(null, ParseOptions::rfc5322()->withEnforceLengthLimits(false)))->parseSingle($long)->invalid,
+            (new Parse(null, ParseOptions::rfc5322()->withEnforceLengthLimits(false)))->parseSingle($long)->invalid
         );
     }
 
@@ -868,14 +868,14 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($leading->invalid, 'leading hyphen label must be rejected');
         $this->assertSame(
             \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen(),
-            $leading->invalidReasonCode,
+            $leading->invalidReasonCode
         );
 
         $trailing = $parser->parseSingle('user@bad-.example.com');
         $this->assertTrue($trailing->invalid, 'trailing hyphen label must be rejected');
         $this->assertSame(
             \Email\ParseErrorCode::DomainLabelStartsOrEndsWithHyphen(),
-            $trailing->invalidReasonCode,
+            $trailing->invalidReasonCode
         );
 
         // Mid-label hyphens are valid; passes the same check.
@@ -895,13 +895,13 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Single label (no dot at all) — dotPos === false branch
         $this->assertSame(
             \Email\ParseErrorCode::FqdnRequired(),
-            $parser->parseSingle('user@localhost')->invalidReasonCode,
+            $parser->parseSingle('user@localhost')->invalidReasonCode
         );
 
         // Bare TLD with trailing dot stripped → single label → FqdnRequired
         $this->assertSame(
             \Email\ParseErrorCode::FqdnRequired(),
-            $parser->parseSingle('user@example.')->invalidReasonCode,
+            $parser->parseSingle('user@example.')->invalidReasonCode
         );
 
         // Multi-label valid case
@@ -915,21 +915,21 @@ class ParseTest extends \PHPUnit\Framework\TestCase
      */
     public function testLocalPartLengthBoundary(): void
     {
-        $opts = new ParseOptions(lengthLimits: new \Email\LengthLimits(10, 254, 63));
+        $opts = new ParseOptions([], [','], true, new \Email\LengthLimits(10, 254, 63));
         $parser = new Parse(null, $opts);
 
         // 10 octets: accepted; 11: rejected.
         $this->assertFalse($parser->parseSingle(str_repeat('a', 10).'@x.com')->invalid);
         $this->assertSame(
             \Email\ParseErrorCode::LocalPartTooLong(),
-            $parser->parseSingle(str_repeat('a', 11).'@x.com')->invalidReasonCode,
+            $parser->parseSingle(str_repeat('a', 11).'@x.com')->invalidReasonCode
         );
     }
 
     public function testTotalLengthBoundary(): void
     {
         // maxTotalLength = 20, local + '@' + domain.
-        $opts = new ParseOptions(lengthLimits: new \Email\LengthLimits(64, 20, 63));
+        $opts = new ParseOptions([], [','], true, new \Email\LengthLimits(64, 20, 63));
         $parser = new Parse(null, $opts);
 
         // "abcdefgh@example.com" is exactly 20 octets — accepted at the boundary.
@@ -937,7 +937,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // "abcdefghi@example.com" is 21 octets — over the limit.
         $this->assertSame(
             \Email\ParseErrorCode::TotalLengthExceeded(),
-            $parser->parseSingle('abcdefghi@example.com')->invalidReasonCode,
+            $parser->parseSingle('abcdefghi@example.com')->invalidReasonCode
         );
     }
 
@@ -965,7 +965,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($r->invalid);
         $this->assertSame(
             \Email\ParseErrorCode::C1ControlInQuotedString(),
-            $r->invalidReasonCode,
+            $r->invalidReasonCode
         );
     }
 
@@ -984,13 +984,13 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Quoted local-parts count the enclosing DQUOTEs in the wire-form length.
         // maxLocalPartLength = 5: `"abc"` (3 chars + 2 DQUOTE = 5 octets) is valid;
         // `"abcd"` (4 chars + 2 DQUOTE = 6 octets) is rejected.
-        $opts = new ParseOptions(lengthLimits: new \Email\LengthLimits(5, 254, 63));
+        $opts = new ParseOptions([], [','], true, new \Email\LengthLimits(5, 254, 63));
         $parser = new Parse(null, $opts);
 
         $this->assertFalse($parser->parseSingle('"abc"@x.com')->invalid);
         $this->assertSame(
             \Email\ParseErrorCode::LocalPartTooLong(),
-            $parser->parseSingle('"abcd"@x.com')->invalidReasonCode,
+            $parser->parseSingle('"abcd"@x.com')->invalidReasonCode
         );
     }
 
@@ -1188,7 +1188,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
                 $this->assertSame(
                     $value,
                     $opts->$prop,
-                    "{$name}() {$prop} should be " . ($value ? 'true' : 'false'),
+                    "{$name}() {$prop} should be " . ($value ? 'true' : 'false')
                 );
             }
         }
@@ -1245,7 +1245,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             $this->assertSame(
                 $expected,
                 $code->severity(),
-                "{$code->name} should be {$expected->value}",
+                "{$code->name} should be {$expected->value}"
             );
         }
 
@@ -1272,10 +1272,12 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $parser = Parse::getInstance();
         $results = iterator_to_array(
             $parser->parseStream(['a@a.com, b@b.com', 'c@c.com']),
-            false,
+            false
         );
         $this->assertCount(3, $results);
-        $this->assertSame(['a', 'b', 'c'], array_map(fn ($r) => $r->localPart, $results));
+        $this->assertSame(['a', 'b', 'c'], array_map(function ($r) {
+            return $r->localPart;
+        }, $results));
     }
 
     public function testParseStreamAcceptsGeneratorInput(): void
@@ -1297,7 +1299,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Invalid addresses still appear in the stream — callers filter by $addr->invalid.
         $results = iterator_to_array(
             Parse::getInstance()->parseStream(['valid@ok.com', 'not-an-email']),
-            false,
+            false
         );
         $this->assertCount(2, $results);
         $this->assertFalse($results[0]->invalid);
@@ -1597,7 +1599,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             $local = str_replace('.', '', $local);
             $plus = strpos($local, '+');
 
-            return $plus === false ? $local : substr($local, 0, $plus);
+            return $plus === false ? $local : (string) substr($local, 0, $plus);
         };
 
         $opts = ParseOptions::rfc5322()->withLocalPartNormalizer($gmailNormalizer);
@@ -1613,9 +1615,11 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testLocalPartNormalizerSkipsOtherDomains(): void
     {
         // The normalizer is gmail-specific; other domains pass through.
-        $normalizer = fn (string $local, string $domain) => $domain === 'gmail.com'
-            ? str_replace('.', '', $local)
-            : $local;
+        $normalizer = function (string $local, string $domain) {
+            return $domain === 'gmail.com'
+                ? str_replace('.', '', $local)
+                : $local;
+        };
 
         $opts = ParseOptions::rfc5322()->withLocalPartNormalizer($normalizer);
         $result = (new Parse(null, $opts))->parseSingle('j.doe@example.com');
@@ -1642,7 +1646,9 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testLocalPartNormalizerCanBeClearedByPassingNull(): void
     {
-        $normalizer = fn (string $l) => strtolower($l);
+        $normalizer = function (string $l) {
+            return strtolower($l);
+        };
         $a = ParseOptions::rfc5322()->withLocalPartNormalizer($normalizer);
         $b = $a->withLocalPartNormalizer(null);
 

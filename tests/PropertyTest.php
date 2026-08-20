@@ -21,7 +21,10 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
 {
     private const ITERATIONS = 200;
 
-    private int $seed;
+    /**
+     * @var int
+     */
+    private $seed;
 
     protected function setUp(): void
     {
@@ -193,7 +196,7 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
             $second = $parser->parseSingle($first->simpleAddress);
             $this->assertFalse(
                 $second->invalid,
-                "Round-trip failed: {$addr} → {$first->simpleAddress} → invalid ({$second->invalidReason})",
+                "Round-trip failed: {$addr} → {$first->simpleAddress} → invalid ({$second->invalidReason})"
             );
             $this->assertSame($first->simpleAddress, $second->simpleAddress);
         }
@@ -279,13 +282,13 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
             // 1. single vs multi consistency. CR/LF are excluded because single-mode is
             //    strict about line endings while multi treats them as separators (by design);
             //    the structural corpus contains no CR/LF, so no exclusion is needed here.
-            if (!str_contains($s, ',') && !str_contains($s, ';')) {
+            if (strpos($s, ',') === false && strpos($s, ';') === false) {
                 $multi = $p->parseMultiple($s);
                 if (count($multi->emailAddresses) === 1) {
                     $this->assertSame(
                         $single->invalid,
                         $multi->emailAddresses[0]->invalid,
-                        'single/multi divergence: '.bin2hex($s),
+                        'single/multi divergence: '.bin2hex($s)
                     );
                 }
             }
@@ -296,15 +299,15 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
                 if ($canon !== '') {
                     $this->assertFalse(
                         $p->parseSingle($canon)->invalid,
-                        "canonical round-trip broke [{$s}] -> [{$canon}]",
+                        "canonical round-trip broke [{$s}] -> [{$canon}]"
                     );
                 }
                 // 3. angle-wrap: a valid bare addr-spec stays valid wrapped in <>.
                 //    (Guards the domain-literal angle-addr fix.)
-                if (!str_contains($s, '<') && !str_contains($s, '>')) {
+                if (strpos($s, '<') === false && strpos($s, '>') === false) {
                     $this->assertFalse(
                         $p->parseSingle('<'.$single->simpleAddress.'>')->invalid,
-                        "angle-wrap broke valid: [{$single->simpleAddress}]",
+                        "angle-wrap broke valid: [{$single->simpleAddress}]"
                     );
                 }
             }

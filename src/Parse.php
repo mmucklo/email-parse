@@ -38,17 +38,17 @@ class Parse
     /**
      * @var ?Parse
      */
-    protected static ?Parse $instance = null;
+    protected static $instance;
 
     /**
      * @var ?LoggerInterface
      */
-    protected ?LoggerInterface $logger = null;
+    protected $logger;
 
     /**
      * @var ParseOptions
      */
-    protected ParseOptions $options;
+    protected $options;
 
     /**
      * Allow Parse to be instantiated as a singleton.
@@ -83,14 +83,17 @@ class Parse
      *
      * @param LoggerInterface $logger PSR-3 compliant logger
      */
-    public function setLogger(LoggerInterface $logger): Parse
+    public function setLogger($logger): Parse
     {
         $this->logger = $logger;
 
         return $this;
     }
 
-    public function setOptions(ParseOptions $options): Parse
+    /**
+     * @param \Email\ParseOptions $options
+     */
+    public function setOptions($options): Parse
     {
         $this->options = $options;
 
@@ -111,9 +114,9 @@ class Parse
      * @param mixed  $level
      * @param string $message
      */
-    protected function log(mixed $level, string $message): void
+    protected function log($level, $message): void
     {
-        $this->logger?->log($level, $message);
+        ($nullsafeVariable1 = $this->logger) ? $nullsafeVariable1->log($level, $message) : null;
     }
 
     /**
@@ -144,7 +147,7 @@ class Parse
             // FILTER_FLAG_NO_RES_RANGE does not cover all IETF-assigned special-purpose ranges.
             // Explicitly reject IETF Protocol Assignments (RFC 5736: 192.0.0.0/24) and
             // documentation TEST-NET ranges (RFC 5737: 192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24).
-            if (str_starts_with($ip, "192.0.0.") || str_starts_with($ip, "192.0.2.") || str_starts_with($ip, "198.51.100.") || str_starts_with($ip, "203.0.113.")) {
+            if (strncmp($ip, "192.0.0.", strlen("192.0.0.")) === 0 || strncmp($ip, "192.0.2.", strlen("192.0.2.")) === 0 || strncmp($ip, "198.51.100.", strlen("198.51.100.")) === 0 || strncmp($ip, "203.0.113.", strlen("203.0.113.")) === 0) {
                 return false;
             }
             $ipType = FILTER_FLAG_IPV4;
@@ -217,8 +220,10 @@ class Parse
      *
      * Recommended over {@see parse()} when you want IDE autocomplete and
      * static-analysis friendly access to the parsed fields.
+     * @param string $email
+     * @param string $encoding
      */
-    public function parseSingle(string $email, string $encoding = 'UTF-8'): ParsedEmailAddress
+    public function parseSingle($email, $encoding = 'UTF-8'): ParsedEmailAddress
     {
         return ParsedEmailAddress::fromArray($this->parse($email, false, $encoding));
     }
@@ -229,8 +234,10 @@ class Parse
      * Recommended over {@see parse()} in multi-address mode for the same reasons as
      * {@see parseSingle()}. Separator handling and per-address rules are configured
      * via {@see ParseOptions}.
+     * @param string $emails
+     * @param string $encoding
      */
-    public function parseMultiple(string $emails, string $encoding = 'UTF-8'): ParseResult
+    public function parseMultiple($emails, $encoding = 'UTF-8'): ParseResult
     {
         /** @var array{success: bool, reason: ?string, email_addresses: array<int, array<string, mixed>>} $raw */
         $raw = $this->parse($emails, true, $encoding);
@@ -257,7 +264,7 @@ class Parse
      * @param  string           $encoding Character encoding of the input strings.
      * @return \Generator<ParsedEmailAddress>
      */
-    public function parseStream(iterable $input, string $encoding = 'UTF-8'): \Generator
+    public function parseStream($input, $encoding = 'UTF-8'): \Generator
     {
         foreach ($input as $emails) {
             $result = $this->parse((string) $emails, true, $encoding);
@@ -267,7 +274,12 @@ class Parse
         }
     }
 
-    public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
+    /**
+     * @param string $emails
+     * @param bool $multiple
+     * @param string $encoding
+     */
+    public function parse($emails, $multiple = true, $encoding = 'UTF-8'): array
     {
         $emailAddresses = [];
 
@@ -982,12 +994,24 @@ class Parse
         // buffered elsewhere (a closed delimiter always returns to STATE_ADDRESS).
         if (!$emailAddress['invalid'] && in_array($state, [self::STATE_QUOTE, self::STATE_COMMENT, self::STATE_SQUARE_BRACKET, self::STATE_OBS_ROUTE], true)) {
             $emailAddress['invalid'] = true;
-            [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = match ($state) {
-                self::STATE_QUOTE => ['No ending quote: \'"\'', Err::UnterminatedQuote()],
-                self::STATE_COMMENT => ['No closing parenthesis: \')\'', Err::UnterminatedComment()],
-                self::STATE_SQUARE_BRACKET => ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket()],
-                self::STATE_OBS_ROUTE => ['Incomplete obs-route: missing colon before end of input', Err::IncompleteAddress()],
-            };
+            switch ($state) {
+                case self::STATE_QUOTE:
+                    [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = ['No ending quote: \'"\'', Err::UnterminatedQuote()];
+
+                    break;
+                case self::STATE_COMMENT:
+                    [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = ['No closing parenthesis: \')\'', Err::UnterminatedComment()];
+
+                    break;
+                case self::STATE_SQUARE_BRACKET:
+                    [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket()];
+
+                    break;
+                case self::STATE_OBS_ROUTE:
+                    [$emailAddress['invalid_reason'], $emailAddress['invalid_reason_code']] = ['Incomplete obs-route: missing colon before end of input', Err::IncompleteAddress()];
+
+                    break;
+            }
         }
         if (!$emailAddress['invalid'] && ($emailAddress['address_temp'] || $emailAddress['quote_temp'])) {
             $this->log('error', "Email\\Parse->parse - corruption during parsing - leftovers:\n\$i: {$i}\n\$emailAddress['address_temp']: {$emailAddress['address_temp']}\n\$emailAddress['quote_temp']: {$emailAddress['quote_temp']}\nEmails: {$emails}");
@@ -1132,7 +1156,7 @@ class Parse
         if (!$emailAddress['invalid']) {
             if (isset($emailAddress['domain']) &&
                 (filter_var($emailAddress['domain'], FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false ||
-                str_starts_with($emailAddress['domain'], 'IPv6:') ||
+                strncmp($emailAddress['domain'], 'IPv6:', strlen('IPv6:')) === 0 ||
                 preg_match('/^\d+\.\d+\.\d+\.\d+$/', $emailAddress['domain']))) {
                 $emailAddress['ip'] = $emailAddress['domain'];
                 $emailAddress['domain'] = '';
@@ -1155,7 +1179,7 @@ class Parse
                         $emailAddress['invalid_reason'] = 'IP address invalid: \'' . $emailAddress['ip'] . '\' does not appear to be a valid IP address in the global range';
                         $emailAddress['invalid_reason_code'] = Err::IpNotInGlobalRange();
                     }
-                } elseif (str_starts_with($emailAddress['ip'], 'IPv6:')) {
+                } elseif (strncmp($emailAddress['ip'], 'IPv6:', strlen('IPv6:')) === 0) {
                     $tempIp = str_replace('IPv6:', '', $emailAddress['ip']);
                     if (filter_var($tempIp, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false) {
                         if ($this->options->validateIpGlobalRange && !$this->validateIpGlobalRange($tempIp, FILTER_FLAG_IPV6)) {
@@ -1176,13 +1200,13 @@ class Parse
             } elseif ($emailAddress['domain']) {
                 // Optional FQDN root-label dot (RFC 5321 §2.3.5 allows "example.com.").
                 // Accepted and stripped by default; rejected when rejectTrailingDot is set.
-                if (str_ends_with($emailAddress['domain'], '.')) {
+                if (substr_compare($emailAddress['domain'], '.', -strlen('.')) === 0) {
                     if ($this->options->rejectTrailingDot) {
                         $emailAddress['invalid'] = true;
                         $emailAddress['invalid_reason'] = 'Domain must not end with a trailing dot';
                         $emailAddress['invalid_reason_code'] = Err::TrailingDotNotAllowed();
                     } else {
-                        $emailAddress['domain'] = substr($emailAddress['domain'], 0, -1);
+                        $emailAddress['domain'] = (string) substr($emailAddress['domain'], 0, -1);
                     }
                 }
             }
@@ -1344,8 +1368,9 @@ class Parse
     /**
      * Returns true if the character is a non-ASCII byte (multi-byte UTF-8 code point).
      * The first byte of any multi-byte UTF-8 sequence is always >= 0x80.
+     * @param string $char
      */
-    protected function isUtf8Char(string $char): bool
+    protected function isUtf8Char($char): bool
     {
         return ord($char[0]) > 127;
     }
@@ -1356,7 +1381,7 @@ class Parse
      * @param array $emailAddress The email address array from the parser
      * @return array{valid: bool, reason: ?string, code: ?ParseErrorCode, normalized: ?string}
      */
-    protected function validateLocalPart(array $emailAddress): array
+    protected function validateLocalPart($emailAddress): array
     {
         $opts = $this->options;
         $localPart = $emailAddress['local_part_parsed'];
@@ -1490,7 +1515,7 @@ class Parse
      * @param string $str The string to normalize
      * @return string|false The normalized string, or false on failure
      */
-    protected function normalizeUtf8(string $str): string|false
+    protected function normalizeUtf8($str)
     {
         if (!function_exists('normalizer_normalize')) {
             // Intl extension not available, return as-is
@@ -1507,8 +1532,9 @@ class Parse
      *
      * Returns the domain unchanged if it is already pure ASCII. Returns null if
      * conversion fails (caller should reject the address).
+     * @param string $domain
      */
-    protected function normalizeDomainAscii(string $domain): ?string
+    protected function normalizeDomainAscii($domain): ?string
     {
         if ($domain === '' || !preg_match('/[^\x00-\x7F]/', $domain)) {
             return $domain;
@@ -1556,7 +1582,7 @@ class Parse
      *
      * @return array{valid: bool, reason?: string, code?: ParseErrorCode}
      */
-    protected function validateDomainName(string $domain): array
+    protected function validateDomainName($domain): array
     {
         // RFC 5321 §4.5.3.1.2: total domain length limit is in octets
         if (strlen($domain) > 255) {

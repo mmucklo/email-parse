@@ -11,4 +11,10 @@ return RectorConfig::configure()
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])
+    // The two enum classes and their trait are already hand-written for PHP 7.1.
+    ->withSkip([
+        __DIR__ . '/src/ParseErrorCode.php',
+        __DIR__ . '/src/ValidationSeverity.php',
+        __DIR__ . '/src/EnumEmulation.php',
+    ])
     ->withDowngradeSets(php71: true);

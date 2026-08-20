@@ -9,8 +9,88 @@ namespace Email;
  * Every field is also present in the legacy array output of {@see Parse::parse()};
  * callers preferring typed access with IDE autocomplete should use the new methods.
  */
-final class ParsedEmailAddress implements \Stringable
+final class ParsedEmailAddress
 {
+    /**
+     * @var string
+     * @readonly
+     */
+    public $address;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $originalAddress;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $simpleAddress;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $name;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $nameParsed;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $localPart;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $localPartParsed;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $domain;
+    /**
+     * @var ?string
+     * @readonly
+     */
+    public $domainAscii;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $ip;
+    /**
+     * @var string
+     * @readonly
+     */
+    public $domainPart;
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $invalid;
+    /**
+     * @var ?string
+     * @readonly
+     */
+    public $invalidReason;
+    /**
+     * @var ?ParseErrorCode
+     * @readonly
+     */
+    public $invalidReasonCode;
+    /**
+     * @var array<int, string>
+     * @readonly
+     */
+    public $comments;
+    /**
+     * @var ?string
+     * @readonly
+     */
+    public $obsRoute;
     /**
      * @param string              $address           Canonical address, comments stripped (e.g. `"J Doe" <j@x.com>`).
      * @param string              $originalAddress   Raw address as given, comments included.
@@ -29,53 +109,51 @@ final class ParsedEmailAddress implements \Stringable
      * @param array<int, string>  $comments          RFC 5322 comments extracted from the address.
      * @param ?string             $obsRoute          RFC 5322 §4.4 obs-route prefix if one was stripped from inside angle-addr (e.g. `@host1,@host2`); `null` otherwise. Only populated when {@see ParseOptions::$allowObsRoute} is enabled.
      */
-    public function __construct(
-        public readonly string $address,
-        public readonly string $originalAddress,
-        public readonly string $simpleAddress,
-        public readonly string $name,
-        public readonly string $nameParsed,
-        public readonly string $localPart,
-        public readonly string $localPartParsed,
-        public readonly string $domain,
-        public readonly ?string $domainAscii,
-        public readonly string $ip,
-        public readonly string $domainPart,
-        public readonly bool $invalid,
-        public readonly ?string $invalidReason,
-        public readonly ?ParseErrorCode $invalidReasonCode,
-        public readonly array $comments,
-        public readonly ?string $obsRoute = null,
-    ) {
+    public function __construct(string $address, string $originalAddress, string $simpleAddress, string $name, string $nameParsed, string $localPart, string $localPartParsed, string $domain, ?string $domainAscii, string $ip, string $domainPart, bool $invalid, ?string $invalidReason, ?ParseErrorCode $invalidReasonCode, array $comments, ?string $obsRoute = null)
+    {
+        $this->address = $address;
+        $this->originalAddress = $originalAddress;
+        $this->simpleAddress = $simpleAddress;
+        $this->name = $name;
+        $this->nameParsed = $nameParsed;
+        $this->localPart = $localPart;
+        $this->localPartParsed = $localPartParsed;
+        $this->domain = $domain;
+        $this->domainAscii = $domainAscii;
+        $this->ip = $ip;
+        $this->domainPart = $domainPart;
+        $this->invalid = $invalid;
+        $this->invalidReason = $invalidReason;
+        $this->invalidReasonCode = $invalidReasonCode;
+        $this->comments = $comments;
+        $this->obsRoute = $obsRoute;
     }
-
     /**
      * Build from the array shape produced by {@see Parse::parse()}.
      *
      * @param array<string,mixed> $arr
      */
-    public static function fromArray(array $arr): self
+    public static function fromArray($arr): self
     {
         return new self(
-            address:           $arr['address'],
-            originalAddress:   $arr['original_address'],
-            simpleAddress:     $arr['simple_address'],
-            name:              $arr['name'],
-            nameParsed:        $arr['name_parsed'],
-            localPart:         $arr['local_part'],
-            localPartParsed:   $arr['local_part_parsed'],
-            domain:            $arr['domain'],
-            domainAscii:       $arr['domain_ascii'],
-            ip:                $arr['ip'],
-            domainPart:        $arr['domain_part'],
-            invalid:           $arr['invalid'],
-            invalidReason:     $arr['invalid_reason'],
-            invalidReasonCode: $arr['invalid_reason_code'],
-            comments:          $arr['comments'],
-            obsRoute:          $arr['obs_route'] ?? null,
+            $arr['address'],
+            $arr['original_address'],
+            $arr['simple_address'],
+            $arr['name'],
+            $arr['name_parsed'],
+            $arr['local_part'],
+            $arr['local_part_parsed'],
+            $arr['domain'],
+            $arr['domain_ascii'],
+            $arr['ip'],
+            $arr['domain_part'],
+            $arr['invalid'],
+            $arr['invalid_reason'],
+            $arr['invalid_reason_code'],
+            $arr['comments'],
+            $arr['obs_route'] ?? null
         );
     }
-
     /**
      * Severity of the validation failure, derived from {@see $invalidReasonCode}.
      * Returns `null` when the address is valid (no failure to classify).
@@ -91,9 +169,8 @@ final class ParsedEmailAddress implements \Stringable
      */
     public function invalidSeverity(): ?ValidationSeverity
     {
-        return $this->invalidReasonCode?->severity();
+        return ($nullsafeVariable1 = $this->invalidReasonCode) ? $nullsafeVariable1->severity() : null;
     }
-
     /**
      * Round-trip to the legacy array shape produced by {@see Parse::parse()}.
      * Field order matches the parser output so the result is compatible with
@@ -124,7 +201,6 @@ final class ParsedEmailAddress implements \Stringable
             'obs_route' => $this->obsRoute,
         ];
     }
-
     /**
      * JSON-encoded representation. Convenience wrapper over {@see toArray()}.
      * `ParseErrorCode` serializes to its backing string value under the default
@@ -132,13 +208,12 @@ final class ParsedEmailAddress implements \Stringable
      *
      * @param int $flags Flags passed through to `json_encode` (e.g. `JSON_PRETTY_PRINT`).
      */
-    public function toJson(int $flags = 0): string
+    public function toJson($flags = 0): string
     {
         $encoded = json_encode($this->toArray(), $flags | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
         return $encoded === false ? '{}' : $encoded;
     }
-
     /**
      * Canonical RFC 5322 display form for the address.
      *
@@ -183,7 +258,6 @@ final class ParsedEmailAddress implements \Stringable
 
         return $name . ' <' . $addrSpec . '>';
     }
-
     /**
      * {@inheritDoc}
      *
@@ -195,7 +269,6 @@ final class ParsedEmailAddress implements \Stringable
     {
         return $this->invalid ? '' : $this->simpleAddress;
     }
-
     /**
      * True when the string conforms to RFC 5322 §3.2.3 dot-atom-text
      * (1*atext *("." 1*atext)) — i.e. can appear unquoted in an addr-spec.
@@ -204,10 +277,9 @@ final class ParsedEmailAddress implements \Stringable
     {
         return (bool) preg_match(
             "/^[A-Za-z0-9!#\$%&'*+\\-\\/=?^_`{|}~]+(?:\\.[A-Za-z0-9!#\$%&'*+\\-\\/=?^_`{|}~]+)*\$/",
-            $s,
+            $s
         );
     }
-
     /**
      * True when the string is a sequence of RFC 5322 §3.2.5 phrase atoms —
      * atext runs separated by single spaces — meaning no display-name quoting
@@ -217,7 +289,7 @@ final class ParsedEmailAddress implements \Stringable
     {
         return (bool) preg_match(
             "/^[A-Za-z0-9!#\$%&'*+\\-\\/=?^_`{|}~]+(?:[ \\t]+[A-Za-z0-9!#\$%&'*+\\-\\/=?^_`{|}~]+)*\$/",
-            $s,
+            $s
         );
     }
 }

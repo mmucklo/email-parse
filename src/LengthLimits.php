@@ -11,15 +11,33 @@ namespace Email;
 class LengthLimits
 {
     /**
+     * @var int
+     * @readonly
+     */
+    public $maxLocalPartLength;
+
+    /**
+     * @var int
+     * @readonly
+     */
+    public $maxTotalLength;
+
+    /**
+     * @var int
+     * @readonly
+     */
+    public $maxDomainLabelLength;
+
+    /**
      * @param int $maxLocalPartLength Maximum length for local part (before @) in octets. Default: 64 per RFC 5321
      * @param int $maxTotalLength Maximum total email length in octets. Default: 254 per RFC 3696 EID 1690
      * @param int $maxDomainLabelLength Maximum length for domain labels in octets. Default: 63 per RFC 1035
      */
-    public function __construct(
-        public readonly int $maxLocalPartLength = 64,
-        public readonly int $maxTotalLength = 254,
-        public readonly int $maxDomainLabelLength = 63,
-    ) {
+    public function __construct(int $maxLocalPartLength = 64, int $maxTotalLength = 254, int $maxDomainLabelLength = 63)
+    {
+        $this->maxLocalPartLength = $maxLocalPartLength;
+        $this->maxTotalLength = $maxTotalLength;
+        $this->maxDomainLabelLength = $maxDomainLabelLength;
     }
 
     /**

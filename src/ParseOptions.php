@@ -4,12 +4,143 @@ namespace Email;
 
 class ParseOptions
 {
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $allowUtf8LocalPart;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $allowObsLocalPart;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $allowQuotedString;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $validateQuotedContent;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $rejectEmptyQuotedLocalPart;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $allowUtf8Domain;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $allowDomainLiteral;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $requireFqdn;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $validateIpGlobalRange;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $rejectC0Controls;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $rejectC1Controls;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $applyNfcNormalization;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $enforceLengthLimits;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $includeDomainAscii;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $validateDisplayNamePhrase;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $strictIdna;
+
+    /**
+     * @var bool
+     * @readonly
+     */
+    public $allowObsRoute;
+
+    /**
+     * @readonly
+     * @var bool
+     */
+    public $trimSingleAddressWhitespace;
+
+    /**
+     * @readonly
+     * @var bool
+     */
+    public $strictMultiWhitespace;
+
+    /**
+     * @readonly
+     * @var bool
+     */
+    public $rejectTrailingDot;
+
+    /**
+     * @var ?\Closure
+     * @readonly
+     */
+    public $localPartNormalizer;
     /** @var array<string, bool> */
-    private array $bannedChars = [];
+    private $bannedChars = [];
     /** @var array<string, bool> */
-    private array $separators = [];
-    private bool $useWhitespaceAsSeparator;
-    private LengthLimits $lengthLimits;
+    private $separators = [];
+    /**
+     * @var bool
+     */
+    private $useWhitespaceAsSeparator;
+    /**
+     * @var \Email\LengthLimits
+     */
+    private $lengthLimits;
     /**
      * Whitespace characters treated as insignificant (folding/separators in
      * multi-address mode; trimmable). A whitespace character outside this set is
@@ -18,7 +149,7 @@ class ParseOptions
      *
      * @var array<string, bool>
      */
-    private array $allowedWhitespace = [];
+    private $allowedWhitespace = [];
 
     /**
      * Construct a parser configuration.
@@ -61,28 +192,49 @@ class ParseOptions
         bool $useWhitespaceAsSeparator = true,
         ?LengthLimits $lengthLimits = null,
         array $allowedWhitespace = [' ', "\t", "\r", "\n"],
-        public readonly bool $allowUtf8LocalPart = true,
-        public readonly bool $allowObsLocalPart = false,
-        public readonly bool $allowQuotedString = true,
-        public readonly bool $validateQuotedContent = false,
-        public readonly bool $rejectEmptyQuotedLocalPart = false,
-        public readonly bool $allowUtf8Domain = true,
-        public readonly bool $allowDomainLiteral = true,
-        public readonly bool $requireFqdn = false,
-        public readonly bool $validateIpGlobalRange = true,
-        public readonly bool $rejectC0Controls = false,
-        public readonly bool $rejectC1Controls = false,
-        public readonly bool $applyNfcNormalization = false,
-        public readonly bool $enforceLengthLimits = true,
-        public readonly bool $includeDomainAscii = false,
-        public readonly bool $validateDisplayNamePhrase = false,
-        public readonly bool $strictIdna = false,
-        public readonly bool $allowObsRoute = false,
-        public readonly bool $trimSingleAddressWhitespace = false,
-        public readonly bool $strictMultiWhitespace = false,
-        public readonly bool $rejectTrailingDot = false,
-        public readonly ?\Closure $localPartNormalizer = null,
+        bool $allowUtf8LocalPart = true,
+        bool $allowObsLocalPart = false,
+        bool $allowQuotedString = true,
+        bool $validateQuotedContent = false,
+        bool $rejectEmptyQuotedLocalPart = false,
+        bool $allowUtf8Domain = true,
+        bool $allowDomainLiteral = true,
+        bool $requireFqdn = false,
+        bool $validateIpGlobalRange = true,
+        bool $rejectC0Controls = false,
+        bool $rejectC1Controls = false,
+        bool $applyNfcNormalization = false,
+        bool $enforceLengthLimits = true,
+        bool $includeDomainAscii = false,
+        bool $validateDisplayNamePhrase = false,
+        bool $strictIdna = false,
+        bool $allowObsRoute = false,
+        bool $trimSingleAddressWhitespace = false,
+        bool $strictMultiWhitespace = false,
+        bool $rejectTrailingDot = false,
+        ?\Closure $localPartNormalizer = null
     ) {
+        $this->allowUtf8LocalPart = $allowUtf8LocalPart;
+        $this->allowObsLocalPart = $allowObsLocalPart;
+        $this->allowQuotedString = $allowQuotedString;
+        $this->validateQuotedContent = $validateQuotedContent;
+        $this->rejectEmptyQuotedLocalPart = $rejectEmptyQuotedLocalPart;
+        $this->allowUtf8Domain = $allowUtf8Domain;
+        $this->allowDomainLiteral = $allowDomainLiteral;
+        $this->requireFqdn = $requireFqdn;
+        $this->validateIpGlobalRange = $validateIpGlobalRange;
+        $this->rejectC0Controls = $rejectC0Controls;
+        $this->rejectC1Controls = $rejectC1Controls;
+        $this->applyNfcNormalization = $applyNfcNormalization;
+        $this->enforceLengthLimits = $enforceLengthLimits;
+        $this->includeDomainAscii = $includeDomainAscii;
+        $this->validateDisplayNamePhrase = $validateDisplayNamePhrase;
+        $this->strictIdna = $strictIdna;
+        $this->allowObsRoute = $allowObsRoute;
+        $this->trimSingleAddressWhitespace = $trimSingleAddressWhitespace;
+        $this->strictMultiWhitespace = $strictMultiWhitespace;
+        $this->rejectTrailingDot = $rejectTrailingDot;
+        $this->localPartNormalizer = $localPartNormalizer;
         foreach ($bannedChars as $char) {
             $this->bannedChars[$char] = true;
         }
@@ -112,22 +264,8 @@ class ParseOptions
      */
     public static function rfc5321(): self
     {
-        return new self(
-            allowUtf8LocalPart: false,
-            allowObsLocalPart: false,
-            allowQuotedString: true,
-            validateQuotedContent: true,
-            rejectEmptyQuotedLocalPart: true,
-            allowUtf8Domain: false,
-            allowDomainLiteral: true,
-            requireFqdn: true,
-            validateIpGlobalRange: true,
-            rejectC0Controls: true,
-            rejectC1Controls: false,
-            applyNfcNormalization: false,
-            enforceLengthLimits: true,
-            includeDomainAscii: false,
-        );
+        return new self([], [','], true, null, [' ', '	', '', '
+'], false, false, true, true, true, false, true, true, true, true, false, false, true, false);
     }
 
     /**
@@ -139,23 +277,8 @@ class ParseOptions
      */
     public static function rfc6531(): self
     {
-        return new self(
-            allowUtf8LocalPart: true,
-            allowObsLocalPart: false,
-            allowQuotedString: true,
-            validateQuotedContent: true,
-            rejectEmptyQuotedLocalPart: true,
-            allowUtf8Domain: true,
-            allowDomainLiteral: true,
-            requireFqdn: true,
-            validateIpGlobalRange: true,
-            rejectC0Controls: true,
-            rejectC1Controls: true,
-            applyNfcNormalization: true,
-            enforceLengthLimits: true,
-            includeDomainAscii: true,
-            strictIdna: true,
-        );
+        return new self([], [','], true, null, [' ', '	', '', '
+'], true, false, true, true, true, true, true, true, true, true, true, true, true, true, false, true);
     }
 
     /**
@@ -170,23 +293,8 @@ class ParseOptions
      */
     public static function rfc5322(): self
     {
-        return new self(
-            allowUtf8LocalPart: false,
-            allowObsLocalPart: false,
-            allowQuotedString: true,
-            validateQuotedContent: false,
-            rejectEmptyQuotedLocalPart: false,
-            allowUtf8Domain: false,
-            allowDomainLiteral: true,
-            requireFqdn: false,
-            validateIpGlobalRange: true,
-            rejectC0Controls: true,
-            rejectC1Controls: false,
-            applyNfcNormalization: false,
-            enforceLengthLimits: true,
-            includeDomainAscii: false,
-            allowObsRoute: true,
-        );
+        return new self([], [','], true, null, [' ', '	', '', '
+'], false, false, true, false, false, false, true, false, true, true, false, false, true, false, false, false, true);
     }
 
     /**
@@ -198,23 +306,8 @@ class ParseOptions
      */
     public static function rfc2822(): self
     {
-        return new self(
-            allowUtf8LocalPart: false,
-            allowObsLocalPart: true,
-            allowQuotedString: true,
-            validateQuotedContent: false,
-            rejectEmptyQuotedLocalPart: false,
-            allowUtf8Domain: false,
-            allowDomainLiteral: true,
-            requireFqdn: false,
-            validateIpGlobalRange: true,
-            rejectC0Controls: false,
-            rejectC1Controls: false,
-            applyNfcNormalization: false,
-            enforceLengthLimits: true,
-            includeDomainAscii: false,
-            allowObsRoute: true,
-        );
+        return new self([], [','], true, null, [' ', '	', '', '
+'], false, true, true, false, false, false, true, false, true, false, false, false, true, false, false, false, true);
     }
 
     // ===== Fluent builders =====
@@ -226,23 +319,29 @@ class ParseOptions
     // have `withX()` builders for symmetry; they will become readonly in v4.0.
 
     /** @param array<string> $bannedChars */
-    public function withBannedChars(array $bannedChars): self
+    public function withBannedChars($bannedChars): self
     {
         return $this->cloneWith(['bannedChars' => $bannedChars]);
     }
 
     /** @param array<string> $separators */
-    public function withSeparators(array $separators): self
+    public function withSeparators($separators): self
     {
         return $this->cloneWith(['separators' => $separators]);
     }
 
-    public function withUseWhitespaceAsSeparator(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withUseWhitespaceAsSeparator($value): self
     {
         return $this->cloneWith(['useWhitespaceAsSeparator' => $value]);
     }
 
-    public function withLengthLimits(LengthLimits $limits): self
+    /**
+     * @param \Email\LengthLimits $limits
+     */
+    public function withLengthLimits($limits): self
     {
         return $this->cloneWith(['lengthLimits' => $limits]);
     }
@@ -253,107 +352,167 @@ class ParseOptions
      *
      * @param array<string> $chars
      */
-    public function withAllowedWhitespace(array $chars): self
+    public function withAllowedWhitespace($chars): self
     {
         return $this->cloneWith(['allowedWhitespace' => $chars]);
     }
 
-    public function withTrimSingleAddressWhitespace(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withTrimSingleAddressWhitespace($value): self
     {
         return $this->cloneWith(['trimSingleAddressWhitespace' => $value]);
     }
 
-    public function withStrictMultiWhitespace(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withStrictMultiWhitespace($value): self
     {
         return $this->cloneWith(['strictMultiWhitespace' => $value]);
     }
 
-    public function withRejectTrailingDot(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withRejectTrailingDot($value): self
     {
         return $this->cloneWith(['rejectTrailingDot' => $value]);
     }
 
-    public function withAllowUtf8LocalPart(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withAllowUtf8LocalPart($value): self
     {
         return $this->cloneWith(['allowUtf8LocalPart' => $value]);
     }
 
-    public function withAllowObsLocalPart(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withAllowObsLocalPart($value): self
     {
         return $this->cloneWith(['allowObsLocalPart' => $value]);
     }
 
-    public function withAllowQuotedString(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withAllowQuotedString($value): self
     {
         return $this->cloneWith(['allowQuotedString' => $value]);
     }
 
-    public function withValidateQuotedContent(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withValidateQuotedContent($value): self
     {
         return $this->cloneWith(['validateQuotedContent' => $value]);
     }
 
-    public function withRejectEmptyQuotedLocalPart(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withRejectEmptyQuotedLocalPart($value): self
     {
         return $this->cloneWith(['rejectEmptyQuotedLocalPart' => $value]);
     }
 
-    public function withAllowUtf8Domain(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withAllowUtf8Domain($value): self
     {
         return $this->cloneWith(['allowUtf8Domain' => $value]);
     }
 
-    public function withAllowDomainLiteral(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withAllowDomainLiteral($value): self
     {
         return $this->cloneWith(['allowDomainLiteral' => $value]);
     }
 
-    public function withRequireFqdn(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withRequireFqdn($value): self
     {
         return $this->cloneWith(['requireFqdn' => $value]);
     }
 
-    public function withValidateIpGlobalRange(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withValidateIpGlobalRange($value): self
     {
         return $this->cloneWith(['validateIpGlobalRange' => $value]);
     }
 
-    public function withRejectC0Controls(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withRejectC0Controls($value): self
     {
         return $this->cloneWith(['rejectC0Controls' => $value]);
     }
 
-    public function withRejectC1Controls(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withRejectC1Controls($value): self
     {
         return $this->cloneWith(['rejectC1Controls' => $value]);
     }
 
-    public function withApplyNfcNormalization(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withApplyNfcNormalization($value): self
     {
         return $this->cloneWith(['applyNfcNormalization' => $value]);
     }
 
-    public function withEnforceLengthLimits(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withEnforceLengthLimits($value): self
     {
         return $this->cloneWith(['enforceLengthLimits' => $value]);
     }
 
-    public function withIncludeDomainAscii(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withIncludeDomainAscii($value): self
     {
         return $this->cloneWith(['includeDomainAscii' => $value]);
     }
 
-    public function withValidateDisplayNamePhrase(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withValidateDisplayNamePhrase($value): self
     {
         return $this->cloneWith(['validateDisplayNamePhrase' => $value]);
     }
 
-    public function withStrictIdna(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withStrictIdna($value): self
     {
         return $this->cloneWith(['strictIdna' => $value]);
     }
 
-    public function withAllowObsRoute(bool $value): self
+    /**
+     * @param bool $value
+     */
+    public function withAllowObsRoute($value): self
     {
         return $this->cloneWith(['allowObsRoute' => $value]);
     }
@@ -373,8 +532,9 @@ class ParseOptions
      *               ? strtolower(strstr(str_replace('.', '', $local), '+', true) ?: str_replace('.', '', $local))
      *               : $local,
      *   );
+     * @param callable|null $normalizer
      */
-    public function withLocalPartNormalizer(?callable $normalizer): self
+    public function withLocalPartNormalizer($normalizer): self
     {
         return $this->cloneWith([
             'localPartNormalizer' => $normalizer === null ? null : \Closure::fromCallable($normalizer),
@@ -389,37 +549,39 @@ class ParseOptions
      */
     private function cloneWith(array $overrides): self
     {
-        $get = fn (string $name, mixed $default): mixed => $overrides[$name] ?? $default;
+        $get = function (string $name, $default) use ($overrides) {
+            return $overrides[$name] ?? $default;
+        };
 
         return new self(
-            bannedChars:                $get('bannedChars', array_keys($this->bannedChars)),
-            separators:                 $get('separators', array_keys($this->separators)),
-            useWhitespaceAsSeparator:   $get('useWhitespaceAsSeparator', $this->useWhitespaceAsSeparator),
-            lengthLimits:               $get('lengthLimits', $this->lengthLimits),
-            allowedWhitespace:          $get('allowedWhitespace', array_keys($this->allowedWhitespace)),
-            allowUtf8LocalPart:         $get('allowUtf8LocalPart', $this->allowUtf8LocalPart),
-            allowObsLocalPart:          $get('allowObsLocalPart', $this->allowObsLocalPart),
-            allowQuotedString:          $get('allowQuotedString', $this->allowQuotedString),
-            validateQuotedContent:      $get('validateQuotedContent', $this->validateQuotedContent),
-            rejectEmptyQuotedLocalPart: $get('rejectEmptyQuotedLocalPart', $this->rejectEmptyQuotedLocalPart),
-            allowUtf8Domain:            $get('allowUtf8Domain', $this->allowUtf8Domain),
-            allowDomainLiteral:         $get('allowDomainLiteral', $this->allowDomainLiteral),
-            requireFqdn:                $get('requireFqdn', $this->requireFqdn),
-            validateIpGlobalRange:      $get('validateIpGlobalRange', $this->validateIpGlobalRange),
-            rejectC0Controls:           $get('rejectC0Controls', $this->rejectC0Controls),
-            rejectC1Controls:           $get('rejectC1Controls', $this->rejectC1Controls),
-            applyNfcNormalization:      $get('applyNfcNormalization', $this->applyNfcNormalization),
-            enforceLengthLimits:        $get('enforceLengthLimits', $this->enforceLengthLimits),
-            includeDomainAscii:         $get('includeDomainAscii', $this->includeDomainAscii),
-            validateDisplayNamePhrase:  $get('validateDisplayNamePhrase', $this->validateDisplayNamePhrase),
-            strictIdna:                 $get('strictIdna', $this->strictIdna),
-            allowObsRoute:              $get('allowObsRoute', $this->allowObsRoute),
-            trimSingleAddressWhitespace: $get('trimSingleAddressWhitespace', $this->trimSingleAddressWhitespace),
-            strictMultiWhitespace:      $get('strictMultiWhitespace', $this->strictMultiWhitespace),
-            rejectTrailingDot:          $get('rejectTrailingDot', $this->rejectTrailingDot),
-            localPartNormalizer:        array_key_exists('localPartNormalizer', $overrides)
+            $get('bannedChars', array_keys($this->bannedChars)),
+            $get('separators', array_keys($this->separators)),
+            $get('useWhitespaceAsSeparator', $this->useWhitespaceAsSeparator),
+            $get('lengthLimits', $this->lengthLimits),
+            $get('allowedWhitespace', array_keys($this->allowedWhitespace)),
+            $get('allowUtf8LocalPart', $this->allowUtf8LocalPart),
+            $get('allowObsLocalPart', $this->allowObsLocalPart),
+            $get('allowQuotedString', $this->allowQuotedString),
+            $get('validateQuotedContent', $this->validateQuotedContent),
+            $get('rejectEmptyQuotedLocalPart', $this->rejectEmptyQuotedLocalPart),
+            $get('allowUtf8Domain', $this->allowUtf8Domain),
+            $get('allowDomainLiteral', $this->allowDomainLiteral),
+            $get('requireFqdn', $this->requireFqdn),
+            $get('validateIpGlobalRange', $this->validateIpGlobalRange),
+            $get('rejectC0Controls', $this->rejectC0Controls),
+            $get('rejectC1Controls', $this->rejectC1Controls),
+            $get('applyNfcNormalization', $this->applyNfcNormalization),
+            $get('enforceLengthLimits', $this->enforceLengthLimits),
+            $get('includeDomainAscii', $this->includeDomainAscii),
+            $get('validateDisplayNamePhrase', $this->validateDisplayNamePhrase),
+            $get('strictIdna', $this->strictIdna),
+            $get('allowObsRoute', $this->allowObsRoute),
+            $get('trimSingleAddressWhitespace', $this->trimSingleAddressWhitespace),
+            $get('strictMultiWhitespace', $this->strictMultiWhitespace),
+            $get('rejectTrailingDot', $this->rejectTrailingDot),
+            array_key_exists('localPartNormalizer', $overrides)
                 ? $overrides['localPartNormalizer']
-                : $this->localPartNormalizer,
+                : $this->localPartNormalizer
         );
     }
 
@@ -432,7 +594,7 @@ class ParseOptions
      * @deprecated v3.0 — Use constructor param or withBannedChars(). Removed in v4.0.
      * @param array<string> $bannedChars
      */
-    public function setBannedChars(array $bannedChars): void
+    public function setBannedChars($bannedChars): void
     {
         $this->bannedChars = [];
         foreach ($bannedChars as $char) {
@@ -450,7 +612,7 @@ class ParseOptions
      * @deprecated v3.0 — Use constructor param or withSeparators(). Removed in v4.0.
      * @param array<string> $separators
      */
-    public function setSeparators(array $separators): void
+    public function setSeparators($separators): void
     {
         $this->separators = [];
         foreach ($separators as $sep) {
@@ -464,8 +626,9 @@ class ParseOptions
         return $this->separators;
     }
 
-    /** @deprecated v3.0 — Use constructor param or withUseWhitespaceAsSeparator(). Removed in v4.0. */
-    public function setUseWhitespaceAsSeparator(bool $value): void
+    /** @deprecated v3.0 — Use constructor param or withUseWhitespaceAsSeparator(). Removed in v4.0.
+     * @param bool $value */
+    public function setUseWhitespaceAsSeparator($value): void
     {
         $this->useWhitespaceAsSeparator = $value;
     }
@@ -475,8 +638,9 @@ class ParseOptions
         return $this->useWhitespaceAsSeparator;
     }
 
-    /** @deprecated v3.0 — Use constructor param or withLengthLimits(). Removed in v4.0. */
-    public function setLengthLimits(LengthLimits $limits): void
+    /** @deprecated v3.0 — Use constructor param or withLengthLimits(). Removed in v4.0.
+     * @param \Email\LengthLimits $limits */
+    public function setLengthLimits($limits): void
     {
         $this->lengthLimits = $limits;
     }
@@ -486,13 +650,14 @@ class ParseOptions
         return $this->lengthLimits;
     }
 
-    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
-    public function setMaxLocalPartLength(int $value): void
+    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0.
+     * @param int $value */
+    public function setMaxLocalPartLength($value): void
     {
         $this->lengthLimits = new LengthLimits(
             $value,
             $this->lengthLimits->maxTotalLength,
-            $this->lengthLimits->maxDomainLabelLength,
+            $this->lengthLimits->maxDomainLabelLength
         );
     }
 
@@ -501,13 +666,14 @@ class ParseOptions
         return $this->lengthLimits->maxLocalPartLength;
     }
 
-    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
-    public function setMaxTotalLength(int $value): void
+    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0.
+     * @param int $value */
+    public function setMaxTotalLength($value): void
     {
         $this->lengthLimits = new LengthLimits(
             $this->lengthLimits->maxLocalPartLength,
             $value,
-            $this->lengthLimits->maxDomainLabelLength,
+            $this->lengthLimits->maxDomainLabelLength
         );
     }
 
@@ -516,13 +682,14 @@ class ParseOptions
         return $this->lengthLimits->maxTotalLength;
     }
 
-    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
-    public function setMaxDomainLabelLength(int $value): void
+    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0.
+     * @param int $value */
+    public function setMaxDomainLabelLength($value): void
     {
         $this->lengthLimits = new LengthLimits(
             $this->lengthLimits->maxLocalPartLength,
             $this->lengthLimits->maxTotalLength,
-            $value,
+            $value
         );
     }
 

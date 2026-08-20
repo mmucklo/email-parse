@@ -11,15 +11,30 @@ namespace Email;
 final class ParseResult
 {
     /**
+     * @var bool
+     * @readonly
+     */
+    public $success;
+    /**
+     * @var ?string
+     * @readonly
+     */
+    public $reason;
+    /**
+     * @var array<int, ParsedEmailAddress>
+     * @readonly
+     */
+    public $emailAddresses;
+    /**
      * @param bool                      $success        `true` when every address parsed successfully.
      * @param ?string                   $reason         Summary failure message when `$success` is `false`; else `null`.
      * @param array<int, ParsedEmailAddress> $emailAddresses Parsed addresses in input order.
      */
-    public function __construct(
-        public readonly bool $success,
-        public readonly ?string $reason,
-        public readonly array $emailAddresses,
-    ) {
+    public function __construct(bool $success, ?string $reason, array $emailAddresses)
+    {
+        $this->success = $success;
+        $this->reason = $reason;
+        $this->emailAddresses = $emailAddresses;
     }
 
     /**
@@ -30,12 +45,14 @@ final class ParseResult
     public static function fromArray(array $arr): self
     {
         return new self(
-            success: $arr['success'],
-            reason:  $arr['reason'],
-            emailAddresses: array_map(
-                fn (array $a) => ParsedEmailAddress::fromArray($a),
-                $arr['email_addresses'],
-            ),
+            $arr['success'],
+            $arr['reason'],
+            array_map(
+                function (array $a) {
+                    return ParsedEmailAddress::fromArray($a);
+                },
+                $arr['email_addresses']
+            )
         );
     }
 
@@ -52,8 +69,10 @@ final class ParseResult
             'success' => $this->success,
             'reason' => $this->reason,
             'email_addresses' => array_map(
-                fn (ParsedEmailAddress $a) => $a->toArray(),
-                $this->emailAddresses,
+                function (ParsedEmailAddress $a) {
+                    return $a->toArray();
+                },
+                $this->emailAddresses
             ),
         ];
     }
