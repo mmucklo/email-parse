@@ -308,7 +308,17 @@ class Parse
         // mb_substr($emails, $i, 1) on every iteration. For multi-byte encodings
         // each mb_substr rescans from the start of the string (O(n) per call, so
         // O(n^2) over the loop); mb_str_split does it in a single O(n) pass.
-        $chars = mb_str_split($emails, 1, $encoding);
+        if ($encoding === 'UTF-8' && preg_match('//u', $emails) === false) {
+            // Invalid UTF-8: native mb_str_split (7.4+) returns byte-preserving
+            // single "characters", but symfony/polyfill-mbstring (PHP < 7.4)
+            // returns false. Split explicitly — into UTF-8 sequences, keeping any
+            // lone/invalid byte as its own character — so malformed input parses
+            // identically across PHP versions.
+            preg_match_all('/[\x00-\x7F]|[\xC0-\xFF][\x80-\xBF]*|./s', $emails, $splitMatches);
+            $chars = $splitMatches[0];
+        } else {
+            $chars = mb_str_split($emails, 1, $encoding);
+        }
         $len = count($chars);
         if (0 == $len) {
             $success = false;
