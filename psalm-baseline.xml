@@ -74,6 +74,7 @@
       <code><![CDATA[withAllowedWhitespace]]></code>
       <code><![CDATA[withApplyNfcNormalization]]></code>
       <code><![CDATA[withBannedChars]]></code>
+      <code><![CDATA[withDetectConfusableDomain]]></code>
       <code><![CDATA[withEnforceLengthLimits]]></code>
       <code><![CDATA[withIncludeDomainAscii]]></code>
       <code><![CDATA[withLengthLimits]]></code>
