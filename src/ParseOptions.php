@@ -53,6 +53,7 @@ class ParseOptions
      * @param bool              $validateDisplayNamePhrase Enforce RFC 5322 §3.2.5 phrase syntax for unquoted display names (atext + WSP only).
      * @param bool              $strictIdna                Apply full IDNA2008 conformance on U-label domains (CONTEXTJ/O, Bidi rule, STD3, nontransitional mapping).
      * @param bool              $allowObsRoute             Accept RFC 5322 §4.4 obs-route source-route prefix inside angle-addr (e.g. `<@host1,@host2:user@host3>`); the route is captured and the real addr-spec is used ("accept and discard" per spec).
+     * @param bool              $detectConfusableDomain    Flag mixed-script / confusable (homograph) domains via the intl Spoofchecker — e.g. `аpple.com` with a Cyrillic `а`. Security policy, not RFC validity: the address stays valid; the result carries `domainIsSuspicious = true`. Single-script international domains (e.g. `почта.рф`) are not flagged.
      * @param ?\Closure         $localPartNormalizer       Optional callback `fn(string $localPart, string $domain): string` invoked after local-part validation succeeds. The returned string replaces `local_part_parsed` in the output (and is re-quoted if needed). Typical uses: Gmail dot-insensitivity, `+tag` plus-addressing.
      */
     public function __construct(
@@ -81,6 +82,7 @@ class ParseOptions
         public readonly bool $trimSingleAddressWhitespace = false,
         public readonly bool $strictMultiWhitespace = false,
         public readonly bool $rejectTrailingDot = false,
+        public readonly bool $detectConfusableDomain = false,
         public readonly ?\Closure $localPartNormalizer = null,
     ) {
         foreach ($bannedChars as $char) {
@@ -273,6 +275,11 @@ class ParseOptions
         return $this->cloneWith(['rejectTrailingDot' => $value]);
     }
 
+    public function withDetectConfusableDomain(bool $value): self
+    {
+        return $this->cloneWith(['detectConfusableDomain' => $value]);
+    }
+
     public function withAllowUtf8LocalPart(bool $value): self
     {
         return $this->cloneWith(['allowUtf8LocalPart' => $value]);
@@ -417,6 +424,7 @@ class ParseOptions
             trimSingleAddressWhitespace: $get('trimSingleAddressWhitespace', $this->trimSingleAddressWhitespace),
             strictMultiWhitespace:      $get('strictMultiWhitespace', $this->strictMultiWhitespace),
             rejectTrailingDot:          $get('rejectTrailingDot', $this->rejectTrailingDot),
+            detectConfusableDomain:     $get('detectConfusableDomain', $this->detectConfusableDomain),
             localPartNormalizer:        array_key_exists('localPartNormalizer', $overrides)
                 ? $overrides['localPartNormalizer']
                 : $this->localPartNormalizer,

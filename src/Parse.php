@@ -50,6 +50,9 @@ class Parse
      */
     protected ParseOptions $options;
 
+    /** Lazily-created intl Spoofchecker, reused across a batch (see detectConfusableDomain). */
+    private ?\Spoofchecker $spoofchecker = null;
+
     /**
      * Allow Parse to be instantiated as a singleton.
      *
@@ -1327,7 +1330,8 @@ class Parse
                         'invalid_reason' => $emailAddress['invalid_reason'],
                         'invalid_reason_code' => $emailAddress['invalid_reason_code'],
                         'comments' => $emailAddress['comments'],
-                        'obs_route' => $emailAddress['obs_route'] !== '' ? $emailAddress['obs_route'] : null, ];
+                        'obs_route' => $emailAddress['obs_route'] !== '' ? $emailAddress['obs_route'] : null,
+                        'domain_is_suspicious' => $this->isDomainConfusable($emailAddress['domain']), ];
 
         // Build the proper address by hand (has comments stripped out and should have quotes in the proper places)
         if (!$emailAddrDef['invalid']) {
@@ -1348,6 +1352,27 @@ class Parse
     protected function isUtf8Char(string $char): bool
     {
         return ord($char[0]) > 127;
+    }
+
+    /**
+     * Whether a domain looks like a mixed-script / confusable (homograph) spoof —
+     * e.g. `аpple.com` with a Cyrillic `а`. Uses the intl Spoofchecker's default
+     * checks (which flag mixed-script and confusable strings) on the Unicode
+     * (U-label) domain. Off unless ParseOptions::$detectConfusableDomain is set;
+     * a legitimate single-script international domain (e.g. `почта.рф`) is not
+     * flagged. This is a security-policy signal, not an RFC validity check.
+     */
+    private function isDomainConfusable(string $domain): bool
+    {
+        if ($domain === '' || !$this->options->detectConfusableDomain || !class_exists('Spoofchecker')) {
+            return false;
+        }
+
+        if ($this->spoofchecker === null) {
+            $this->spoofchecker = new \Spoofchecker();
+        }
+
+        return $this->spoofchecker->isSuspicious($domain);
     }
 
     /**
