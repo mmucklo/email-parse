@@ -777,7 +777,7 @@ class Parse
                                 if ($subState === self::STATE_START) {
                                     $emailAddress['address_temp'] .= $curChar;
                                     // ??= preserves the first invalid character seen; later chars must not overwrite it
-                                    $emailAddress['special_char_in_substate'] = $emailAddress['special_char_in_substate'] ?? $curChar;
+                                    $emailAddress['special_char_in_substate'] ??= $curChar;
                                 } else {
                                     $emailAddress['invalid'] = true;
                                     $emailAddress['invalid_reason'] = "Invalid character found in email address local part: '{$curChar}'";
@@ -787,7 +787,7 @@ class Parse
                                 // Non-UTF-8, non-atext character
                                 if ($subState === self::STATE_START) {
                                     // ??= preserves the first invalid character seen; later chars must not overwrite it
-                                    $emailAddress['special_char_in_substate'] = $emailAddress['special_char_in_substate'] ?? $curChar;
+                                    $emailAddress['special_char_in_substate'] ??= $curChar;
                                     $emailAddress['address_temp'] .= $curChar;
                                 } else {
                                     $emailAddress['invalid'] = true;
