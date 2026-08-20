@@ -470,9 +470,9 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $p = new Parse(null, ParseOptions::rfc5322());
         foreach (['@', '.', '<', '"'] as $char) {
-            $start = hrtime(true);
+            $start = microtime(true); // microtime, not hrtime() — hrtime is PHP 7.3+
             $result = $p->parseSingle(str_repeat($char, 200000));
-            $elapsedMs = (hrtime(true) - $start) / 1e6;
+            $elapsedMs = (microtime(true) - $start) * 1000;
             $this->assertTrue($result->invalid, "repeat({$char}) should be invalid");
             // Linear is ~40ms here; the old O(n^2) took multiple seconds. 2s is a wide,
             // non-flaky margin that still fails a quadratic regression.
