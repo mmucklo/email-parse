@@ -153,6 +153,14 @@ class Parse
             $ipType = FILTER_FLAG_IPV4;
         }
 
+        // 2001:db8::/32 is reserved for documentation (RFC 3849). Older PHP's
+        // FILTER_FLAG_NO_RES_RANGE does not reject it for IPv6 (only 8.2+'s
+        // FILTER_FLAG_GLOBAL_RANGE does), so check it explicitly for consistency
+        // across the supported 7.1-8.1 range.
+        if ($ipType === FILTER_FLAG_IPV6 && preg_match('/^2001:0?db8:/i', $ip)) {
+            return false;
+        }
+
         // Check if it's NOT in private or reserved ranges
         return filter_var($ip, FILTER_VALIDATE_IP, $ipType | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
     }
@@ -1469,8 +1477,11 @@ class Parse
             }
         }
 
-        // UTF-8 encoding validation
-        if ($hasUtf8 && !mb_check_encoding($localPart, 'UTF-8')) {
+        // UTF-8 encoding validation. Use a PCRE `//u` match rather than
+        // mb_check_encoding(): the latter's strictness about lone continuation
+        // bytes varies by PHP version (7.1-7.3 accept some that 7.4+ reject),
+        // whereas the PCRE UTF-8 validity check is consistent across versions.
+        if ($hasUtf8 && preg_match('//u', $localPart) === false) {
             return ['valid' => false, 'reason' => 'Invalid UTF-8 encoding in local part', 'code' => Err::InvalidUtf8Encoding(), 'normalized' => null];
         }
 
@@ -1517,6 +1528,13 @@ class Parse
      */
     protected function normalizeUtf8($str)
     {
+        // Invalid UTF-8 cannot be normalized. The PCRE `//u` validity check is
+        // consistent across PHP versions, unlike Normalizer::normalize(), whose
+        // handling of malformed input differs on 7.1-7.3 vs 7.4+.
+        if (preg_match('//u', $str) === false) {
+            return false;
+        }
+
         if (!function_exists('normalizer_normalize')) {
             // Intl extension not available, return as-is
             return $str;
