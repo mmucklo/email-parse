@@ -638,9 +638,81 @@ class Parse
                 $emailAddress->state = self::STATE_SQUARE_BRACKET;
             }
         } elseif ('.' == $curChar) {
-            $this->handleAddressDot($emailAddress, $curChar, $prevChar);
+            // Period placement (RFC 5322 §3.4) — inlined as it is per-character hot.
+            if ('.' == $prevChar && !$this->options->allowObsLocalPart) {
+                // Consecutive dots only allowed when obs-local-part is enabled
+                $emailAddress->invalid = true;
+                $emailAddress->invalid_reason = "Email address should not contain two dots '.' in a row";
+                $emailAddress->invalid_reason_code = Err::ConsecutiveDots;
+            } elseif (self::STATE_LOCAL_PART == $emailAddress->subState) {
+                if (!$emailAddress->local_part_parsed && !$this->options->allowObsLocalPart) {
+                    // Leading dots only allowed when obs-local-part is enabled
+                    $emailAddress->invalid = true;
+                    $emailAddress->invalid_reason = "Email address can not start with '.'";
+                    $emailAddress->invalid_reason_code = Err::LeadingDot;
+                } else {
+                    $emailAddress->local_part_parsed .= $curChar;
+                }
+            } elseif (self::STATE_DOMAIN == $emailAddress->subState) {
+                $emailAddress->domain .= $curChar;
+            } elseif (self::STATE_AFTER_DOMAIN == $emailAddress->subState) {
+                $emailAddress->invalid = true;
+                $emailAddress->invalid_reason = "Stray period '.' found after domain of email address";
+                $emailAddress->invalid_reason_code = Err::StrayPeriodAfterDomain;
+            } elseif (self::STATE_START == $emailAddress->subState) {
+                if ($emailAddress->quote_temp) {
+                    $emailAddress->address_temp .= $emailAddress->quote_temp;
+                    $emailAddress->address_temp_quoted = true;
+                    $emailAddress->quote_temp = '';
+                }
+                $emailAddress->address_temp .= $curChar;
+                ++$emailAddress->address_temp_period;
+            } else {
+                // RFC 5322 §3.4: a period is not an atext character and is not
+                // valid in an unquoted display name or at the start of an address.
+                $emailAddress->invalid = true;
+                $emailAddress->invalid_reason = 'Stray period found in email address.  If the period is part of a person\'s name, it must appear in double quotes - e.g. "John Q. Public". Otherwise, an email address shouldn\'t begin with a period.';
+                $emailAddress->invalid_reason_code = Err::StrayPeriod;
+            }
         } elseif (preg_match('/[A-Za-z0-9_\-!#$%&\'*+\/=?^`{|}~]/', $curChar)) {
-            $this->handleAddressAtext($emailAddress, $curChar);
+            // atext (RFC 5322 §3.2.3) — the per-character hot path; inlined to keep
+            // one call per character. Appends to the local-part, display name,
+            // domain or pending word per the sub-state.
+            if (isset($emailAddress->bannedChars[$curChar])) {
+                $emailAddress->invalid = true;
+                $emailAddress->invalid_reason = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
+                $emailAddress->invalid_reason_code = Err::CharacterNotAllowed;
+            } elseif (('/' == $curChar || '|' == $curChar) &&
+            !$emailAddress->local_part_parsed && !$emailAddress->address_temp && !$emailAddress->quote_temp && !$emailAddress->name_parsed) {
+                $emailAddress->invalid = true;
+                $emailAddress->invalid_reason = "This character is not allowed at the beginning of an email address (please put in quotes if needed): '{$curChar}'";
+                $emailAddress->invalid_reason_code = Err::InvalidCharacterAtStart;
+            } elseif (self::STATE_LOCAL_PART == $emailAddress->subState) {
+                // Legitimate character - Determine where to append based on the current 'substate'
+
+                if ($emailAddress->quote_temp) {
+                    $emailAddress->local_part_parsed .= $emailAddress->quote_temp;
+                    $emailAddress->quote_temp = '';
+                    $emailAddress->local_part_quoted = true;
+                }
+                $emailAddress->local_part_parsed .= $curChar;
+            } elseif (self::STATE_NAME == $emailAddress->subState) {
+                if ($emailAddress->quote_temp) {
+                    $emailAddress->name_parsed .= $emailAddress->quote_temp;
+                    $emailAddress->quote_temp = '';
+                    $emailAddress->name_quoted = true;
+                }
+                $emailAddress->name_parsed .= $curChar;
+            } elseif (self::STATE_DOMAIN == $emailAddress->subState) {
+                $emailAddress->domain .= $curChar;
+            } else {
+                if ($emailAddress->quote_temp) {
+                    $emailAddress->address_temp .= $emailAddress->quote_temp;
+                    $emailAddress->address_temp_quoted = true;
+                    $emailAddress->quote_temp = '';
+                }
+                $emailAddress->address_temp .= $curChar;
+            }
         } else {
             $this->handleAddressNonAtext($emailAddress, $curChar);
         }
@@ -843,92 +915,6 @@ class Parse
                 $emailAddress->address_temp_quoted = false;
                 $emailAddress->address_temp_period = 0;
             }
-        }
-    }
-
-    /**
-     * STATE_ADDRESS period handling — placement rules differ by sub-state and by
-     * whether obs-local-part is permitted (RFC 5322 §3.4).
-     */
-    private function handleAddressDot(ParseContext $emailAddress, string $curChar, ?string $prevChar): void
-    {
-        if ('.' == $prevChar && !$this->options->allowObsLocalPart) {
-            // Consecutive dots only allowed when obs-local-part is enabled
-            $emailAddress->invalid = true;
-            $emailAddress->invalid_reason = "Email address should not contain two dots '.' in a row";
-            $emailAddress->invalid_reason_code = Err::ConsecutiveDots;
-        } elseif (self::STATE_LOCAL_PART == $emailAddress->subState) {
-            if (!$emailAddress->local_part_parsed && !$this->options->allowObsLocalPart) {
-                // Leading dots only allowed when obs-local-part is enabled
-                $emailAddress->invalid = true;
-                $emailAddress->invalid_reason = "Email address can not start with '.'";
-                $emailAddress->invalid_reason_code = Err::LeadingDot;
-            } else {
-                $emailAddress->local_part_parsed .= $curChar;
-            }
-        } elseif (self::STATE_DOMAIN == $emailAddress->subState) {
-            $emailAddress->domain .= $curChar;
-        } elseif (self::STATE_AFTER_DOMAIN == $emailAddress->subState) {
-            $emailAddress->invalid = true;
-            $emailAddress->invalid_reason = "Stray period '.' found after domain of email address";
-            $emailAddress->invalid_reason_code = Err::StrayPeriodAfterDomain;
-        } elseif (self::STATE_START == $emailAddress->subState) {
-            if ($emailAddress->quote_temp) {
-                $emailAddress->address_temp .= $emailAddress->quote_temp;
-                $emailAddress->address_temp_quoted = true;
-                $emailAddress->quote_temp = '';
-            }
-            $emailAddress->address_temp .= $curChar;
-            ++$emailAddress->address_temp_period;
-        } else {
-            // RFC 5322 §3.4: a period is not an atext character and is not
-            // valid in an unquoted display name or at the start of an address.
-            $emailAddress->invalid = true;
-            $emailAddress->invalid_reason = 'Stray period found in email address.  If the period is part of a person\'s name, it must appear in double quotes - e.g. "John Q. Public". Otherwise, an email address shouldn\'t begin with a period.';
-            $emailAddress->invalid_reason_code = Err::StrayPeriod;
-        }
-    }
-
-    /**
-     * STATE_ADDRESS atext handling (RFC 5322 §3.2.3) — appends the character to
-     * the local-part, display name, domain or pending word per the sub-state.
-     */
-    private function handleAddressAtext(ParseContext $emailAddress, string $curChar): void
-    {
-        if (isset($emailAddress->bannedChars[$curChar])) {
-            $emailAddress->invalid = true;
-            $emailAddress->invalid_reason = "This character is not allowed in email addresses submitted (please put in quotes if needed): '{$curChar}'";
-            $emailAddress->invalid_reason_code = Err::CharacterNotAllowed;
-        } elseif (('/' == $curChar || '|' == $curChar) &&
-        !$emailAddress->local_part_parsed && !$emailAddress->address_temp && !$emailAddress->quote_temp && !$emailAddress->name_parsed) {
-            $emailAddress->invalid = true;
-            $emailAddress->invalid_reason = "This character is not allowed at the beginning of an email address (please put in quotes if needed): '{$curChar}'";
-            $emailAddress->invalid_reason_code = Err::InvalidCharacterAtStart;
-        } elseif (self::STATE_LOCAL_PART == $emailAddress->subState) {
-            // Legitimate character - Determine where to append based on the current 'substate'
-
-            if ($emailAddress->quote_temp) {
-                $emailAddress->local_part_parsed .= $emailAddress->quote_temp;
-                $emailAddress->quote_temp = '';
-                $emailAddress->local_part_quoted = true;
-            }
-            $emailAddress->local_part_parsed .= $curChar;
-        } elseif (self::STATE_NAME == $emailAddress->subState) {
-            if ($emailAddress->quote_temp) {
-                $emailAddress->name_parsed .= $emailAddress->quote_temp;
-                $emailAddress->quote_temp = '';
-                $emailAddress->name_quoted = true;
-            }
-            $emailAddress->name_parsed .= $curChar;
-        } elseif (self::STATE_DOMAIN == $emailAddress->subState) {
-            $emailAddress->domain .= $curChar;
-        } else {
-            if ($emailAddress->quote_temp) {
-                $emailAddress->address_temp .= $emailAddress->quote_temp;
-                $emailAddress->address_temp_quoted = true;
-                $emailAddress->quote_temp = '';
-            }
-            $emailAddress->address_temp .= $curChar;
         }
     }
 
