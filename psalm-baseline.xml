@@ -6,6 +6,20 @@
     </PossiblyUnusedMethod>
   </file>
   <file src="src/Parse.php">
+    <InvalidCast>
+      <code><![CDATA[$emailAddress->state]]></code>
+    </InvalidCast>
+    <ParadoxicalCondition>
+      <code><![CDATA[default:
+                    // Shouldn't ever get here - what is $emailAddress->state?
+                    $emailAddress->original_address .= $curChar;
+                    $emailAddress->invalid = true;
+                    $emailAddress->invalid_reason = 'Error during parsing';
+                    $emailAddress->invalid_reason_code = Err::ParseError;
+                    $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$emailAddress->state}\n\$subState: {$emailAddress->subState}\n\$i: {$i}\n\$curChar: {$curChar}");
+
+                    break;]]></code>
+    </ParadoxicalCondition>
     <PossiblyUnusedMethod>
       <code><![CDATA[getInstance]]></code>
       <code><![CDATA[getOptions]]></code>
@@ -16,13 +30,21 @@
       <code><![CDATA[setOptions]]></code>
     </PossiblyUnusedMethod>
     <RedundantCondition>
-      <code><![CDATA[self::STATE_START == $subState]]></code>
+      <code><![CDATA[self::STATE_TRIM]]></code>
     </RedundantCondition>
     <TypeDoesNotContainType>
-      <code><![CDATA[self::STATE_NAME == $subState]]></code>
-      <code><![CDATA[self::STATE_NAME == $subState]]></code>
-      <code><![CDATA[self::STATE_NAME === $subState]]></code>
-      <code><![CDATA[self::STATE_NAME === $subState]]></code>
+      <code><![CDATA[in_array($emailAddress->state, [self::STATE_QUOTE, self::STATE_COMMENT, self::STATE_SQUARE_BRACKET, self::STATE_OBS_ROUTE], true)]]></code>
+      <code><![CDATA[self::STATE_ADDRESS]]></code>
+      <code><![CDATA[self::STATE_COMMENT]]></code>
+      <code><![CDATA[self::STATE_COMMENT => ['No closing parenthesis: \')\'', Err::UnterminatedComment]]]></code>
+      <code><![CDATA[self::STATE_END_ADDRESS == $emailAddress->state]]></code>
+      <code><![CDATA[self::STATE_END_ADDRESS == $emailAddress->state]]></code>
+      <code><![CDATA[self::STATE_OBS_ROUTE]]></code>
+      <code><![CDATA[self::STATE_OBS_ROUTE => ['Incomplete obs-route: missing colon before end of input', Err::IncompleteAddress]]]></code>
+      <code><![CDATA[self::STATE_QUOTE]]></code>
+      <code><![CDATA[self::STATE_QUOTE => ['No ending quote: \'"\'', Err::UnterminatedQuote]]]></code>
+      <code><![CDATA[self::STATE_SQUARE_BRACKET]]></code>
+      <code><![CDATA[self::STATE_SQUARE_BRACKET => ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket]]]></code>
     </TypeDoesNotContainType>
   </file>
   <file src="src/ParseOptions.php">

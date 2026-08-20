@@ -3,20 +3,64 @@
 namespace Email;
 
 /**
- * Per-parse mutable accumulator for {@see Parse::parse()}.
+ * Per-parse mutable state for {@see Parse::parse()}.
+ *
+ * Holds the input snapshot and hoisted config, the state-machine control
+ * variables, and the ~24-field address accumulator that the state handlers
+ * read and mutate as they walk the input character by character.
  *
  * A fresh instance is created for every parse() call and is never stored on the
  * Parse instance, so the parser stays reentrant: a caller-supplied
  * localPartNormalizer closure may call back into parse() mid-parse without
  * clobbering the outer parse's state.
  *
- * Property names mirror the historical $emailAddress accumulator keys so the
- * accumulator threads through the validation helpers unchanged; the public
- * output array shape is built separately in {@see Parse::addAddress()} and is
+ * The accumulator property names mirror the historical $emailAddress array keys
+ * so they thread through the validation helpers unchanged; the public output
+ * array shape is built separately in {@see Parse::addAddress()} and is
  * unaffected by this object.
  */
 final class ParseContext
 {
+    // --- Per-parse input snapshot and hoisted config (set once in parse(),
+    //     never reset between addresses). ---
+
+    /** @var array<int, string> The input split into characters (see parse()). */
+    public array $chars = [];
+
+    /** Number of characters in $chars. */
+    public int $len = 0;
+
+    /** Whether multiple addresses are being parsed. */
+    public bool $multiple = true;
+
+    /** The original input string, retained for diagnostic logging. */
+    public string $emails = '';
+
+    /** @var array<string, bool> Separator characters, as a lookup map. */
+    public array $separators = [];
+
+    /** @var array<string, bool> Banned characters, as a lookup map. */
+    public array $bannedChars = [];
+
+    /** Whether whitespace acts as an address separator. */
+    public bool $useWhitespaceAsSeparator = false;
+
+    /** @var array<string, bool> Insignificant (foldable/trimmable) whitespace, as a lookup map. */
+    public array $allowedWhitespace = [];
+
+    // --- Loop control state (state/subState reset per address by parse()). ---
+
+    /** Current parser state (one of Parse::STATE_*). */
+    public int $state = 0;
+
+    /** Current parser sub-state within an addr-spec (one of Parse::STATE_*). */
+    public int $subState = 0;
+
+    /** Current comment nesting depth. */
+    public int $commentNestLevel = 0;
+
+    // --- Accumulator fields (reset per address via resetAddress()). ---
+
     /** Raw address as given, comments included. */
     public string $original_address = '';
 
