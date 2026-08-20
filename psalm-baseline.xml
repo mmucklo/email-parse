@@ -6,30 +6,6 @@
     </PossiblyUnusedMethod>
   </file>
   <file src="src/Parse.php">
-    <PossiblyInvalidArgument>
-      <code><![CDATA[$tempIp]]></code>
-    </PossiblyInvalidArgument>
-    <PossiblyInvalidCast>
-      <code><![CDATA[$tempIp]]></code>
-    </PossiblyInvalidCast>
-    <PossiblyUndefinedArrayOffset>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp']]]></code>
-      <code><![CDATA[$emailAddress['address_temp_quoted']]]></code>
-      <code><![CDATA[$emailAddress['in_angle_addr']]]></code>
-      <code><![CDATA[$emailAddress['invalid']]]></code>
-      <code><![CDATA[$emailAddress['local_atom_split_by_comment']]]></code>
-      <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
-      <code><![CDATA[$emailAddress['local_part_parsed']]]></code>
-      <code><![CDATA[$emailAddress['name_parsed']]]></code>
-      <code><![CDATA[$emailAddress['name_parsed']]]></code>
-      <code><![CDATA[$emailAddress['quote_temp']]]></code>
-    </PossiblyUndefinedArrayOffset>
     <PossiblyUnusedMethod>
       <code><![CDATA[getInstance]]></code>
       <code><![CDATA[getOptions]]></code>
