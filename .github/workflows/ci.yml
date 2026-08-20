@@ -13,16 +13,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        # This build targets PHP 7.1-8.0 (8.1+ users get the native 3.x line).
         php-version:
           - '7.1'
           - '7.2'
           - '7.3'
           - '7.4'
           - '8.0'
-          - '8.1'
-          - '8.2'
-          - '8.3'
-          - '8.4'
 
     steps:
       - name: Checkout code
@@ -70,7 +67,7 @@ jobs:
           extensions: mbstring, intl
           coverage: none
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --ignore-platform-req=php
       - name: Run PHP CS Fixer
         run: bin/php-cs-fixer fix --dry-run --diff --verbose
 
@@ -87,6 +84,6 @@ jobs:
           extensions: mbstring, intl
           coverage: none
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+        run: composer install --prefer-dist --no-progress --ignore-platform-req=php
       - name: Run PHPStan
         run: bin/phpstan analyse --memory-limit=512M --error-format=github
