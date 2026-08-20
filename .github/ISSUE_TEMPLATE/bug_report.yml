@@ -1,0 +1,62 @@
+name: Bug report
+description: A specific address parses incorrectly, or the library errors unexpectedly.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report! The single most useful thing you can give us is the **exact input string** that misparses and what you expected — that turns straight into a test case.
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: The exact address string passed to the parser. Paste it verbatim (in backticks) — whitespace and invisible characters matter.
+      placeholder: "`\"John Doe\" <john@example.com>`"
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What should the parser return? (valid/invalid, the local part / domain, or the error code you'd expect.)
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What does it return instead? Include the relevant fields — e.g. `invalid`, `invalidReason`, `invalidReasonCode`, `localPart`, `domain`.
+    validations:
+      required: true
+  - type: textarea
+    id: options
+    attributes:
+      label: Options / preset used
+      description: Which preset or `ParseOptions` did you configure? Paste the `ParseOptions::...` / `withX()` setup (or "defaults / `new Parse()`").
+      render: php
+      placeholder: |
+        $parser = new Parse(null, ParseOptions::rfc5322()->withRequireFqdn(false));
+        $result = $parser->parseSingle($input);
+    validations:
+      required: true
+  - type: input
+    id: package-version
+    attributes:
+      label: Package version
+      description: "Output of `composer show mmucklo/email-parse | grep versions` (e.g. 3.8.0, or 3.8.0.71 for the PHP 7.1 build)."
+    validations:
+      required: true
+  - type: input
+    id: php-version
+    attributes:
+      label: PHP version
+      description: "Output of `php -v` (first line)."
+    validations:
+      required: true
+  - type: input
+    id: rfc
+    attributes:
+      label: Relevant RFC (optional)
+      description: If you know the rule this violates, cite it — e.g. "RFC 5322 §3.2.4". Helps us confirm the correct behavior.
+    validations:
+      required: false
