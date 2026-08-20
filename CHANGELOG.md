@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.8.0]
+
+Adds opt-in homoglyph / confusable-domain detection. Additive and off by default — no behavior change unless you enable it.
+
 ### Added
 - **Optional homoglyph / confusable-domain detection.** `ParseOptions::withDetectConfusableDomain(true)` flags mixed-script "look-alike" domains (e.g. `аpple.com` with a Cyrillic `а`) via the intl `Spoofchecker`. This is a **security-policy signal, not RFC validity**: the address stays valid, and the result carries a new `ParsedEmailAddress::$domainIsSuspicious` field (also `domain_is_suspicious` in the array API). Off by default. Legitimate single-script international domains (e.g. `почта.рф`, `münchen.de`) are **not** flagged. Full confusable-against-a-target-list matching ("looks like `paypal.com`") remains out of scope — it needs a caller-supplied brand set.
 
