@@ -11,7 +11,10 @@ $config = new PhpCsFixer\Config();
 return $config
     ->setRules([
         '@PSR12' => true,
-        '@PHP8x2Migration' => true,
+        // This is the PHP 7.1 build of the 3.x line — do not let the fixer
+        // "modernize" the source past 7.1 (e.g. `??=`, arrow functions, nullsafe),
+        // which would reintroduce syntax that does not parse on PHP 7.1-7.3.
+        '@PHP71Migration' => true,
         'array_syntax' => ['syntax' => 'short'],
         'ordered_imports' => ['sort_algorithm' => 'alpha'],
         'no_unused_imports' => true,
