@@ -148,8 +148,16 @@ final class ParseContext
      * for the next address in a multi-address parse (matches the historical
      * "rebuild the $emailAddress array" behaviour).
      */
-    public function resetAddress(): void
+    public function resetAddress(int $state, int $subState): void
     {
+        // Loop-control state, reset here so every per-address field has a single
+        // source of truth. commentNestLevel in particular has no other reset:
+        // leaving it out would let an unterminated comment leak into the next
+        // address in a batch, self-healing only because '(' reassigns it to 1.
+        $this->state = $state;
+        $this->subState = $subState;
+        $this->commentNestLevel = 0;
+
         $this->original_address = '';
         $this->name_parsed = '';
         $this->local_part_parsed = '';
