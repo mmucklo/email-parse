@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or usage help
+    url: https://github.com/mmucklo/email-parse/discussions
+    about: For "how do I…" and general questions, please open a Discussion rather than an issue.
+  - name: Cookbook
+    url: https://github.com/mmucklo/email-parse/blob/master/docs/cookbook.md
+    about: Common recipes — check here first; your use case may already be covered.

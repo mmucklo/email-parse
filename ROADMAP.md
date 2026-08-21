@@ -123,8 +123,8 @@ The comparison harness remains a local dev tool (not a CI gate). Every fixed clu
 
 **Community / documentation:**
 - [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.
-- [~] GitHub issue + pull-request templates. (PR template done; issue templates still to add.)
-- [ ] `CODE_OF_CONDUCT.md`.
+- [x] GitHub issue + pull-request templates — YAML issue forms (parser-tailored bug report + feature request) with a config linking Discussions/cookbook, plus a PR template.
+- [x] `CODE_OF_CONDUCT.md` — minimal statement + report contact (mmucklo@gmail.com).
 - [x] Examples cookbook — `docs/cookbook.md` (parsing, presets, streaming, UTF-8/IDN, error codes/severity, `canonical()`, local-part normalizer, confusable-domain detection, legacy array API). Linked from the README.
 - [ ] README cleanup — split the large reference tables into `docs/` sub-pages if the top-level README grows further.
 
