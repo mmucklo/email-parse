@@ -1317,15 +1317,9 @@ class Parse
             $ctx->invalid_reason_code = Err::InvalidDisplayNamePhrase;
         }
 
-        // Unified local-part validation. Dispatched through validateLocalPart(),
-        // a deprecated but backward-compatible extension point (removed in 4.0),
-        // so it still receives the legacy accumulator-array shape it always took.
+        // Unified local-part validation.
         if (!$ctx->invalid) {
-            /** @psalm-suppress DeprecatedMethod Intentional BC hook so subclass overrides still fire; see validateLocalPart(). */
-            $result = $this->validateLocalPart([
-                'local_part_parsed' => $ctx->local_part_parsed,
-                'local_part_quoted' => $ctx->local_part_quoted,
-            ]);
+            $result = $this->validateLocalPart($ctx);
             if (!$result['valid']) {
                 $ctx->invalid = true;
                 $ctx->invalid_reason = $result['reason'];
@@ -1451,20 +1445,13 @@ class Parse
     /**
      * Unified local-part validation based on ParseOptions rule properties.
      *
-     * @deprecated 3.9.0 Not a supported extension point going forward — customize
-     *             validation through ParseOptions, not by overriding this. Kept
-     *             with its original array signature for backward compatibility
-     *             and removed in 4.0. Receives the accumulator keys it reads:
-     *             `local_part_parsed` (string) and `local_part_quoted` (bool).
-     *
-     * @param array{local_part_parsed: string, local_part_quoted: bool} $emailAddress
      * @return array{valid: bool, reason: ?string, code: ?ParseErrorCode, normalized: ?string}
      */
-    protected function validateLocalPart(array $emailAddress): array
+    private function validateLocalPart(ParseContext $ctx): array
     {
         $opts = $this->options;
-        $localPart = $emailAddress['local_part_parsed'];
-        $quoted = $emailAddress['local_part_quoted'];
+        $localPart = $ctx->local_part_parsed;
+        $quoted = $ctx->local_part_quoted;
 
         // RFC 6531 §3.3 / RFC 6532 §3.2: gate UTF-8 presence before other checks
         // (allowUtf8LocalPart is false in rfc5321() and rfc5322() presets)
@@ -1660,7 +1647,7 @@ class Parse
      *
      * @return array{valid: bool, reason?: string, code?: ParseErrorCode}
      */
-    protected function validateDomainName(string $domain): array
+    private function validateDomainName(string $domain): array
     {
         // RFC 5321 §4.5.3.1.2: total domain length limit is in octets
         if (strlen($domain) > 255) {

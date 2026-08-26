@@ -1730,33 +1730,4 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('inner.user', $innerResult->localPart);
         $this->assertSame('nested.example.org', $innerResult->domain);
     }
-
-    /**
-     * Backward compatibility: validateLocalPart() keeps its original array
-     * signature as a deprecated extension point (removed in 4.0). A subclass
-     * override must still be invoked and able to change the outcome — the parser
-     * dispatches through $this->validateLocalPart(), not a renamed internal.
-     */
-    public function testDeprecatedValidateLocalPartOverrideStillTakesEffect(): void
-    {
-        $parser = new class () extends Parse {
-            protected function validateLocalPart(array $emailAddress): array
-            {
-                if ('blocked' === $emailAddress['local_part_parsed']) {
-                    return ['valid' => false, 'reason' => 'blocked local part', 'code' => null, 'normalized' => null];
-                }
-
-                return parent::validateLocalPart($emailAddress);
-            }
-        };
-
-        // Un-blocked address flows through parent::validateLocalPart() unchanged.
-        $ok = $parser->parseSingle('allowed@example.com');
-        $this->assertFalse($ok->invalid);
-
-        // The override fires and rejects an otherwise-valid address.
-        $blocked = $parser->parseSingle('blocked@example.com');
-        $this->assertTrue($blocked->invalid, 'subclass validateLocalPart() override was not honored');
-        $this->assertSame('blocked local part', $blocked->invalidReason);
-    }
 }

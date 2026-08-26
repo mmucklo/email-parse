@@ -31,7 +31,7 @@ below as a record; planned work follows.
 ### Deprecations
 
 - **v3.0:** `LengthLimits` moved to readonly constructor promotion (getters/setters removed — see [UPGRADE.md](UPGRADE.md)). The `ParseOptions` setters (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) are marked `@deprecated` and still functional; removal is targeted for v4.0.
-- **v3.9:** `protected Parse::validateLocalPart(array $emailAddress)` marked `@deprecated`. Still functional and still a live extension point (subclass overrides are invoked), but customizing validation via `ParseOptions` is the supported path; removal is targeted for v4.0 (see Planned below).
+- **v3.9 → removed v4.0:** `protected Parse::validateLocalPart(array $emailAddress)` was deprecated in 3.9 and is removed in 4.0 (now a `private` `ParseContext`-based method). Validation is customized via `ParseOptions`.
 - **v4.0:** `Parse::parse()` (the polymorphic array API) marked `@deprecated` — kept as a working shim over the typed methods; removal targeted for v5.0.
 - `RfcMode` never shipped (existed only on a feature branch).
 
@@ -78,7 +78,7 @@ Continuous work, not tied to a specific release.
 - [ ] Promote the `ParseOptions` state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) to public `readonly` via constructor promotion with named arguments.
 - [x] **Deprecate** the polymorphic `parse()` (the `$multiple`-boolean array API) in favor of `parseSingle()` / `parseMultiple()` / `parseStream()`. Kept as a thin `@deprecated` shim over the private `parseInternal()` core, so it still works; **removal deferred to 5.0** (see below).
 - [ ] Deprecate or remove the `getInstance()` singleton (recommend explicit instantiation).
-- [ ] Remove the deprecated `Parse::validateLocalPart(array)` extension point (deprecated when the `parse()` decomposition landed) and fold local-part validation into a `private`, `ParseContext`-based method; likewise make `validateDomainName()` `private`. They take the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
+- [x] Removed the deprecated `Parse::validateLocalPart(array)` extension point (deprecated in 3.9) — local-part validation is now a `private`, `ParseContext`-based method, and `validateDomainName()` is `private` too. They took the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
 
 **New capabilities (breaking or late-binding):**
 - [ ] DNS/MX validation via a `DnsValidator` callback interface — breaking because the `Parse` constructor grows, and synchronous lookups change performance characteristics.

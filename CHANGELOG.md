@@ -9,6 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Deprecated
 - **`Parse::parse()`** (the polymorphic `$multiple`-boolean, array-returning API) is deprecated. Use `parseSingle()` / `parseMultiple()` for typed value objects, or `parseStream()` for large batches; call `->toArray()` on a result if you need the legacy array shape. `parse()` keeps working as a thin shim over the typed core and will be removed in 5.0.
 
+### Removed
+- **BREAKING: `Parse::validateLocalPart()`** — the `@deprecated` (3.9) `array`-based method is removed; local-part validation is now a `private`, `ParseContext`-based method. **`Parse::validateDomainName()` is now `private`.** Both took the parser's internal accumulator and were never a supported extension point — customize validation via `ParseOptions`. Any subclass that overrode them must move to `ParseOptions`-based configuration.
+
 ## [3.9.0]
 
 Internal refactor of the `parse()` state machine into per-state handler methods backed by a new `ParseContext` object. Behavior-preserving and fully backward compatible — no public or protected signature changed and output is byte-identical. Adds the `ParseContext` type and deprecates `Parse::validateLocalPart()` (removed in 4.0). See [ARCHITECTURE.md](ARCHITECTURE.md).
