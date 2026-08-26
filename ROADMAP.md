@@ -1,151 +1,91 @@
 # Roadmap
 
-Future plans by version. Items here are intent, not commitment — priority and scope may shift.
+Intent, not commitment — priorities and scope may shift. Shipped work is kept
+below as a record; planned work follows.
 
-## Deprecation Timeline
+## Released
 
-### v3.0 — shipped
-- [x] `LengthLimits` switched to readonly constructor promotion (getters/setters removed; see [UPGRADE.md](UPGRADE.md) for migration).
-- [x] `ParseOptions` setters marked `@deprecated v3.0` (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) — still functional.
-- [x] `RfcMode` class never released (existed only on a feature branch).
+### v3.1 — Immutable config, error codes, typed output
 
-### v4.0 — planned
-- [ ] Remove all `@deprecated` `ParseOptions` setters above.
-- [ ] Make remaining private fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) public readonly via constructor promotion.
+- Immutable `ParseOptions`: all 15 boolean rule properties are `readonly` (PHP 8.1), with fluent `withX()` builders that return new instances. The 4 state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) stay mutable via deprecated setters until v4.0.
+- `ParseErrorCode` backed enum — 46 cases grouped by category; `invalid_reason_code: ?ParseErrorCode` on every entry alongside the `invalid_reason` string.
+- Typed output value objects (non-breaking): `ParsedEmailAddress` and `ParseResult` (readonly), plus `parseSingle()` / `parseMultiple()`. `parse()` is unchanged.
+- Validation rules: `validateDisplayNamePhrase` (RFC 5322 §3.2.5 phrase syntax) and `strictIdna` (full IDNA2008 conformance; default in `rfc6531()`).
 
-## v3.1 — Immutable Config, Error Codes, Typed Output — shipped
+### v3.2 — Streaming, severity levels, obsolete syntax
 
-**Immutable `ParseOptions` with fluent builders:**
-- [x] All 15 boolean rule properties are now `readonly` (PHP 8.1). The 4 state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) remain mutable via deprecated setters until v4.0.
-- [x] Fluent builder methods that return new instances:
-  ```php
-  ParseOptions::rfc5322()->withBannedChars([...])->withSeparators([...])->withRequireFqdn(true);
-  ```
-- Deprecated setters continue to work for backward compatibility.
+- `parseStream(iterable, string): Generator<ParsedEmailAddress>` — yields one address at a time; each input item may itself hold several.
+- `ValidationSeverity` enum (Critical / Warning / Info), `ParseErrorCode::severity()`, and `ParsedEmailAddress::invalidSeverity()`.
+- Obsolete syntax (RFC 5322 §4): `obs-route` (`$allowObsRoute`, captured on `$obsRoute`; default in `rfc5322()` / `rfc2822()`), `obs-angle-addr`, `obs-domain-list`, and CFWS look-ahead at dot-atom and angle-addr boundaries. (`obs-local-part` already shipped in v3.0.)
 
-**Structured error codes:**
-- [x] `ParseErrorCode` backed enum — 46 cases grouped by category (structural, character, dot placement, local-part content, quoted-string, domain, IP literal, length, display-name).
-- [x] `invalid_reason_code: ?ParseErrorCode` on every parsed-address entry, populated alongside the existing `invalid_reason` string.
+### v3.3 — Polish, ergonomics
 
-**Typed output value objects (non-breaking):**
-- [x] `ParsedEmailAddress` — readonly properties for every per-address field with named-arg constructor and `fromArray()` factory.
-- [x] `ParseResult` — readonly `success`, `reason`, `emailAddresses` (array of `ParsedEmailAddress`).
-- [x] New methods: `Parse::parseSingle(string): ParsedEmailAddress`, `Parse::parseMultiple(string): ParseResult`.
-- Existing `parse()` stays unchanged for backward compatibility.
+- Serialization: `ParsedEmailAddress::toArray()` / `toJson()`, `implements \Stringable` (returns `simpleAddress`), and `ParseResult` counterparts.
+- `canonical()` — minimal-quoting RFC 5322 display form (§3.2.4 local-part, §3.2.5 phrase).
+- Optional local-part normalizer callback via `withLocalPartNormalizer()` — for Gmail dot-insensitivity, `+tag` plus-addressing, and similar domain rules.
 
-**Additional validation rules:**
-- [x] `validateDisplayNamePhrase: bool` — enforce RFC 5322 §3.2.5 phrase syntax (atext + WSP only) for unquoted display names.
-- [x] `strictIdna: bool` — apply full IDNA2008 conformance (`IDNA_USE_STD3_RULES | IDNA_CHECK_BIDI | IDNA_CHECK_CONTEXTJ | IDNA_NONTRANSITIONAL_TO_ASCII`) per RFC 5891/5892/5893. Enabled by default in `rfc6531()`.
-- [x] Extended test coverage: 265 assertions (target: 250+).
+### v3.8 — Confusable-domain detection
 
-## v3.2 — Streaming, Severity Levels, Obsolete Syntax — shipped
+- Opt-in homoglyph / confusable-domain detection: `withDetectConfusableDomain()` runs the `intl` `Spoofchecker` (mixed-script / confusable) over the U-label domain and surfaces `ParsedEmailAddress::$domainIsSuspicious`. It's a security-policy signal, not a validity check — the address stays valid — and legitimate single-script international domains (`почта.рф`, `münchen.de`) are not flagged.
 
-**Batch streaming:**
-- [x] `Parse::parseStream(iterable, string): Generator<ParsedEmailAddress>` — yields one typed address at a time; each input item may itself contain multiple separator-delimited addresses.
+### Deprecations
 
-**Validation severity levels:**
-- [x] `ValidationSeverity` enum with `Critical`, `Warning`, `Info` cases.
-- [x] `ParseErrorCode::severity()` method classifying every code (13 Warning, rest Critical).
-- [x] `ParsedEmailAddress::invalidSeverity()` accessor returning the derived severity (or `null` when valid).
+- **v3.0:** `LengthLimits` moved to readonly constructor promotion (getters/setters removed — see [UPGRADE.md](UPGRADE.md)). The `ParseOptions` setters (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) are marked `@deprecated` and still functional; removal is targeted for v4.0.
+- `RfcMode` never shipped (existed only on a feature branch).
 
-**Obsolete syntax extensions (RFC 5322 §4):**
+### Community & documentation
 
-> Note: `obs-local-part` was already supported via `allowObsLocalPart` in v3.0.
+- `CONTRIBUTING.md`, GitHub issue + PR templates (parser-tailored YAML forms), `CODE_OF_CONDUCT.md`, and the examples cookbook (`docs/cookbook.md`) — all shipped and linked from the README.
 
-- [x] `obs-route` handling — `ParseOptions::$allowObsRoute` gates acceptance of `<@host1,@host2:user@host3>` source-route prefixes; the route is captured on `ParsedEmailAddress::$obsRoute`. Enabled by default in `rfc5322()` and `rfc2822()`.
-- [x] `obs-angle-addr` — implied by obs-route support (it is the outer `[CFWS] "<" obs-route addr-spec ">" [CFWS]` form).
-- [x] `obs-domain-list` — the `*("," [CFWS] ["@" domain])` shape is consumed inside `STATE_OBS_ROUTE`.
-- [x] CFWS (comments / folding whitespace) improvements — look-ahead in the whitespace handler now absorbs CFWS at dot-atom boundaries (`local @domain`, `local@ domain`, `local @ domain`) and around angle-addr delimiters (`<  local@domain  >`, `<local @ domain>`), including folded whitespace (LF + WSP). Comments in these positions were already supported in v3.0.
+## Quality & infrastructure
 
-## v3.3 — Polish, Ergonomics — shipped
-
-Non-breaking follow-on to v3.2.
-
-**Serialization ergonomics:**
-- [x] `ParsedEmailAddress::toArray(): array<string, mixed>` — round-trips to the legacy array shape for callers mixing typed and array-based code.
-- [x] `ParsedEmailAddress::toJson(int $flags = 0): string` — convenience wrapper over `json_encode` with `JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES`.
-- [x] `implements \Stringable` on `ParsedEmailAddress` — returns `simpleAddress` for valid addresses; empty string otherwise. Drops directly into string contexts.
-- [x] `ParseResult::toArray()` and `toJson()` counterparts.
-
-**Canonicalization (pulled forward from v4.0):**
-- [x] `ParsedEmailAddress::canonical(): string` — minimal-quoting RFC 5322 display form per §3.2.4 (local-part) and §3.2.5 (phrase).
-- [x] Optional local-part normalizer callback on `ParseOptions` for domain-specific rules (Gmail dot-insensitivity, `+tag` plus-addressing). Attached via `withLocalPartNormalizer(?callable)`.
-
-**Ecosystem bridges:** *(deferred — out of scope for v3.3 per user direction)*
-- [ ] `mmucklo/email-parse-symfony` — Symfony `Constraint` + `ConstraintValidator` attribute. Wraps existing `ParseOptions` presets.
-- [ ] `mmucklo/email-parse-laravel` — Laravel validation rule, service provider for DI.
-- [ ] PSR-14 event dispatcher integration — emit a `ParsedAddressEvent` per result for observability.
-
-## Quality and Infrastructure (ongoing)
-
-Not tied to a specific release; picked up as time allows.
+Continuous work, not tied to a specific release.
 
 **Testing depth:**
-- [~] Mutation testing with Infection — wired in via `composer infect` with thresholds `minMsi=80`, `minCoveredMsi=85` (current baseline, up from 74/79). Target remains ≥85% overall MSI; raise threshold as more error-path tests land.
-- [x] Property-based testing — `tests/PropertyTest.php` with 10 invariants across 200 random iterations each: no-crash on arbitrary bytes, determinism, reason+code consistency, severity classification, Stringable contract, toArray ↔ parse() round-trip, valid-address round-trip, and all-presets-never-crash. No extra dependency (native PHPUnit + `mt_rand`; deterministic via `SEED` envvar).
-- [~] Parse.php line coverage — now 87.98% (up from 86.69%). Overall project line coverage 91.15% (up from 89.61%). Remaining gaps are obscure error branches, the "shouldn't ever get here" default case, and code paths reachable only via internal state corruption. Target ≥95% aspirational.
-- [x] CI matrix: PHP 8.5 added as a required job; PHP 8.6 added as an allowed-to-fail experimental (nightly) job until its stable release (~Nov 2026).
+- [~] Mutation testing (Infection) — `composer infect`, thresholds `minMsi=80` / `minCoveredMsi=85` (baseline up from 74/79). Target ≥85% overall MSI; raise as more error-path tests land.
+- [x] Property-based tests — `tests/PropertyTest.php`, 10 invariants × 200 random iterations (no-crash on arbitrary bytes, determinism, reason/code consistency, severity, Stringable, `toArray` ↔ `parse()` round-trip, valid-address round-trip, all-presets-never-crash). Native PHPUnit + `mt_rand`; deterministic via `SEED`.
+- [~] Coverage — `Parse.php` 87.98%, project 91.15%. Remaining gaps are obscure error branches, the defensive "shouldn't get here" default case, and paths reachable only via internal state corruption. ≥95% aspirational.
+- [x] CI matrix — PHP 8.5 required; PHP 8.6 nightly allowed-to-fail until stable (~Nov 2026).
 
-**RFC conformance (gold-standard differential):**
+**RFC conformance (differential vs `dominicsayers/isemail`, 164 cases):**
+- [x] Drove strict-preset false-accepts from 29 → **1** (the intentional trailing root dot, now toggleable). Clusters resolved: quoted-string boundaries (`"test"test@` rejected, `"word".atom` valid); unclosed domain literal (`test@[1.2.3.4`); comment / CFWS parsing (unbalanced nesting, `\)` quoted-pair, C0 controls, atext-after-comment); quoted-string content (bare CR/LF); the CR/LF & folding-whitespace policy (`withTrimSingleAddressWhitespace`, `withStrictMultiWhitespace`); and the trailing domain dot (`withRejectTrailingDot`). The harness is a local dev tool, not a CI gate; every cluster carries regression tests in `tests/ParseTest.php`.
 
-Differential testing against the `dominicsayers/isemail` reference corpus (164 cases) drove the strict-preset false-accept set from 29 down to **1** — the intentional trailing root dot, now toggleable. All clusters resolved:
-
-- [x] **Quoted-string boundaries** — `"test"test@` / `"test""test"@` rejected (`AtextAfterQuotedString`); `"word".atom` stays valid.
-- [x] **Unclosed domain literal** — `test@[1.2.3.4` rejected; end-of-input unterminated-delimiter check keyed on parser state.
-- [x] **Comment (CFWS) parsing** — unbalanced nested comment; backslash quoted-pair (`(comment\)test@` — `\)` no longer closes); C0 controls in comment content (`ControlCharInComment`); atext splitting one atom after a comment (`AtextAfterComment`).
-- [x] **Quoted-string content** — C0 controls (bare CR/LF) in a quoted string rejected under the strict presets.
-- [x] **CR/LF & folding-whitespace** — resolved via the whitespace policy: single-address mode rejects surrounding/dangling CR/LF by default (`withTrimSingleAddressWhitespace` loosens); multi-address mode stays loose by default with an opt-in `withStrictMultiWhitespace` for per-address strictness. Whitespace still separates addresses in batch mode.
-- [x] **Trailing domain dot** — `test@iana.org.` accepted by default (RFC 5321 §2.3.5); `withRejectTrailingDot(true)` rejects it. The one remaining corpus divergence, by design.
-
-The comparison harness remains a local dev tool (not a CI gate). Every fixed cluster carries regression tests in `tests/ParseTest.php`.
-
-**Pre-existing bugs (found during review; not in the isemail corpus, so not covered above):**
-- [x] **Angle-addr with a domain-literal rejected** — `<user@[1.2.3.4]>` was wrongly rejected; the `>` handler now accepts `STATE_AFTER_DOMAIN` (which `]` reaches) when a domain/IP is present. Fixed with a metamorphic angle-wrap property test.
-- [x] **`word "." word` with quoted-string words** — `"x"."y"@`, `x."y"@`, `"a b"."c"@` (a quoted-string as a non-first obs-local-part word) are now accepted; the final quoted word is flushed onto the local part like earlier words (RFC 5322 §3.4.1).
-- [x] **`ParserConfusion` no longer reaches callers** — the remaining path (`user@a[1.2.3.4]`, a domain literal after domain characters) is rejected up front as `InvalidOpeningBracket`. A 500k-input fuzz confirms the code is now unreachable.
-- [x] **C1 controls (U+0080–U+009F) in comment content** — now rejected when `rejectC1Controls` is set (rfc6531), matching local-part and quoted-string handling.
+**Pre-existing bugs fixed (found in review; outside the isemail corpus):**
+- [x] Angle-addr with a domain-literal (`<user@[1.2.3.4]>`) was wrongly rejected — the `>` handler now accepts `STATE_AFTER_DOMAIN` when a domain/IP is present.
+- [x] `word "." word` with quoted-string words (`"x"."y"@`, `x."y"@`, `"a b"."c"@`) now accepted (RFC 5322 §3.4.1).
+- [x] `ParserConfusion` no longer reaches callers — `user@a[1.2.3.4]` is rejected up front as `InvalidOpeningBracket`; a 500k-input fuzz confirms the path is unreachable.
+- [x] C1 controls (U+0080–U+009F) in comment content now rejected under `rejectC1Controls` (rfc6531), matching local-part and quoted-string handling.
 
 **Static analysis:**
-- [x] PHPStan level 6 → 8 — tighter generics and inference; required four small nullable-return guards (`idn_to_ascii`, `mb_split`, `file_get_contents`) and one local docblock shape on `parseMultiple()`.
-- [x] Psalm alongside PHPStan — level 3 with baseline (66 entries, all false positives or duplicates of PHPStan findings). Found no genuinely new bugs vs PHPStan level 8; serves as a cross-check for future regressions. `composer psalm`.
+- [x] PHPStan level 6 → 8 (tighter generics; four nullable-return guards, one local docblock shape on `parseMultiple()`).
+- [x] Psalm level 3 with baseline as a cross-check — no genuinely new bugs vs PHPStan level 8. `composer psalm`.
 
 **Performance:**
-- [x] PhpBench suite — `benchmarks/ParseBench.php` covers single ASCII, name-addr, UTF-8 local-part, IDN, obs-route, 10-address comma batch, 100-address `parseStream` batch, invalid inputs, and comment extraction. Run with `composer bench`.
-- [x] Benchmark baseline + regression comparison — `composer bench:baseline` records a tagged reference (5 iterations, 5% retry threshold for stable numbers); `composer bench:compare` diffs a run against it. Reference figures and host context in `benchmarks/BASELINE.md`. Local storage (`.phpbench/`) is git-ignored since wall-clock times are machine-specific.
-- [x] Wire `bench:compare` into CI — a non-blocking `benchmarks` job records a baseline from the PR base's `src/` and compares the head against it on the same runner. Generous 50%-regression assertion (shared runners are noisy) and `continue-on-error`, so it reports without blocking.
-- [x] Main-loop hot path — replaced per-character `mb_substr($emails, $i, 1)` (O(n²) for multi-byte encodings, which rescan from the start each call) with a single `mb_str_split()` pass and array indexing. ~10–27% faster across the suite; biggest gains on longer inputs. Measured against the baseline via `composer bench:compare`.
-- [ ] Further profiling under mailing-list-sized inputs if needed — the `mb_str_split` array now dominates memory for very large batches; a streaming/chunked reader could bound that.
+- [x] PhpBench suite (`composer bench`) plus baseline/compare (`bench:baseline`, `bench:compare`; reference figures in `benchmarks/BASELINE.md`) and a non-blocking `benchmarks` CI job.
+- [x] Hot-path fix — per-character `mb_substr` (O(n²) for multi-byte encodings) replaced with a single `mb_str_split` pass and array indexing. ~10–27% faster across the suite.
 
-**Maintainability / readability:**
-- [x] **Reorganize `Parse::parse()` for readability.** The main state machine has grown deeply nested (a `switch ($state)` with a nested `switch/if` on `$subState`, plus per-character CFWS/comment/quote handling), and several correctness fixes have added flags and edge branches that are hard to follow. Decompose the loop body into named per-state handlers (e.g. `handleTrim`/`handleAddress`/`handleQuote`/`handleComment`) so each state's logic is isolated and independently readable. Also fold the accumulated tracking flags (`after_closing_quote`, `comment_after_local_atext`, `comment_escaped`, …) into a clearer per-parse context object.
-  - **Hard constraint: no performance regression.** Benchmark before and after with `composer bench:baseline` (on the pre-refactor commit) then `composer bench:compare` on the refactor; every subject must stay within noise. A prior spike proved this is achievable — decomposing the switch into method-per-character dispatch dropped `parse()` cyclomatic complexity 168 → 23 with **no measurable slowdown** (PHP 8's method calls are cheap; smaller methods can even help I-cache). Prefer passing a context object over instance properties, to keep the parser reentrant (a user `localPartNormalizer` callback can re-enter `parse()`).
-  - Keep it behavior-preserving: it is a pure structural refactor, gated by the full test suite (currently 99 tests) + PHPStan level 8 + Psalm, with no changes to parsing logic, conditions, or ordering.
-  - **Delivered** as `ParseContext` (per-parse mutable state, reentrancy-safe) plus per-state handler methods. Follow-ups from review, not blocking:
-    - [ ] Migrate `ParseContext`'s per-address accumulator fields from `snake_case` to the codebase's `camelCase`. Kept `snake_case` during the extraction so the diff was a pure move of the original loop locals; rename once the dust settles.
-    - [ ] Encode `ParseContext`'s three concerns structurally rather than by convention: the immutable input snapshot (`chars`/`len`/`emails`), the hoisted read-only config (`separators`, `bannedChars`, …), and the mutable per-address accumulator are all public fields today, so nothing stops a handler from writing config. Consider grouping/readonly-marking the stable fields.
-    - [ ] Remove the `chars`/`len` double source of truth: they exist both as `parse()` loop locals and as `ParseContext` properties. Read from one (kept duplicated for hot-loop locality; measure before changing).
-    - [ ] Decompose `handleStateAddress` further (~200 lines). CFWS/`@`/non-atext handling is already split into helpers; the remaining bulk is inherent to the address sub-state machine, so this is diminishing-returns polish.
+**Maintainability:**
+- [x] **`parse()` decomposition** (delivered; unreleased). The ~772-line state-machine loop is now a ~185-line dispatch loop over per-state handler methods, backed by a typed, per-parse `ParseContext` (a fresh instance per call keeps the parser reentrant). Behavior-preserving — same logic, conditions, ordering, and output. See [ARCHITECTURE.md](ARCHITECTURE.md). Follow-ups in the backlog below.
 
-**Community / documentation:**
-- [x] `CONTRIBUTING.md` — dev setup, all `composer` scripts, test-case guidance, code-style rules, RFC citation expectations.
-- [x] GitHub issue + pull-request templates — YAML issue forms (parser-tailored bug report + feature request) with a config linking Discussions/cookbook, plus a PR template.
-- [x] `CODE_OF_CONDUCT.md` — minimal statement + report contact (mmucklo@gmail.com).
-- [x] Examples cookbook — `docs/cookbook.md` (parsing, presets, streaming, UTF-8/IDN, error codes/severity, `canonical()`, local-part normalizer, confusable-domain detection, legacy array API). Linked from the README.
-- [ ] README cleanup — split the large reference tables into `docs/` sub-pages if the top-level README grows further.
+## Planned
 
-## v4.0 — Breaking Modernization
+### v4.0 — Breaking modernization
 
 **API cleanup:**
-- [ ] Remove deprecated `ParseOptions` setters (see Deprecation Timeline above).
-- [ ] Remove `parse()` in favor of `parseSingle()` / `parseMultiple()` with typed returns — eliminates the polymorphic `$multiple` boolean parameter.
+- [ ] Remove the `@deprecated` `ParseOptions` setters (deprecated in v3.0).
+- [ ] Promote the `ParseOptions` state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) to public `readonly` via constructor promotion with named arguments.
+- [ ] Remove the polymorphic `parse()` in favor of `parseSingle()` / `parseMultiple()` with typed returns — drops the `$multiple` boolean parameter.
 - [ ] Deprecate or remove the `getInstance()` singleton (recommend explicit instantiation).
-- [ ] Constructor promotion on `ParseOptions` with named arguments.
-- [ ] Make the internal validation helpers `private` (notably `validateLocalPart`, which takes the parser-internal `ParseContext`, and `validateDomainName`). They are `protected` only for historical reasons and were never a supported extension point — validation is customized through `ParseOptions`. Marked `@internal` when the `parse()` decomposition landed, which already changed `validateLocalPart`'s signature (`array` → `ParseContext`).
+- [ ] Make the internal validation helpers (`validateLocalPart`, `validateDomainName`) `private`. They are already `@internal`; `validateLocalPart`'s signature became `ParseContext` in the `parse()` decomposition. They take the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
 
-**New capabilities (genuinely breaking or late-binding):**
-- [ ] Optional DNS/MX validation via callback interface (`DnsValidator`). Breaking because the Parse constructor signature grows, and because synchronous DNS lookups change performance characteristics meaningfully.
-- [ ] Group syntax support (RFC 6854: `Group Name: addr1, addr2;`). Breaking because it introduces a new output-container shape for grouped results.
-- [x] **Optional homoglyph / confusable-domain detection** (shipped in 3.8.0). A domain like `аpple.com` (Cyrillic `а`, U+0430) is valid RFC syntax but a visual spoof of `apple.com`. `withDetectConfusableDomain()` runs the `intl` `Spoofchecker` (mixed-script / confusable) over the U-label domain and surfaces `ParsedEmailAddress::$domainIsSuspicious` — a security-policy signal, not a validity check: the address stays valid. Opt-in (default off), and legitimate single-script international domains (`почта.рф`, `münchen.de`) are not flagged.
-- [ ] **Confusable-against-a-target-list matching** (follow-up to the above; not yet done). Detect "looks like `paypal.com`" by comparing the domain's Unicode skeleton against a caller-supplied brand/skeleton set (`Spoofchecker::areConfusable()` or skeleton maps). Deferred because it needs the caller to provide the target list — it isn't a self-contained check like single-string suspicion.
+**New capabilities (breaking or late-binding):**
+- [ ] DNS/MX validation via a `DnsValidator` callback interface — breaking because the `Parse` constructor grows, and synchronous lookups change performance characteristics.
+- [ ] Group syntax (RFC 6854: `Group Name: addr1, addr2;`) — introduces a new output-container shape for grouped results.
+- [ ] Confusable-against-a-target-list matching — compare the domain's Unicode skeleton against a caller-supplied brand/skeleton set (`Spoofchecker::areConfusable()`), following on from the v3.8 single-string check. Deferred until the caller-provided target list is designed.
 
-*Note: `canonicalize()` and the local-part normalizer callback were moved to v3.3 as additive (non-breaking) features.*
+### Backlog (unversioned)
+
+- [ ] **`parse()` refactor follow-ups** (from review; non-blocking): rename `ParseContext`'s accumulator fields `snake_case` → `camelCase`; encode its three concerns (immutable input snapshot / read-only config / mutable accumulator) structurally rather than by convention; drop the `chars` / `len` duplication (loop locals vs context properties — kept for hot-loop locality, measure before changing); decompose `handleStateAddress` further (~200 lines; diminishing returns).
+- [ ] **Ecosystem bridges:** `mmucklo/email-parse-symfony` (`Constraint` + `ConstraintValidator`), `mmucklo/email-parse-laravel` (validation rule + service provider), PSR-14 `ParsedAddressEvent` for observability.
+- [ ] **Large-batch profiling:** the `mb_str_split` array dominates memory for very large batches; a streaming/chunked reader could bound it.
+- [ ] **README cleanup:** split the large reference tables into `docs/` sub-pages if the top-level README keeps growing.
