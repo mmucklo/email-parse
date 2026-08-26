@@ -13,43 +13,7 @@ parameters:
 			path: src/Parse.php
 
 		-
-			message: '#^Method Email\\Parse\:\:addAddress\(\) has parameter \$emailAddress with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Parse.php
-
-		-
-			message: '#^Method Email\\Parse\:\:addAddress\(\) has parameter \$emailAddresses with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Parse.php
-
-		-
-			message: '#^Method Email\\Parse\:\:addAddress\(\) has parameter \$i with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Parse.php
-
-		-
-			message: '#^Method Email\\Parse\:\:buildEmailAddressArray\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Parse.php
-
-		-
-			message: '#^Method Email\\Parse\:\:handleQuote\(\) has parameter \$emailAddress with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Parse.php
-
-		-
 			message: '#^Method Email\\Parse\:\:parse\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Parse.php
-
-		-
-			message: '#^Method Email\\Parse\:\:validateLocalPart\(\) has parameter \$emailAddress with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Parse.php

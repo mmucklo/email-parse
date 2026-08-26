@@ -1684,4 +1684,75 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertNotNull($a->localPartNormalizer);
         $this->assertNull($b->localPartNormalizer);
     }
+
+    /**
+     * Reentrancy: parse() keeps its state in a fresh per-call ParseContext, never
+     * on the Parse instance, so a localPartNormalizer callback may re-enter the
+     * SAME parser mid-parse without corrupting the outer parse. If any parse
+     * state were stored on $this, the inner call would clobber the outer one.
+     */
+    public function testParserIsReentrantAcrossLocalPartNormalizer(): void
+    {
+        /** @var Parse|null $parser */
+        $parser = null;
+        $innerResult = null;
+        /** @var bool $reentered */
+        $reentered = false;
+
+        // Runs while the outer parse is finalizing its address; re-enters the
+        // same parser once. The flag is set BEFORE re-entering so the nested
+        // call's own normalizer skips it (otherwise it recurses forever).
+        $normalizer = function (string $localPart, string $domain) use (&$parser, &$reentered, &$innerResult): string {
+            if (!$reentered) {
+                $reentered = true;
+                \assert($parser instanceof Parse);
+                $innerResult = $parser->parseSingle('inner.user@nested.example.org');
+            }
+
+            return $localPart; // pass through unchanged
+        };
+
+        $parser = new Parse(null, (new ParseOptions())->withLocalPartNormalizer($normalizer));
+        $outer = $parser->parseSingle('outer.name@outer.example.com');
+
+        // Outer parse is intact despite the re-entrant inner parse.
+        $this->assertFalse($outer->invalid);
+        $this->assertSame('outer.name', $outer->localPart);
+        $this->assertSame('outer.example.com', $outer->domain);
+
+        // The inner (re-entrant) parse ran and returned its own correct result.
+        $this->assertInstanceOf(\Email\ParsedEmailAddress::class, $innerResult, 'normalizer did not re-enter parse()');
+        $this->assertFalse($innerResult->invalid);
+        $this->assertSame('inner.user', $innerResult->localPart);
+        $this->assertSame('nested.example.org', $innerResult->domain);
+    }
+
+    /**
+     * Backward compatibility: validateLocalPart() keeps its original array
+     * signature as a deprecated extension point (removed in 4.0). A subclass
+     * override must still be invoked and able to change the outcome — the parser
+     * dispatches through $this->validateLocalPart(), not a renamed internal.
+     */
+    public function testDeprecatedValidateLocalPartOverrideStillTakesEffect(): void
+    {
+        $parser = new class () extends Parse {
+            protected function validateLocalPart(array $emailAddress): array
+            {
+                if ('blocked' === $emailAddress['local_part_parsed']) {
+                    return ['valid' => false, 'reason' => 'blocked local part', 'code' => null, 'normalized' => null];
+                }
+
+                return parent::validateLocalPart($emailAddress);
+            }
+        };
+
+        // Un-blocked address flows through parent::validateLocalPart() unchanged.
+        $ok = $parser->parseSingle('allowed@example.com');
+        $this->assertFalse($ok->invalid);
+
+        // The override fires and rejects an otherwise-valid address.
+        $blocked = $parser->parseSingle('blocked@example.com');
+        $this->assertTrue($blocked->invalid, 'subclass validateLocalPart() override was not honored');
+        $this->assertSame('blocked local part', $blocked->invalidReason);
+    }
 }
