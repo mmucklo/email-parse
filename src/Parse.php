@@ -293,14 +293,6 @@ class Parse
     private function parseInternal(string $emails, bool $multiple, string $encoding): array
     {
         $emailAddresses = [];
-
-        // Per-parse accumulator. A fresh instance (never an instance property)
-        // keeps parse() reentrant across a localPartNormalizer callback. The
-        // constructor requires the initial state (STATE_TRIM) and sub-state
-        // (STATE_START, for when we reach the xyz@somewhere.com address itself),
-        // so the context is fully initialized before its first use.
-        $ctx = new ParseContext(self::STATE_TRIM, self::STATE_START);
-
         $success = true;
         $reason = null;
 
@@ -322,17 +314,25 @@ class Parse
             unset($allowedWhitespace["\r"], $allowedWhitespace["\n"]);
         }
 
-        // Publish the input snapshot and hoisted config onto the context so the
-        // per-state handlers can read them without long parameter lists. $chars
-        // and $len are also kept as locals below for the tight loop counter.
-        $ctx->chars = $chars;
-        $ctx->len = $len;
-        $ctx->multiple = $multiple;
-        $ctx->emails = $emails;
-        $ctx->separators = $this->options->getSeparators();
-        $ctx->bannedChars = $this->options->getBannedChars();
-        $ctx->useWhitespaceAsSeparator = $this->options->getUseWhitespaceAsSeparator();
-        $ctx->allowedWhitespace = $allowedWhitespace;
+        // Per-parse accumulator. A fresh instance (never an instance property)
+        // keeps parse() reentrant across a localPartNormalizer callback. The
+        // constructor takes the initial state (STATE_TRIM) and sub-state
+        // (STATE_START) plus the immutable input snapshot + hoisted config, which
+        // it exposes as readonly properties — so no handler can mutate config, and
+        // the context is fully initialized before first use. $chars/$len are also
+        // kept as locals below for the tight loop counter.
+        $ctx = new ParseContext(
+            self::STATE_TRIM,
+            self::STATE_START,
+            $chars,
+            $len,
+            $multiple,
+            $emails,
+            $this->options->getSeparators(),
+            $this->options->getBannedChars(),
+            $this->options->getUseWhitespaceAsSeparator(),
+            $allowedWhitespace,
+        );
 
         $curChar = null;
         for ($i = 0; $i < $len; ++$i) {

@@ -23,32 +23,10 @@ namespace Email;
  */
 final class ParseContext
 {
-    // --- Per-parse input snapshot and hoisted config (set once in parse(),
-    //     never reset between addresses). ---
-
-    /** @var array<int, string> The input split into characters (see parse()). */
-    public array $chars = [];
-
-    /** Number of characters in $chars. */
-    public int $len = 0;
-
-    /** Whether multiple addresses are being parsed. */
-    public bool $multiple = true;
-
-    /** The original input string, retained for diagnostic logging. */
-    public string $emails = '';
-
-    /** @var array<string, bool> Separator characters, as a lookup map. */
-    public array $separators = [];
-
-    /** @var array<string, bool> Banned characters, as a lookup map. */
-    public array $bannedChars = [];
-
-    /** Whether whitespace acts as an address separator. */
-    public bool $useWhitespaceAsSeparator = false;
-
-    /** @var array<string, bool> Insignificant (foldable/trimmable) whitespace, as a lookup map. */
-    public array $allowedWhitespace = [];
+    // The per-parse input snapshot and hoisted config (chars, len, multiple,
+    // emails, separators, bannedChars, useWhitespaceAsSeparator,
+    // allowedWhitespace) are immutable for the whole parse — they are declared as
+    // `public readonly` constructor-promoted properties (see __construct below).
 
     // --- Loop control state (state/subState reset per address by parse()). ---
 
@@ -151,14 +129,32 @@ final class ParseContext
     public string $obsRoute = '';
 
     /**
-     * @param int $state    Initial parser state (a Parse::STATE_* value).
-     * @param int $subState Initial addr-spec sub-state (a Parse::STATE_* value).
+     * @param int                 $state                    Initial parser state (a Parse::STATE_* value).
+     * @param int                 $subState                 Initial addr-spec sub-state (a Parse::STATE_* value).
+     * @param array<int, string>  $chars                    Input split into characters.
+     * @param int                 $len                      Number of characters in $chars.
+     * @param bool                $multiple                 Whether multiple addresses are being parsed.
+     * @param string              $emails                   Original input string (retained for diagnostic logging).
+     * @param array<string, bool> $separators               Separator characters, as a lookup map.
+     * @param array<string, bool> $bannedChars              Banned characters, as a lookup map.
+     * @param bool                $useWhitespaceAsSeparator Whether whitespace acts as an address separator.
+     * @param array<string, bool> $allowedWhitespace        Insignificant (foldable/trimmable) whitespace, as a lookup map.
      */
-    public function __construct(int $state, int $subState)
-    {
-        // Requiring the initial states makes an un-initialized context
-        // unrepresentable: every instance is reset before its first use, so no
-        // caller can start parsing from the misleading zero-value field defaults.
+    public function __construct(
+        int $state,
+        int $subState,
+        public readonly array $chars,
+        public readonly int $len,
+        public readonly bool $multiple,
+        public readonly string $emails,
+        public readonly array $separators,
+        public readonly array $bannedChars,
+        public readonly bool $useWhitespaceAsSeparator,
+        public readonly array $allowedWhitespace,
+    ) {
+        // Requiring the initial states + immutable snapshot makes an
+        // un-initialized context unrepresentable: config cannot be mutated by a
+        // handler, and every instance is reset before its first use.
         $this->resetAddress($state, $subState);
     }
 
