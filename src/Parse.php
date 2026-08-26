@@ -275,16 +275,14 @@ class Parse
         $emailAddresses = [];
 
         // Per-parse accumulator. A fresh instance (never an instance property)
-        // keeps parse() reentrant across a localPartNormalizer callback.
-        $ctx = new ParseContext();
+        // keeps parse() reentrant across a localPartNormalizer callback. The
+        // constructor requires the initial state (STATE_TRIM) and sub-state
+        // (STATE_START, for when we reach the xyz@somewhere.com address itself),
+        // so the context is fully initialized before its first use.
+        $ctx = new ParseContext(self::STATE_TRIM, self::STATE_START);
 
         $success = true;
         $reason = null;
-
-        // Initialize per-address state: STATE_TRIM as the current parser state,
-        // STATE_START as the sub state (for when we reach the xyz@somewhere.com
-        // address itself), and zero the accumulator and comment nesting.
-        $ctx->resetAddress(self::STATE_TRIM, self::STATE_START);
 
         // Split once into an array of characters rather than calling
         // mb_substr($emails, $i, 1) on every iteration. For multi-byte encodings
@@ -296,8 +294,6 @@ class Parse
             $success = false;
             $reason = 'No emails passed in';
         }
-        // Hoist the immutable separator/banned-char config out of the per-character loop.
-        $separators = $this->options->getSeparators();
         // Whitespace treated as insignificant (folding/separators; trimmable). In
         // single-address mode CR and LF are excluded — a lone addr-spec has no line
         // endings — unless trimSingleAddressWhitespace opts back into liberal trimming.
@@ -313,7 +309,7 @@ class Parse
         $ctx->len = $len;
         $ctx->multiple = $multiple;
         $ctx->emails = $emails;
-        $ctx->separators = $separators;
+        $ctx->separators = $this->options->getSeparators();
         $ctx->bannedChars = $this->options->getBannedChars();
         $ctx->useWhitespaceAsSeparator = $this->options->getUseWhitespaceAsSeparator();
         $ctx->allowedWhitespace = $allowedWhitespace;
@@ -1432,6 +1428,10 @@ class Parse
 
     /**
      * Unified local-part validation based on ParseOptions rule properties.
+     *
+     * @internal Not a supported extension point. It takes the parser's internal
+     *           accumulator (ParseContext); customize validation via ParseOptions
+     *           rather than by overriding this. Slated to become private in v4.0.
      *
      * @param ParseContext $ctx The email address accumulator from the parser
      * @return array{valid: bool, reason: ?string, code: ?ParseErrorCode, normalized: ?string}

@@ -140,6 +140,7 @@ The comparison harness remains a local dev tool (not a CI gate). Every fixed clu
 - [ ] Remove `parse()` in favor of `parseSingle()` / `parseMultiple()` with typed returns — eliminates the polymorphic `$multiple` boolean parameter.
 - [ ] Deprecate or remove the `getInstance()` singleton (recommend explicit instantiation).
 - [ ] Constructor promotion on `ParseOptions` with named arguments.
+- [ ] Make the internal validation helpers `private` (notably `validateLocalPart`, which takes the parser-internal `ParseContext`, and `validateDomainName`). They are `protected` only for historical reasons and were never a supported extension point — validation is customized through `ParseOptions`. Marked `@internal` when the `parse()` decomposition landed, which already changed `validateLocalPart`'s signature (`array` → `ParseContext`).
 
 **New capabilities (genuinely breaking or late-binding):**
 - [ ] Optional DNS/MX validation via callback interface (`DnsValidator`). Breaking because the Parse constructor signature grows, and because synchronous DNS lookups change performance characteristics meaningfully.

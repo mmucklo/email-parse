@@ -53,7 +53,12 @@ final class ParseContext
     /** Current parser state (one of Parse::STATE_*). */
     public int $state = 0;
 
-    /** Current parser sub-state within an addr-spec (one of Parse::STATE_*). */
+    /**
+     * Current parser sub-state within an addr-spec (one of Parse::STATE_*).
+     * Initialized by the constructor / resetAddress(); the literal 0 default is
+     * STATE_TRIM, not a valid starting sub-state (which is STATE_START), so it
+     * must never be relied on un-initialized.
+     */
     public int $subState = 0;
 
     /** Current comment nesting depth. */
@@ -148,6 +153,18 @@ final class ParseContext
      * for the next address in a multi-address parse (matches the historical
      * "rebuild the $emailAddress array" behaviour).
      */
+    /**
+     * @param int $state    Initial parser state (a Parse::STATE_* value).
+     * @param int $subState Initial addr-spec sub-state (a Parse::STATE_* value).
+     */
+    public function __construct(int $state, int $subState)
+    {
+        // Requiring the initial states makes an un-initialized context
+        // unrepresentable: every instance is reset before its first use, so no
+        // caller can start parsing from the misleading zero-value field defaults.
+        $this->resetAddress($state, $subState);
+    }
+
     public function resetAddress(int $state, int $subState): void
     {
         // Loop-control state, reset here so every per-address field has a single
