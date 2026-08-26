@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a new option, validation rule, or capability.
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The use case or gap you're hitting. What are you trying to do that the library doesn't support today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed API / behavior
+      description: How might it look? A `ParseOptions` flag, a new preset, a new output field, etc. Sketch the call site if you can.
+      render: php
+    validations:
+      required: false
+  - type: input
+    id: rfc
+    attributes:
+      label: RFC reference (if applicable)
+      description: If this is about standards conformance, cite the relevant RFC section — e.g. "RFC 6854 (group syntax)".
+    validations:
+      required: false
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds you've tried, or why an existing option doesn't fit.
+    validations:
+      required: false
