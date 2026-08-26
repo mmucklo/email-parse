@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [3.9.0]
+
+Internal refactor of the `parse()` state machine into per-state handler methods backed by a new `ParseContext` object. Behavior-preserving and fully backward compatible — no public or protected signature changed and output is byte-identical. Adds the `ParseContext` type and deprecates `Parse::validateLocalPart()` (removed in 4.0). See [ARCHITECTURE.md](ARCHITECTURE.md).
+
 ### Changed
 - **Internal: `Parse::parse()` decomposed** into a per-state handler dispatch loop backed by a new `ParseContext` accumulator object. Pure structural refactor — no change to parsing logic, conditions, ordering, error codes, or output shape; the address arrays and `ParsedEmailAddress` objects are byte-identical, and **no public or protected method signature changed** (fully backward compatible). A fresh `ParseContext` is created per call and never stored on the parser, so `parse()` is reentrant across a `localPartNormalizer` callback. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
