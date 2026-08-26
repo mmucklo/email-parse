@@ -118,7 +118,11 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
             $options = $this->buildOptions($test);
             $parser = new Parse(null, $options);
-            $actual = $parser->parse($emails, $multiple);
+            // Drive the typed API (not the deprecated parse()); toArray() reproduces
+            // the legacy array shape the fixtures assert against.
+            $actual = $multiple
+                ? $parser->parseMultiple($emails)->toArray()
+                : $parser->parseSingle($emails)->toArray();
 
             // YAML tests written before ParseErrorCode landed omit `invalid_reason_code`.
             // Reconcile: where the expected entry doesn't mention the key, strip it from

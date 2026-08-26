@@ -167,9 +167,9 @@ Recommended: match on the `invalid` boolean, not error text. A typed `ParseError
 Each parsed address now includes a `domain_ascii` field. It is `null` unless `ParseOptions::$includeDomainAscii` is `true` (the default in the `rfc6531()` preset only). Existing code that reads other fields is unaffected.
 
 ```php
-$result = $parser->parse('user@bücher.de', false);
-$result['domain'];       // 'bücher.de'
-$result['domain_ascii']; // 'xn--bcher-kva.de' (when includeDomainAscii=true), else null
+$addr = $parser->parseSingle('user@bücher.de');
+$addr->domain;       // 'bücher.de'
+$addr->domainAscii;  // 'xn--bcher-kva.de' (when includeDomainAscii=true), else null
 ```
 
 #### New factory presets on `ParseOptions`

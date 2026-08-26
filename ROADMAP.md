@@ -32,6 +32,7 @@ below as a record; planned work follows.
 
 - **v3.0:** `LengthLimits` moved to readonly constructor promotion (getters/setters removed — see [UPGRADE.md](UPGRADE.md)). The `ParseOptions` setters (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) are marked `@deprecated` and still functional; removal is targeted for v4.0.
 - **v3.9:** `protected Parse::validateLocalPart(array $emailAddress)` marked `@deprecated`. Still functional and still a live extension point (subclass overrides are invoked), but customizing validation via `ParseOptions` is the supported path; removal is targeted for v4.0 (see Planned below).
+- **v4.0:** `Parse::parse()` (the polymorphic array API) marked `@deprecated` — kept as a working shim over the typed methods; removal targeted for v5.0.
 - `RfcMode` never shipped (existed only on a feature branch).
 
 ### Community & documentation
@@ -75,7 +76,7 @@ Continuous work, not tied to a specific release.
 **API cleanup:**
 - [ ] Remove the `@deprecated` `ParseOptions` setters (deprecated in v3.0).
 - [ ] Promote the `ParseOptions` state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) to public `readonly` via constructor promotion with named arguments.
-- [ ] Remove the polymorphic `parse()` in favor of `parseSingle()` / `parseMultiple()` with typed returns — drops the `$multiple` boolean parameter.
+- [x] **Deprecate** the polymorphic `parse()` (the `$multiple`-boolean array API) in favor of `parseSingle()` / `parseMultiple()` / `parseStream()`. Kept as a thin `@deprecated` shim over the private `parseInternal()` core, so it still works; **removal deferred to 5.0** (see below).
 - [ ] Deprecate or remove the `getInstance()` singleton (recommend explicit instantiation).
 - [ ] Remove the deprecated `Parse::validateLocalPart(array)` extension point (deprecated when the `parse()` decomposition landed) and fold local-part validation into a `private`, `ParseContext`-based method; likewise make `validateDomainName()` `private`. They take the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
 
@@ -83,6 +84,10 @@ Continuous work, not tied to a specific release.
 - [ ] DNS/MX validation via a `DnsValidator` callback interface — breaking because the `Parse` constructor grows, and synchronous lookups change performance characteristics.
 - [ ] Group syntax (RFC 6854: `Group Name: addr1, addr2;`) — introduces a new output-container shape for grouped results.
 - [ ] Confusable-against-a-target-list matching — compare the domain's Unicode skeleton against a caller-supplied brand/skeleton set (`Spoofchecker::areConfusable()`), following on from the v3.8 single-string check. Deferred until the caller-provided target list is designed.
+
+### v5.0 — planned
+
+- [ ] Remove the deprecated `parse()` method (deprecated in 4.0). `parseSingle()` / `parseMultiple()` / `parseStream()` are the entry points; the private `parseInternal()` core stays.
 
 ### Backlog (unversioned)
 

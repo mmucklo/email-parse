@@ -160,6 +160,12 @@ class Parse
     /**
      * Parses a list of 1 to n email addresses separated by space or comma.
      *
+     * @deprecated 4.0 Use {@see parseSingle()} for one address or
+     *             {@see parseMultiple()} for a list — both return typed value
+     *             objects (or {@see parseStream()} for large batches). This
+     *             polymorphic array-returning method is retained for backward
+     *             compatibility and will be removed in 5.0.
+     *
      * Compliance level is controlled by the ParseOptions passed to the constructor:
      *   - ParseOptions::rfc5321()  — RFC 5321 Mailbox (strict ASCII, SMTP-compatible)
      *   - ParseOptions::rfc6531()  — RFC 6531/6532 (full UTF-8, NFC normalization)
@@ -215,28 +221,30 @@ class Parse
      *               'invalid_reason_code' => ParseErrorCode|null, 'comments' => array)
      *               endif;
      */
-    /**
-     * Parse a single email address and return a typed value object.
-     *
-     * Recommended over {@see parse()} when you want IDE autocomplete and
-     * static-analysis friendly access to the parsed fields.
-     */
-    public function parseSingle(string $email, string $encoding = 'UTF-8'): ParsedEmailAddress
+    public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
-        return ParsedEmailAddress::fromArray($this->parse($email, false, $encoding));
+        return $this->parseInternal($emails, $multiple, $encoding);
     }
 
     /**
-     * Parse a list of email addresses and return a typed result.
+     * Parse a single email address and return a typed {@see ParsedEmailAddress}
+     * value object with IDE autocomplete and static-analysis-friendly fields.
+     */
+    public function parseSingle(string $email, string $encoding = 'UTF-8'): ParsedEmailAddress
+    {
+        return ParsedEmailAddress::fromArray($this->parseInternal($email, false, $encoding));
+    }
+
+    /**
+     * Parse a list of email addresses and return a typed {@see ParseResult}.
      *
-     * Recommended over {@see parse()} in multi-address mode for the same reasons as
-     * {@see parseSingle()}. Separator handling and per-address rules are configured
-     * via {@see ParseOptions}.
+     * Separator handling and per-address rules are configured via
+     * {@see ParseOptions}.
      */
     public function parseMultiple(string $emails, string $encoding = 'UTF-8'): ParseResult
     {
         /** @var array{success: bool, reason: ?string, email_addresses: array<int, array<string, mixed>>} $raw */
-        $raw = $this->parse($emails, true, $encoding);
+        $raw = $this->parseInternal($emails, true, $encoding);
 
         return ParseResult::fromArray($raw);
     }
@@ -263,14 +271,22 @@ class Parse
     public function parseStream(iterable $input, string $encoding = 'UTF-8'): \Generator
     {
         foreach ($input as $emails) {
-            $result = $this->parse((string) $emails, true, $encoding);
+            $result = $this->parseInternal((string) $emails, true, $encoding);
             foreach ($result['email_addresses'] as $address) {
                 yield ParsedEmailAddress::fromArray($address);
             }
         }
     }
 
-    public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
+    /**
+     * Core parser shared by parseSingle()/parseMultiple()/parseStream() and the
+     * deprecated {@see parse()} shim. Returns the raw array documented on parse():
+     * the multi-address envelope when $multiple is true, or a single-address hash
+     * otherwise.
+     *
+     * @return array<string, mixed>
+     */
+    private function parseInternal(string $emails, bool $multiple, string $encoding): array
     {
         $emailAddresses = [];
 

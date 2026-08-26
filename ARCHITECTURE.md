@@ -10,11 +10,12 @@ over per-state handlers, backed by a per-parse context object.
 
 | | |
 |---|---|
-| Entry point | `parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array` |
+| Entry points | `parseSingle()` → `ParsedEmailAddress`, `parseMultiple()` → `ParseResult`, `parseStream()` → `Generator` (plus the deprecated array-returning `parse()`) |
+| Core | All entry points funnel into the private `parseInternal(string $emails, bool $multiple, string $encoding): array` |
 | Model | Character-by-character state machine, 12 states |
-| `parse()` body | Setup + a `switch ($ctx->state)` dispatch loop (~193 lines) |
+| Core body | Setup + a `switch ($ctx->state)` dispatch loop (~185 lines) |
 | State handlers | 7 methods (one per switch arm) |
-| Working state | `ParseContext` — one object per `parse()` call, ~24 accumulator fields |
+| Working state | `ParseContext` — one object per parse, ~24 accumulator fields |
 | Reentrancy | A fresh context per call; nothing parse-specific is stored on the `Parse` instance |
 
 ## The dispatch loop

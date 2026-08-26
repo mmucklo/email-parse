@@ -32,10 +32,8 @@ Usage:
 ```php
 use Email\Parse;
 
-// Array-based API (v2.x-compatible)
-$result = Parse::getInstance()->parse("a@aaa.com b@bbb.com");
-
-// Typed value objects (v3.1+, recommended for new code)
+// Typed value objects — parseSingle() / parseMultiple() / parseStream().
+// (The legacy array-returning parse() is deprecated; see "Other Examples" below.)
 $address = Parse::getInstance()->parseSingle('john@example.com');
 echo $address->localPart;           // "john"
 echo $address->domain;              // "example.com"
@@ -71,18 +69,18 @@ use Email\ParseOptions;
 // Example 1: Use comma and semicolon as separators (default behavior includes whitespace)
 $options = new ParseOptions([], [',', ';']);
 $parser = new Parse(null, $options);
-$result = $parser->parse("a@aaa.com; b@bbb.com, c@ccc.com");
+$result = $parser->parseMultiple("a@aaa.com; b@bbb.com, c@ccc.com");
 
 // Example 2: Disable whitespace as separator (only comma and semicolon work)
 $options = new ParseOptions([], [',', ';'], false);
 $parser = new Parse(null, $options);
-$result = $parser->parse("a@aaa.com; b@bbb.com"); // Works - uses semicolon
-$result = $parser->parse("a@aaa.com b@bbb.com");  // Won't split - whitespace not a separator
+$result = $parser->parseMultiple("a@aaa.com; b@bbb.com"); // Works - uses semicolon
+$result = $parser->parseMultiple("a@aaa.com b@bbb.com");  // Won't split - whitespace not a separator
 
 // Example 3: Names with spaces always work regardless of whitespace separator setting
 $options = new ParseOptions([], [',', ';'], false);
 $parser = new Parse(null, $options);
-$result = $parser->parse("John Doe <john@example.com>, Jane Smith <jane@example.com>");
+$result = $parser->parseMultiple("John Doe <john@example.com>, Jane Smith <jane@example.com>");
 // Returns 2 valid emails with names preserved
 ```
 
@@ -366,11 +364,11 @@ $result = $parser->parseSingle('müller@münchen.de');
 Other Examples:
 ---------------
 
-The following examples use the legacy array-returning `parse()` method to document its full output shape. New code should prefer `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed return values; both APIs expose the same underlying fields.
+New code uses `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed value objects; call `->toArray()` on either result for the array form. The examples below illustrate the principal fields — see [`ParsedEmailAddress`](src/ParsedEmailAddress.php) for the complete, canonical set. (The old `parse()` method is deprecated and will be removed in 5.0.)
 
 ```php
  $email = '"J Doe" <johndoe@xyz.com>';
- $result = Email\Parse::getInstance()->parse($email, false);
+ $result = Email\Parse::getInstance()->parseSingle($email)->toArray();
 
  $result == array(
      'address' => '"J Doe" <johndoe@xyz.com>',
@@ -389,7 +387,7 @@ The following examples use the legacy array-returning `parse()` method to docume
      'comments' => []);
 
  $emails = 'testing@[8.8.8.8] testing@xyz.com, "test.2"@xyz.com (comment)';
- $result = Email\Parse::getInstance()->parse($emails);
+ $result = Email\Parse::getInstance()->parseMultiple($emails)->toArray();
  $result == array(
      'success' => true,
      'reason' => null,

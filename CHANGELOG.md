@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Deprecated
+- **`Parse::parse()`** (the polymorphic `$multiple`-boolean, array-returning API) is deprecated. Use `parseSingle()` / `parseMultiple()` for typed value objects, or `parseStream()` for large batches; call `->toArray()` on a result if you need the legacy array shape. `parse()` keeps working as a thin shim over the typed core and will be removed in 5.0.
+
 ## [3.9.0]
 
 Internal refactor of the `parse()` state machine into per-state handler methods backed by a new `ParseContext` object. Behavior-preserving and fully backward compatible — no public or protected signature changed and output is byte-identical. Adds the `ParseContext` type and deprecates `Parse::validateLocalPart()` (removed in 4.0). See [ARCHITECTURE.md](ARCHITECTURE.md).
