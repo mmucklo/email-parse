@@ -1301,9 +1301,15 @@ class Parse
             $ctx->invalid_reason_code = Err::InvalidDisplayNamePhrase;
         }
 
-        // Unified local-part validation
+        // Unified local-part validation. Dispatched through validateLocalPart(),
+        // a deprecated but backward-compatible extension point (removed in 4.0),
+        // so it still receives the legacy accumulator-array shape it always took.
         if (!$ctx->invalid) {
-            $result = $this->validateLocalPart($ctx);
+            /** @psalm-suppress DeprecatedMethod Intentional BC hook so subclass overrides still fire; see validateLocalPart(). */
+            $result = $this->validateLocalPart([
+                'local_part_parsed' => $ctx->local_part_parsed,
+                'local_part_quoted' => $ctx->local_part_quoted,
+            ]);
             if (!$result['valid']) {
                 $ctx->invalid = true;
                 $ctx->invalid_reason = $result['reason'];
@@ -1429,18 +1435,20 @@ class Parse
     /**
      * Unified local-part validation based on ParseOptions rule properties.
      *
-     * @internal Not a supported extension point. It takes the parser's internal
-     *           accumulator (ParseContext); customize validation via ParseOptions
-     *           rather than by overriding this. Slated to become private in v4.0.
+     * @deprecated 3.9.0 Not a supported extension point going forward — customize
+     *             validation through ParseOptions, not by overriding this. Kept
+     *             with its original array signature for backward compatibility
+     *             and removed in 4.0. Receives the accumulator keys it reads:
+     *             `local_part_parsed` (string) and `local_part_quoted` (bool).
      *
-     * @param ParseContext $ctx The email address accumulator from the parser
+     * @param array{local_part_parsed: string, local_part_quoted: bool} $emailAddress
      * @return array{valid: bool, reason: ?string, code: ?ParseErrorCode, normalized: ?string}
      */
-    protected function validateLocalPart(ParseContext $ctx): array
+    protected function validateLocalPart(array $emailAddress): array
     {
         $opts = $this->options;
-        $localPart = $ctx->local_part_parsed;
-        $quoted = $ctx->local_part_quoted;
+        $localPart = $emailAddress['local_part_parsed'];
+        $quoted = $emailAddress['local_part_quoted'];
 
         // RFC 6531 §3.3 / RFC 6532 §3.2: gate UTF-8 presence before other checks
         // (allowUtf8LocalPart is false in rfc5321() and rfc5322() presets)

@@ -7,8 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Changed
-- **Internal: `Parse::parse()` decomposed** into a per-state handler dispatch loop backed by a new `ParseContext` accumulator object. Pure structural refactor — no change to parsing logic, conditions, ordering, error codes, or output shape; the address arrays and `ParsedEmailAddress` objects are byte-identical. A fresh `ParseContext` is created per call and never stored on the parser, so `parse()` is reentrant across a `localPartNormalizer` callback. See [ARCHITECTURE.md](ARCHITECTURE.md).
-- **`protected Parse::validateLocalPart()` signature changed** (`array` → `ParseContext`) and is now marked `@internal`, as is `ParseContext` itself. These are implementation details, not extension points — customize validation via `ParseOptions`. Both are slated to become `private` in v4.0.
+- **Internal: `Parse::parse()` decomposed** into a per-state handler dispatch loop backed by a new `ParseContext` accumulator object. Pure structural refactor — no change to parsing logic, conditions, ordering, error codes, or output shape; the address arrays and `ParsedEmailAddress` objects are byte-identical, and **no public or protected method signature changed** (fully backward compatible). A fresh `ParseContext` is created per call and never stored on the parser, so `parse()` is reentrant across a `localPartNormalizer` callback. See [ARCHITECTURE.md](ARCHITECTURE.md).
+
+### Deprecated
+- **`protected Parse::validateLocalPart(array $emailAddress)`** — deprecated, removed in 4.0. It keeps its original `array` signature and remains a live extension point (a subclass override is still invoked), so existing subclasses keep working; going forward, customize validation through `ParseOptions` instead. The new `ParseContext` accumulator is `@internal` — its field shape is not a stable API.
 
 ## [3.8.0]
 

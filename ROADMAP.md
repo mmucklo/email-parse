@@ -76,7 +76,7 @@ Continuous work, not tied to a specific release.
 - [ ] Promote the `ParseOptions` state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) to public `readonly` via constructor promotion with named arguments.
 - [ ] Remove the polymorphic `parse()` in favor of `parseSingle()` / `parseMultiple()` with typed returns — drops the `$multiple` boolean parameter.
 - [ ] Deprecate or remove the `getInstance()` singleton (recommend explicit instantiation).
-- [ ] Make the internal validation helpers (`validateLocalPart`, `validateDomainName`) `private`. They are already `@internal`; `validateLocalPart`'s signature became `ParseContext` in the `parse()` decomposition. They take the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
+- [ ] Remove the deprecated `Parse::validateLocalPart(array)` extension point (deprecated when the `parse()` decomposition landed) and fold local-part validation into a `private`, `ParseContext`-based method; likewise make `validateDomainName()` `private`. They take the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
 
 **New capabilities (breaking or late-binding):**
 - [ ] DNS/MX validation via a `DnsValidator` callback interface — breaking because the `Parse` constructor grows, and synchronous lookups change performance characteristics.
