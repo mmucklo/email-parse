@@ -34,24 +34,24 @@ use Email\Parse;
 
 // Typed value objects — parseSingle() / parseMultiple() / parseStream().
 // (The legacy array-returning parse() is deprecated; see "Other Examples" below.)
-$address = Parse::getInstance()->parseSingle('john@example.com');
+$address = (new Parse())->parseSingle('john@example.com');
 echo $address->localPart;           // "john"
 echo $address->domain;              // "example.com"
 if ($address->invalid) {
     echo $address->invalidReasonCode->value;
 }
 
-$result = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+$result = (new Parse())->parseMultiple('a@a.com, b@b.com');
 foreach ($result->emailAddresses as $addr) { /* ... */ }
 
 // Streaming for large batches (v3.2+) — yields one address at a time.
-foreach (Parse::getInstance()->parseStream($csvRows) as $addr) {
+foreach ((new Parse())->parseStream($csvRows) as $addr) {
     if ($addr->invalid) continue;
     // ...
 }
 
 // Serialization (v3.3+)
-$parsed = Parse::getInstance()->parseSingle('"J Doe" <j@example.com>');
+$parsed = (new Parse())->parseSingle('"J Doe" <j@example.com>');
 (string) $parsed;        // "j@example.com" — Stringable returns simple_address
 $parsed->canonical();    // 'J Doe <j@example.com>' — minimal RFC 5322 quoting
 $parsed->toArray();      // legacy array shape, for mixed-API code
@@ -263,19 +263,19 @@ RFC 5322 allows comments in email addresses using parentheses. The parser automa
 use Email\Parse;
 
 // Single comment
-$result = Parse::getInstance()->parseSingle('john@example.com (home address)');
+$result = (new Parse())->parseSingle('john@example.com (home address)');
 // $result->comments === ['home address']
 
 // Multiple comments
-$result = Parse::getInstance()->parseSingle('test(comment1)(comment2)@example.com');
+$result = (new Parse())->parseSingle('test(comment1)(comment2)@example.com');
 // $result->comments === ['comment1', 'comment2']
 
 // Nested comments
-$result = Parse::getInstance()->parseSingle('test@example.com (comment with (nested) parens)');
+$result = (new Parse())->parseSingle('test@example.com (comment with (nested) parens)');
 // $result->comments === ['comment with (nested) parens']
 
 // No comments
-$result = Parse::getInstance()->parseSingle('test@example.com');
+$result = (new Parse())->parseSingle('test@example.com');
 // $result->comments === []
 ```
 
@@ -291,7 +291,7 @@ See [UPGRADE.md](UPGRADE.md) for the complete list of breaking changes, deprecat
 
 ```php
 // v2.x default (legacy behavior — still works in v3.0)
-$parser = Parse::getInstance();
+$parser = new Parse();
 
 // v3.0 recommended default
 $options = ParseOptions::rfc5322();
@@ -368,7 +368,7 @@ New code uses `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed va
 
 ```php
  $email = '"J Doe" <johndoe@xyz.com>';
- $result = Email\Parse::getInstance()->parseSingle($email)->toArray();
+ $result = (new Email\Parse())->parseSingle($email)->toArray();
 
  $result == array(
      'address' => '"J Doe" <johndoe@xyz.com>',
@@ -387,7 +387,7 @@ New code uses `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed va
      'comments' => []);
 
  $emails = 'testing@[8.8.8.8] testing@xyz.com, "test.2"@xyz.com (comment)';
- $result = Email\Parse::getInstance()->parseMultiple($emails)->toArray();
+ $result = (new Email\Parse())->parseMultiple($emails)->toArray();
  $result == array(
      'success' => true,
      'reason' => null,

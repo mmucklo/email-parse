@@ -6,10 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- **`ParseOptions` state fields are now `public readonly`** — `bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, and `allowedWhitespace` are readable directly as properties (the existing `getX()` accessors remain). Every `ParseOptions` property is now readonly; configure via the constructor or the `withX()` builders.
+
 ### Deprecated
 - **`Parse::parse()`** (the polymorphic `$multiple`-boolean, array-returning API) is deprecated. Use `parseSingle()` / `parseMultiple()` for typed value objects, or `parseStream()` for large batches; call `->toArray()` on a result if you need the legacy array shape. `parse()` keeps working as a thin shim over the typed core and will be removed in 5.0.
+- **`Parse::getInstance()`** — the default-options singleton is deprecated; use explicit instantiation (`new Parse($logger, $options)`), which also lets you pass custom options. Removed in 5.0.
 
 ### Removed
+- **BREAKING: the deprecated `ParseOptions` mutating setters** — `setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength` (deprecated since v3.0) are removed. Configure via the constructor or the `withX()` builders; the state fields are now `public readonly`.
 - **BREAKING: `Parse::validateLocalPart()`** — the `@deprecated` (3.9) `array`-based method is removed; local-part validation is now a `private`, `ParseContext`-based method. **`Parse::validateDomainName()` is now `private`.** Both took the parser's internal accumulator and were never a supported extension point — customize validation via `ParseOptions`. Any subclass that overrode them must move to `ParseOptions`-based configuration.
 
 ## [3.9.0]

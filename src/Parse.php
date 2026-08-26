@@ -54,7 +54,11 @@ class Parse
     private ?\Spoofchecker $spoofchecker = null;
 
     /**
-     * Allow Parse to be instantiated as a singleton.
+     * Return a shared singleton instance configured with default options.
+     *
+     * @deprecated 4.0 Prefer explicit instantiation — `new Parse($logger, $options)`.
+     *             The singleton carries process-global state and cannot take custom
+     *             options; it will be removed in 5.0.
      *
      * @return Parse The instance
      */

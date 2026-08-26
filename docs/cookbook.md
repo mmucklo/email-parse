@@ -203,7 +203,7 @@ foreach ($addresses as $raw) {
 }
 ```
 
-Prefer explicit instantiation; `Parse::getInstance()` (a singleton with default options) exists for convenience and backward compatibility.
+Prefer explicit instantiation — `new Parse()`. `Parse::getInstance()` (a default-options singleton) is **deprecated** and will be removed in 5.0.
 
 ## The array shape
 

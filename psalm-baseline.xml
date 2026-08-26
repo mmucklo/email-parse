@@ -25,13 +25,6 @@
       <code><![CDATA[rfc5321]]></code>
       <code><![CDATA[rfc5322]]></code>
       <code><![CDATA[rfc6531]]></code>
-      <code><![CDATA[setBannedChars]]></code>
-      <code><![CDATA[setLengthLimits]]></code>
-      <code><![CDATA[setMaxDomainLabelLength]]></code>
-      <code><![CDATA[setMaxLocalPartLength]]></code>
-      <code><![CDATA[setMaxTotalLength]]></code>
-      <code><![CDATA[setSeparators]]></code>
-      <code><![CDATA[setUseWhitespaceAsSeparator]]></code>
       <code><![CDATA[withAllowDomainLiteral]]></code>
       <code><![CDATA[withAllowObsLocalPart]]></code>
       <code><![CDATA[withAllowObsRoute]]></code>

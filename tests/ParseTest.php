@@ -188,7 +188,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseSingleReturnsTypedObject(): void
     {
-        $result = Parse::getInstance()->parseSingle('john@example.com');
+        $result = (new Parse())->parseSingle('john@example.com');
         $this->assertInstanceOf(\Email\ParsedEmailAddress::class, $result);
         $this->assertSame('john', $result->localPart);
         $this->assertSame('example.com', $result->domain);
@@ -199,14 +199,14 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseSingleInvalidCarriesErrorCode(): void
     {
-        $result = Parse::getInstance()->parseSingle('foo@bar@baz.com');
+        $result = (new Parse())->parseSingle('foo@bar@baz.com');
         $this->assertTrue($result->invalid);
         $this->assertSame(\Email\ParseErrorCode::MultipleAtSymbols, $result->invalidReasonCode);
     }
 
     public function testParseMultipleReturnsTypedResult(): void
     {
-        $result = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+        $result = (new Parse())->parseMultiple('a@a.com, b@b.com');
         $this->assertInstanceOf(\Email\ParseResult::class, $result);
         $this->assertTrue($result->success);
         $this->assertNull($result->reason);
@@ -218,7 +218,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseMultipleFailureCarriesReason(): void
     {
-        $result = Parse::getInstance()->parseMultiple('a@a.com, not-an-email');
+        $result = (new Parse())->parseMultiple('a@a.com, not-an-email');
         $this->assertFalse($result->success);
         $this->assertNotNull($result->reason);
         $this->assertTrue($result->emailAddresses[1]->invalid);
@@ -226,7 +226,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParsedEmailAddressCommentsAreExtracted(): void
     {
-        $result = Parse::getInstance()->parseSingle('user@example.com (home)');
+        $result = (new Parse())->parseSingle('user@example.com (home)');
         $this->assertSame(['home'], $result->comments);
     }
 
@@ -640,7 +640,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         // "Jörg <j@example.com>" with ö as the single ISO-8859-1 byte 0xF6.
         $input = "J\xF6rg <j@example.com>";
-        $result = Parse::getInstance()->parseSingle($input, 'ISO-8859-1');
+        $result = (new Parse())->parseSingle($input, 'ISO-8859-1');
 
         $this->assertFalse($result->invalid);
         $this->assertSame('j', $result->localPart);
@@ -657,7 +657,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testVariableWidthEncodingIsHonoredByTokenizer(): void
     {
         $input = mb_convert_encoding('日本 <j@example.com>', 'SJIS', 'UTF-8');
-        $result = Parse::getInstance()->parseSingle($input, 'SJIS');
+        $result = (new Parse())->parseSingle($input, 'SJIS');
 
         $this->assertFalse($result->invalid);
         $this->assertSame('j', $result->localPart);
@@ -679,14 +679,14 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $loneByte = pack('C', 0x80); // a lone UTF-8 continuation byte
         $input = 'us'.$loneByte.'er@example.com';
-        $result = Parse::getInstance()->parseSingle($input);
+        $result = (new Parse())->parseSingle($input);
 
         if (mb_substr($loneByte, 0, 1, 'UTF-8') === $loneByte) {
             $this->assertTrue($result->invalid);
             $this->assertSame(\Email\ParseErrorCode::InvalidUtf8Encoding, $result->invalidReasonCode);
         } else {
             // Byte sanitized before validation; result must be deterministic.
-            $this->assertSame($result->invalid, Parse::getInstance()->parseSingle($input)->invalid);
+            $this->assertSame($result->invalid, (new Parse())->parseSingle($input)->invalid);
         }
     }
 
@@ -697,7 +697,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
      */
     public function testLengthBoundariesAcceptMaxAndRejectOneOver(): void
     {
-        $p = Parse::getInstance();
+        $p = new Parse();
         $Err = \Email\ParseErrorCode::class;
 
         // Local part: 64 octets is the maximum; 65 is over.
@@ -723,7 +723,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
      */
     public function testPunycodeConversionFailureIsReported(): void
     {
-        $result = Parse::getInstance()->parseSingle('user@'.str_repeat('ä', 70).'.de');
+        $result = (new Parse())->parseSingle('user@'.str_repeat('ä', 70).'.de');
         $this->assertTrue($result->invalid);
         $this->assertSame(\Email\ParseErrorCode::PunycodeConversionFailed, $result->invalidReasonCode);
     }
@@ -736,7 +736,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testMismatchedEncodingDomainFailsGracefully(): void
     {
         $input = mb_convert_encoding('user@日本.com', 'SJIS', 'UTF-8');
-        $result = Parse::getInstance()->parseSingle($input, 'SJIS');
+        $result = (new Parse())->parseSingle($input, 'SJIS');
         $this->assertTrue($result->invalid);
         $this->assertNotNull($result->invalidReasonCode);
     }
@@ -810,37 +810,30 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Exercises the deprecated setters — they continue to work in v3.1 and
-     * will be removed in v4.0. Coverage-only; assertions verify round-trips.
+     * The state fields (bannedChars / separators / useWhitespaceAsSeparator /
+     * lengthLimits) are `public readonly`, configured via the constructor or the
+     * withX() builders. The deprecated mutating setters were removed in 4.0.
      */
-    public function testDeprecatedSettersStillFunction(): void
+    public function testStateFieldsArePublicReadonlyAndConfigurable(): void
     {
-        $opts = new ParseOptions();
-        $opts->setBannedChars(['%']);
+        $opts = (new ParseOptions())
+            ->withBannedChars(['%'])
+            ->withSeparators([';'])
+            ->withUseWhitespaceAsSeparator(false)
+            ->withLengthLimits(new \Email\LengthLimits(10, 20, 5));
+
+        // Readable via the public readonly properties...
+        $this->assertSame(['%' => true], $opts->bannedChars);
+        $this->assertSame([';' => true], $opts->separators);
+        $this->assertFalse($opts->useWhitespaceAsSeparator);
+        $this->assertSame(10, $opts->lengthLimits->maxLocalPartLength);
+
+        // ...and via the retained getters.
         $this->assertSame(['%' => true], $opts->getBannedChars());
-
-        $opts->setSeparators([';']);
         $this->assertSame([';' => true], $opts->getSeparators());
-
-        $opts->setUseWhitespaceAsSeparator(false);
         $this->assertFalse($opts->getUseWhitespaceAsSeparator());
-
-        $opts->setLengthLimits(new \Email\LengthLimits(10, 20, 5));
-        $this->assertSame(10, $opts->getMaxLocalPartLength());
         $this->assertSame(20, $opts->getMaxTotalLength());
         $this->assertSame(5, $opts->getMaxDomainLabelLength());
-
-        $opts->setMaxLocalPartLength(64);
-        $this->assertSame(64, $opts->getMaxLocalPartLength());
-        // Other two limits preserved.
-        $this->assertSame(20, $opts->getMaxTotalLength());
-        $this->assertSame(5, $opts->getMaxDomainLabelLength());
-
-        $opts->setMaxTotalLength(254);
-        $this->assertSame(254, $opts->getMaxTotalLength());
-
-        $opts->setMaxDomainLabelLength(63);
-        $this->assertSame(63, $opts->getMaxDomainLabelLength());
     }
 
     /**
@@ -873,7 +866,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         ];
 
         foreach ($cases as [$input, $expected]) {
-            $result = Parse::getInstance()->parseSingle($input);
+            $result = (new Parse())->parseSingle($input);
             $this->assertTrue($result->invalid, "{$input} should be invalid");
             $this->assertSame($expected, $result->invalidReasonCode, "{$input} wrong code");
         }
@@ -1013,7 +1006,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // When a batch contains two or more invalid addresses, the top-level
         // $reason becomes "Invalid email addresses" (plural) — the second-error
         // branch on line ~844 of Parse.php flips $reason from the singular form.
-        $result = Parse::getInstance()->parseMultiple('first-bad@, second-bad@');
+        $result = (new Parse())->parseMultiple('first-bad@, second-bad@');
         $this->assertFalse($result->success);
         $this->assertSame('Invalid email addresses', $result->reason);
     }
@@ -1105,7 +1098,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testValidAddressHasNullInvalidSeverity(): void
     {
-        $result = Parse::getInstance()->parseSingle('user@example.com');
+        $result = (new Parse())->parseSingle('user@example.com');
         $this->assertFalse($result->invalid);
         $this->assertNull($result->invalidSeverity());
     }
@@ -1113,7 +1106,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testStructuralFailureIsCriticalSeverity(): void
     {
         // Missing '@' — structural failure, unparseable.
-        $result = Parse::getInstance()->parseSingle('not-an-email');
+        $result = (new Parse())->parseSingle('not-an-email');
         $this->assertTrue($result->invalid);
         $this->assertSame(\Email\ValidationSeverity::Critical, $result->invalidSeverity());
     }
@@ -1127,7 +1120,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
 
         // Private-range IP literal is syntactically valid but rejected by the global-range rule.
-        $result = Parse::getInstance()->parseSingle('user@[192.168.0.1]');
+        $result = (new Parse())->parseSingle('user@[192.168.0.1]');
         $this->assertTrue($result->invalid);
         $this->assertSame(\Email\ValidationSeverity::Warning, $result->invalidSeverity());
     }
@@ -1294,7 +1287,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseStreamYieldsTypedObjects(): void
     {
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         $gen = $parser->parseStream(['a@a.com', 'b@b.com']);
         $this->assertInstanceOf(\Generator::class, $gen);
         $results = iterator_to_array($gen, false);
@@ -1308,7 +1301,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         // Each input item may itself contain several comma-separated addresses;
         // parseStream yields one ParsedEmailAddress per address regardless.
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         $results = iterator_to_array(
             $parser->parseStream(['a@a.com, b@b.com', 'c@c.com']),
             false,
@@ -1325,7 +1318,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             yield 'two@example.com';
         })();
 
-        $results = iterator_to_array(Parse::getInstance()->parseStream($input), false);
+        $results = iterator_to_array((new Parse())->parseStream($input), false);
         $this->assertCount(2, $results);
         $this->assertSame('one', $results[0]->localPart);
         $this->assertSame('two', $results[1]->localPart);
@@ -1335,7 +1328,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         // Invalid addresses still appear in the stream — callers filter by $addr->invalid.
         $results = iterator_to_array(
-            Parse::getInstance()->parseStream(['valid@ok.com', 'not-an-email']),
+            (new Parse())->parseStream(['valid@ok.com', 'not-an-email']),
             false,
         );
         $this->assertCount(2, $results);
@@ -1423,7 +1416,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testValidAddressHasNullObsRoute(): void
     {
         // A normal address produces obsRoute=null (not empty string).
-        $result = Parse::getInstance()->parseSingle('user@example.com');
+        $result = (new Parse())->parseSingle('user@example.com');
         $this->assertNull($result->obsRoute);
     }
 
@@ -1436,7 +1429,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testCfwsTrailingLocalPart(): void
     {
         // "local @domain" — trailing CFWS on local-part dot-atom.
-        $result = Parse::getInstance()->parseSingle('local @domain.com');
+        $result = (new Parse())->parseSingle('local @domain.com');
         $this->assertFalse($result->invalid);
         $this->assertSame('local', $result->localPart);
         $this->assertSame('domain.com', $result->domain);
@@ -1445,7 +1438,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testCfwsLeadingDomain(): void
     {
         // "local@ domain" — leading CFWS on domain dot-atom.
-        $result = Parse::getInstance()->parseSingle('local@ domain.com');
+        $result = (new Parse())->parseSingle('local@ domain.com');
         $this->assertFalse($result->invalid);
         $this->assertSame('local', $result->localPart);
         $this->assertSame('domain.com', $result->domain);
@@ -1453,7 +1446,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testCfwsAroundAtSymbol(): void
     {
-        $result = Parse::getInstance()->parseSingle('local @ domain.com');
+        $result = (new Parse())->parseSingle('local @ domain.com');
         $this->assertFalse($result->invalid);
         $this->assertSame('local', $result->localPart);
         $this->assertSame('domain.com', $result->domain);
@@ -1462,7 +1455,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testCfwsInsideAngleAddr(): void
     {
         // Whitespace inside <> flanking the addr-spec.
-        $result = Parse::getInstance()->parseSingle('John Doe <  local@domain.com  >');
+        $result = (new Parse())->parseSingle('John Doe <  local@domain.com  >');
         $this->assertFalse($result->invalid);
         $this->assertSame('John Doe', $result->nameParsed);
         $this->assertSame('local', $result->localPart);
@@ -1471,7 +1464,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testCfwsAroundAtInsideAngleAddr(): void
     {
-        $result = Parse::getInstance()->parseSingle('<local @ domain.com>');
+        $result = (new Parse())->parseSingle('<local @ domain.com>');
         $this->assertFalse($result->invalid);
         $this->assertSame('local', $result->localPart);
         $this->assertSame('domain.com', $result->domain);
@@ -1502,7 +1495,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testToArrayPreservesErrorCode(): void
     {
-        $typed = Parse::getInstance()->parseSingle('not-an-email');
+        $typed = (new Parse())->parseSingle('not-an-email');
         $arr = $typed->toArray();
         $this->assertTrue($arr['invalid']);
         $this->assertInstanceOf(\Email\ParseErrorCode::class, $arr['invalid_reason_code']);
@@ -1510,7 +1503,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testToJsonProducesParseableJson(): void
     {
-        $typed = Parse::getInstance()->parseSingle('user@example.com');
+        $typed = (new Parse())->parseSingle('user@example.com');
         $decoded = json_decode($typed->toJson(), true);
         $this->assertIsArray($decoded);
         $this->assertSame('user', $decoded['local_part']);
@@ -1520,7 +1513,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testToJsonSerializesErrorCodeAsString(): void
     {
         // ParseErrorCode is a BackedEnum; json_encode emits its backing value.
-        $typed = Parse::getInstance()->parseSingle('<<a@b.com>');
+        $typed = (new Parse())->parseSingle('<<a@b.com>');
         $decoded = json_decode($typed->toJson(), true);
         $this->assertSame('multiple_opening_angle', $decoded['invalid_reason_code']);
     }
@@ -1529,7 +1522,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         // Asserts JSON_UNESCAPED_UNICODE is in the flag set — without it, "münchen"
         // would become "m\u00fcnchen". Catches bitwise-or regressions in toJson().
-        $typed = Parse::getInstance()->parseSingle('user@münchen.de');
+        $typed = (new Parse())->parseSingle('user@münchen.de');
         $this->assertStringContainsString('münchen', $typed->toJson());
         $this->assertStringNotContainsString('\u00', $typed->toJson());
     }
@@ -1537,33 +1530,33 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     public function testToJsonPassesCallerFlagsThrough(): void
     {
         // Caller-supplied flags must reach json_encode (bitwise-or, not &).
-        $typed = Parse::getInstance()->parseSingle('user@example.com');
+        $typed = (new Parse())->parseSingle('user@example.com');
         $pretty = $typed->toJson(JSON_PRETTY_PRINT);
         $this->assertStringContainsString("\n", $pretty);
     }
 
     public function testStringableReturnsSimpleAddressWhenValid(): void
     {
-        $typed = Parse::getInstance()->parseSingle('"J Doe" <john@example.com>');
+        $typed = (new Parse())->parseSingle('"J Doe" <john@example.com>');
         $this->assertSame('john@example.com', (string) $typed);
     }
 
     public function testStringableReturnsEmptyStringWhenInvalid(): void
     {
-        $typed = Parse::getInstance()->parseSingle('not-an-email');
+        $typed = (new Parse())->parseSingle('not-an-email');
         $this->assertSame('', (string) $typed);
     }
 
     public function testCanonicalAddrSpecWithoutName(): void
     {
-        $typed = Parse::getInstance()->parseSingle('john@example.com');
+        $typed = (new Parse())->parseSingle('john@example.com');
         $this->assertSame('john@example.com', $typed->canonical());
     }
 
     public function testCanonicalAddrSpecWithSimpleName(): void
     {
         // Atext-only name needs no quotes.
-        $typed = Parse::getInstance()->parseSingle('John Doe <john@example.com>');
+        $typed = (new Parse())->parseSingle('John Doe <john@example.com>');
         $this->assertSame('John Doe <john@example.com>', $typed->canonical());
     }
 
@@ -1571,27 +1564,27 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         // Input had quotes; canonical form drops them because the name is
         // pure atext+WSP and quoting is not required per RFC 5322 §3.2.5.
-        $typed = Parse::getInstance()->parseSingle('"John Doe" <john@example.com>');
+        $typed = (new Parse())->parseSingle('"John Doe" <john@example.com>');
         $this->assertSame('John Doe <john@example.com>', $typed->canonical());
     }
 
     public function testCanonicalKeepsRequiredNameQuotes(): void
     {
         // Period in display name requires quoting (it's not atext).
-        $typed = Parse::getInstance()->parseSingle('"John Q. Public" <john@example.com>');
+        $typed = (new Parse())->parseSingle('"John Q. Public" <john@example.com>');
         $this->assertSame('"John Q. Public" <john@example.com>', $typed->canonical());
     }
 
     public function testCanonicalQuotesLocalPartWhenRequired(): void
     {
         // Local-part with a space must be quoted per RFC 5322 §3.2.4.
-        $typed = Parse::getInstance()->parseSingle('"with space"@example.com');
+        $typed = (new Parse())->parseSingle('"with space"@example.com');
         $this->assertSame('"with space"@example.com', $typed->canonical());
     }
 
     public function testCanonicalReturnsEmptyForInvalidAddress(): void
     {
-        $typed = Parse::getInstance()->parseSingle('not-an-email');
+        $typed = (new Parse())->parseSingle('not-an-email');
         $this->assertSame('', $typed->canonical());
     }
 
@@ -1606,7 +1599,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseResultToJsonProducesParseableJson(): void
     {
-        $typed = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+        $typed = (new Parse())->parseMultiple('a@a.com, b@b.com');
         $decoded = json_decode($typed->toJson(), true);
         $this->assertTrue($decoded['success']);
         $this->assertCount(2, $decoded['email_addresses']);
@@ -1615,14 +1608,14 @@ class ParseTest extends \PHPUnit\Framework\TestCase
 
     public function testParseResultToJsonEmitsUnescapedUnicode(): void
     {
-        $typed = Parse::getInstance()->parseMultiple('user@münchen.de');
+        $typed = (new Parse())->parseMultiple('user@münchen.de');
         $this->assertStringContainsString('münchen', $typed->toJson());
         $this->assertStringNotContainsString('\u00', $typed->toJson());
     }
 
     public function testParseResultToJsonPassesCallerFlagsThrough(): void
     {
-        $typed = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+        $typed = (new Parse())->parseMultiple('a@a.com, b@b.com');
         $this->assertStringContainsString("\n", $typed->toJson(JSON_PRETTY_PRINT));
     }
 

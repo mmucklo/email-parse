@@ -30,9 +30,11 @@ below as a record; planned work follows.
 
 ### Deprecations
 
-- **v3.0:** `LengthLimits` moved to readonly constructor promotion (getters/setters removed — see [UPGRADE.md](UPGRADE.md)). The `ParseOptions` setters (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) are marked `@deprecated` and still functional; removal is targeted for v4.0.
+- **v3.0 → removed v4.0:** the `ParseOptions` mutating setters (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) were deprecated in v3.0 and are removed in v4.0. The state fields are `public readonly`; configure via the constructor or `withX()` builders.
+- **v3.0:** `LengthLimits` moved to readonly constructor promotion (getters/setters removed — see [UPGRADE.md](UPGRADE.md)).
 - **v3.9 → removed v4.0:** `protected Parse::validateLocalPart(array $emailAddress)` was deprecated in 3.9 and is removed in 4.0 (now a `private` `ParseContext`-based method). Validation is customized via `ParseOptions`.
 - **v4.0:** `Parse::parse()` (the polymorphic array API) marked `@deprecated` — kept as a working shim over the typed methods; removal targeted for v5.0.
+- **v4.0:** `Parse::getInstance()` (default-options singleton) marked `@deprecated` — use `new Parse($logger, $options)`; removal targeted for v5.0.
 - `RfcMode` never shipped (existed only on a feature branch).
 
 ### Community & documentation
@@ -74,10 +76,10 @@ Continuous work, not tied to a specific release.
 ### v4.0 — Breaking modernization
 
 **API cleanup:**
-- [ ] Remove the `@deprecated` `ParseOptions` setters (deprecated in v3.0).
-- [ ] Promote the `ParseOptions` state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`) to public `readonly` via constructor promotion with named arguments.
+- [x] Removed the `@deprecated` `ParseOptions` setters (deprecated in v3.0).
+- [x] Promoted the `ParseOptions` state fields (`bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, `allowedWhitespace`) to `public readonly`. Configured via the constructor or `withX()` builders; the `getX()` accessors remain.
 - [x] **Deprecate** the polymorphic `parse()` (the `$multiple`-boolean array API) in favor of `parseSingle()` / `parseMultiple()` / `parseStream()`. Kept as a thin `@deprecated` shim over the private `parseInternal()` core, so it still works; **removal deferred to 5.0** (see below).
-- [ ] Deprecate or remove the `getInstance()` singleton (recommend explicit instantiation).
+- [x] **Deprecate** the `getInstance()` singleton (recommend explicit instantiation — the static singleton carries process-global state and is pinned to the LEGACY preset). Kept working; **removal deferred to 5.0**.
 - [x] Removed the deprecated `Parse::validateLocalPart(array)` extension point (deprecated in 3.9) — local-part validation is now a `private`, `ParseContext`-based method, and `validateDomainName()` is `private` too. They took the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
 
 **New capabilities (breaking or late-binding):**
@@ -88,6 +90,7 @@ Continuous work, not tied to a specific release.
 ### v5.0 — planned
 
 - [ ] Remove the deprecated `parse()` method (deprecated in 4.0). `parseSingle()` / `parseMultiple()` / `parseStream()` are the entry points; the private `parseInternal()` core stays.
+- [ ] Remove the deprecated `Parse::getInstance()` singleton (deprecated in 4.0). Use `new Parse($logger, $options)`.
 
 ### Backlog (unversioned)
 

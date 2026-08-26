@@ -5,11 +5,11 @@ namespace Email;
 class ParseOptions
 {
     /** @var array<string, bool> */
-    private array $bannedChars = [];
+    public readonly array $bannedChars;
     /** @var array<string, bool> */
-    private array $separators = [];
-    private bool $useWhitespaceAsSeparator;
-    private LengthLimits $lengthLimits;
+    public readonly array $separators;
+    public readonly bool $useWhitespaceAsSeparator;
+    public readonly LengthLimits $lengthLimits;
     /**
      * Whitespace characters treated as insignificant (folding/separators in
      * multi-address mode; trimmable). A whitespace character outside this set is
@@ -18,15 +18,15 @@ class ParseOptions
      *
      * @var array<string, bool>
      */
-    private array $allowedWhitespace = [];
+    public readonly array $allowedWhitespace;
 
     /**
      * Construct a parser configuration.
      *
-     * The first four positional parameters preserve the v2.x / v3.0 signature for
-     * backward compatibility. The 15 rule properties following them are readonly
-     * (PHP 8.1) — mutate via the `withX()` fluent builders, which return new
-     * instances with the change applied.
+     * The first five positional parameters preserve the v2.x / v3.0 signature for
+     * backward compatibility. Every property is `readonly` (PHP 8.1) — configure a
+     * new instance via the `withX()` fluent builders, which return a copy with the
+     * change applied. (The deprecated mutating setters were removed in 4.0.)
      *
      * Default values match legacy (v2.x) parser behavior so `new ParseOptions()`
      * preserves existing call sites.
@@ -85,17 +85,28 @@ class ParseOptions
         public readonly bool $detectConfusableDomain = false,
         public readonly ?\Closure $localPartNormalizer = null,
     ) {
+        // Build the character lookup maps once and assign to the readonly
+        // properties (readonly forbids the incremental $this->x[$k] = ... writes).
+        $bannedMap = [];
         foreach ($bannedChars as $char) {
-            $this->bannedChars[$char] = true;
+            $bannedMap[$char] = true;
         }
+        $this->bannedChars = $bannedMap;
+
+        $separatorMap = [];
         foreach ($separators as $sep) {
-            $this->separators[$sep] = true;
+            $separatorMap[$sep] = true;
         }
+        $this->separators = $separatorMap;
+
         $this->useWhitespaceAsSeparator = $useWhitespaceAsSeparator;
         $this->lengthLimits = $lengthLimits ?? LengthLimits::createDefault();
+
+        $whitespaceMap = [];
         foreach ($allowedWhitespace as $ws) {
-            $this->allowedWhitespace[$ws] = true;
+            $whitespaceMap[$ws] = true;
         }
+        $this->allowedWhitespace = $whitespaceMap;
     }
 
     /** @return array<string, bool> */
@@ -431,39 +442,12 @@ class ParseOptions
         );
     }
 
-    // ===== Legacy deprecated setters =====
-    //
-    // These remain as mutating setters for the four non-readonly state fields
-    // only. They continue to work for v2.x callers; they will be removed in v4.0.
-
-    /**
-     * @deprecated v3.0 — Use constructor param or withBannedChars(). Removed in v4.0.
-     * @param array<string> $bannedChars
-     */
-    public function setBannedChars(array $bannedChars): void
-    {
-        $this->bannedChars = [];
-        foreach ($bannedChars as $char) {
-            $this->bannedChars[$char] = true;
-        }
-    }
+    // ===== Accessors for the state fields =====
 
     /** @return array<string, bool> */
     public function getBannedChars(): array
     {
         return $this->bannedChars;
-    }
-
-    /**
-     * @deprecated v3.0 — Use constructor param or withSeparators(). Removed in v4.0.
-     * @param array<string> $separators
-     */
-    public function setSeparators(array $separators): void
-    {
-        $this->separators = [];
-        foreach ($separators as $sep) {
-            $this->separators[$sep] = true;
-        }
     }
 
     /** @return array<string, bool> */
@@ -472,21 +456,9 @@ class ParseOptions
         return $this->separators;
     }
 
-    /** @deprecated v3.0 — Use constructor param or withUseWhitespaceAsSeparator(). Removed in v4.0. */
-    public function setUseWhitespaceAsSeparator(bool $value): void
-    {
-        $this->useWhitespaceAsSeparator = $value;
-    }
-
     public function getUseWhitespaceAsSeparator(): bool
     {
         return $this->useWhitespaceAsSeparator;
-    }
-
-    /** @deprecated v3.0 — Use constructor param or withLengthLimits(). Removed in v4.0. */
-    public function setLengthLimits(LengthLimits $limits): void
-    {
-        $this->lengthLimits = $limits;
     }
 
     public function getLengthLimits(): LengthLimits
@@ -494,44 +466,14 @@ class ParseOptions
         return $this->lengthLimits;
     }
 
-    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
-    public function setMaxLocalPartLength(int $value): void
-    {
-        $this->lengthLimits = new LengthLimits(
-            $value,
-            $this->lengthLimits->maxTotalLength,
-            $this->lengthLimits->maxDomainLabelLength,
-        );
-    }
-
     public function getMaxLocalPartLength(): int
     {
         return $this->lengthLimits->maxLocalPartLength;
     }
 
-    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
-    public function setMaxTotalLength(int $value): void
-    {
-        $this->lengthLimits = new LengthLimits(
-            $this->lengthLimits->maxLocalPartLength,
-            $value,
-            $this->lengthLimits->maxDomainLabelLength,
-        );
-    }
-
     public function getMaxTotalLength(): int
     {
         return $this->lengthLimits->maxTotalLength;
-    }
-
-    /** @deprecated v3.0 — Construct a new LengthLimits and pass it. Removed in v4.0. */
-    public function setMaxDomainLabelLength(int $value): void
-    {
-        $this->lengthLimits = new LengthLimits(
-            $this->lengthLimits->maxLocalPartLength,
-            $this->lengthLimits->maxTotalLength,
-            $value,
-        );
     }
 
     public function getMaxDomainLabelLength(): int
