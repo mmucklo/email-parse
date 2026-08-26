@@ -31,6 +31,7 @@ below as a record; planned work follows.
 ### Deprecations
 
 - **v3.0:** `LengthLimits` moved to readonly constructor promotion (getters/setters removed — see [UPGRADE.md](UPGRADE.md)). The `ParseOptions` setters (`setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength`) are marked `@deprecated` and still functional; removal is targeted for v4.0.
+- **v3.9:** `protected Parse::validateLocalPart(array $emailAddress)` marked `@deprecated`. Still functional and still a live extension point (subclass overrides are invoked), but customizing validation via `ParseOptions` is the supported path; removal is targeted for v4.0 (see Planned below).
 - `RfcMode` never shipped (existed only on a feature branch).
 
 ### Community & documentation
