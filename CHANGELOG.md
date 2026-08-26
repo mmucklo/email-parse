@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- **Internal: `Parse::parse()` decomposed** into a per-state handler dispatch loop backed by a new `ParseContext` accumulator object. Pure structural refactor — no change to parsing logic, conditions, ordering, error codes, or output shape; the address arrays and `ParsedEmailAddress` objects are byte-identical. A fresh `ParseContext` is created per call and never stored on the parser, so `parse()` is reentrant across a `localPartNormalizer` callback. See [ARCHITECTURE.md](ARCHITECTURE.md).
+- **`protected Parse::validateLocalPart()` signature changed** (`array` → `ParseContext`) and is now marked `@internal`, as is `ParseContext` itself. These are implementation details, not extension points — customize validation via `ParseOptions`. Both are slated to become `private` in v4.0.
+
 ## [3.8.0]
 
 Adds opt-in homoglyph / confusable-domain detection. Additive and off by default — no behavior change unless you enable it.

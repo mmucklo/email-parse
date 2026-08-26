@@ -18,6 +18,9 @@ namespace Email;
  * so they thread through the validation helpers unchanged; the public output
  * array shape is built separately in {@see Parse::addAddress()} and is
  * unaffected by this object.
+ *
+ * @internal Implementation detail of {@see Parse}. The field shape is not a
+ *           stable API and may change between minor versions.
  */
 final class ParseContext
 {
@@ -149,11 +152,6 @@ final class ParseContext
     public string $obs_route = '';
 
     /**
-     * Resets every accumulator field to its initial value, reusing the instance
-     * for the next address in a multi-address parse (matches the historical
-     * "rebuild the $emailAddress array" behaviour).
-     */
-    /**
      * @param int $state    Initial parser state (a Parse::STATE_* value).
      * @param int $subState Initial addr-spec sub-state (a Parse::STATE_* value).
      */
@@ -165,6 +163,14 @@ final class ParseContext
         $this->resetAddress($state, $subState);
     }
 
+    /**
+     * Resets every accumulator field to its initial value, reusing the instance
+     * for the next address in a multi-address parse (matches the historical
+     * "rebuild the $emailAddress array" behaviour).
+     *
+     * @param int $state    Parser state to start the next address in (Parse::STATE_*).
+     * @param int $subState Addr-spec sub-state to start it in (Parse::STATE_*).
+     */
     public function resetAddress(int $state, int $subState): void
     {
         // Loop-control state, reset here so every per-address field has a single
