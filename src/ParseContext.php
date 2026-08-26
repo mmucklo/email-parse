@@ -14,8 +14,7 @@ namespace Email;
  * localPartNormalizer closure may call back into parse() mid-parse without
  * clobbering the outer parse's state.
  *
- * The accumulator property names mirror the historical $emailAddress array keys
- * so they thread through the validation helpers unchanged; the public output
+ * The accumulator uses camelCase property names; the public snake_case output
  * array shape is built separately in {@see Parse::addAddress()} and is
  * unaffected by this object.
  *
@@ -70,62 +69,62 @@ final class ParseContext
     // --- Accumulator fields (reset per address via resetAddress()). ---
 
     /** Raw address as given, comments included. */
-    public string $original_address = '';
+    public string $originalAddress = '';
 
     /** Display name without quotes. */
-    public string $name_parsed = '';
+    public string $nameParsed = '';
 
     /** Local-part without quotes. */
-    public string $local_part_parsed = '';
+    public string $localPartParsed = '';
 
     /** Domain after '@' (may be Unicode/U-label). */
     public string $domain = '';
 
     /** Punycode A-label domain, populated when it differs from $domain. */
-    public ?string $domain_ascii = null;
+    public ?string $domainAscii = null;
 
     /** IP address if a domain-literal was used. */
     public string $ip = '';
 
     public bool $invalid = false;
 
-    public ?string $invalid_reason = null;
+    public ?string $invalidReason = null;
 
-    public ?ParseErrorCode $invalid_reason_code = null;
+    public ?ParseErrorCode $invalidReasonCode = null;
 
-    public bool $local_part_quoted = false;
+    public bool $localPartQuoted = false;
 
-    public bool $name_quoted = false;
+    public bool $nameQuoted = false;
 
-    public bool $address_temp_quoted = false;
+    public bool $addressTempQuoted = false;
 
     /**
      * True for exactly the character after a closing quote, so atext / a second
      * quote directly abutting a quoted-string can be rejected.
      */
-    public bool $after_closing_quote = false;
+    public bool $afterClosingQuote = false;
 
-    public string $quote_temp = '';
+    public string $quoteTemp = '';
 
-    public string $address_temp = '';
+    public string $addressTemp = '';
 
-    public int $address_temp_period = 0;
+    public int $addressTempPeriod = 0;
 
-    public ?string $special_char_in_substate = null;
+    public ?string $specialCharInSubstate = null;
 
-    public string $comment_temp = '';
+    public string $commentTemp = '';
 
     /**
      * True for the character following an unescaped backslash inside a comment
      * (RFC 5322 §3.2.1 quoted-pair: "\)" and "\(" are literal, not structural).
      */
-    public bool $comment_escaped = false;
+    public bool $commentEscaped = false;
 
     /**
      * True just after a comment closes mid-atom in the local part (atext already
      * accumulated), so the very next character can be inspected.
      */
-    public bool $comment_after_local_atext = false;
+    public bool $commentAfterLocalAtext = false;
 
     /**
      * Set when atext resumes the atom after such a comment. Whether that is an
@@ -133,7 +132,7 @@ final class ParseContext
      * addr-spec (resolved at '@' → reject, RFC 5322 §3.2.3) or a display-name
      * phrase where "word CFWS word" is legal (resolved at '<' → clear).
      */
-    public bool $local_atom_split_by_comment = false;
+    public bool $localAtomSplitByComment = false;
 
     /** @var array<int, string> Extracted RFC 5322 comments. */
     public array $comments = [];
@@ -142,14 +141,14 @@ final class ParseContext
      * True while the parser is inside angle-addr (between `<` and `>`).
      * Used to gate obs-route detection per RFC 5322 §4.4.
      */
-    public bool $in_angle_addr = false;
+    public bool $inAngleAddr = false;
 
     /**
      * Accumulates the obs-route prefix (everything between `<` and the
      * terminating `:`) when ParseOptions::$allowObsRoute is true.
      * Empty string when no obs-route was seen.
      */
-    public string $obs_route = '';
+    public string $obsRoute = '';
 
     /**
      * @param int $state    Initial parser state (a Parse::STATE_* value).
@@ -181,29 +180,29 @@ final class ParseContext
         $this->subState = $subState;
         $this->commentNestLevel = 0;
 
-        $this->original_address = '';
-        $this->name_parsed = '';
-        $this->local_part_parsed = '';
+        $this->originalAddress = '';
+        $this->nameParsed = '';
+        $this->localPartParsed = '';
         $this->domain = '';
-        $this->domain_ascii = null;
+        $this->domainAscii = null;
         $this->ip = '';
         $this->invalid = false;
-        $this->invalid_reason = null;
-        $this->invalid_reason_code = null;
-        $this->local_part_quoted = false;
-        $this->name_quoted = false;
-        $this->address_temp_quoted = false;
-        $this->after_closing_quote = false;
-        $this->quote_temp = '';
-        $this->address_temp = '';
-        $this->address_temp_period = 0;
-        $this->special_char_in_substate = null;
-        $this->comment_temp = '';
-        $this->comment_escaped = false;
-        $this->comment_after_local_atext = false;
-        $this->local_atom_split_by_comment = false;
+        $this->invalidReason = null;
+        $this->invalidReasonCode = null;
+        $this->localPartQuoted = false;
+        $this->nameQuoted = false;
+        $this->addressTempQuoted = false;
+        $this->afterClosingQuote = false;
+        $this->quoteTemp = '';
+        $this->addressTemp = '';
+        $this->addressTempPeriod = 0;
+        $this->specialCharInSubstate = null;
+        $this->commentTemp = '';
+        $this->commentEscaped = false;
+        $this->commentAfterLocalAtext = false;
+        $this->localAtomSplitByComment = false;
         $this->comments = [];
-        $this->in_angle_addr = false;
-        $this->obs_route = '';
+        $this->inAngleAddr = false;
+        $this->obsRoute = '';
     }
 }

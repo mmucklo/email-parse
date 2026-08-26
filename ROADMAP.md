@@ -95,7 +95,7 @@ Continuous work, not tied to a specific release.
 ### Backlog (unversioned)
 
 - [ ] **`parse()` refactor & modernization follow-ups** (from review; non-blocking, each behavior-preserving and test-gated):
-  - [ ] Rename `ParseContext`'s accumulator fields `snake_case` → `camelCase` to match the codebase. Output-array keys stay `snake_case` (public API); only the internal properties change. Kept as-is during extraction so the diff was a pure move.
+  - [x] Renamed `ParseContext`'s accumulator fields `snake_case` → `camelCase` to match the codebase. Output-array keys stay `snake_case` (public API, string literals in `addAddress()`); only the internal properties changed.
   - [ ] **Encode `ParseContext`'s three concerns structurally.** The immutable input snapshot (`chars`/`len`/`emails`), the read-only hoisted config (`separators`, `bannedChars`, …), and the mutable per-address accumulator are all plain public fields today, so nothing stops a handler writing config. Promote the snapshot + config to `readonly` (constructor-promoted) so only the accumulator stays mutable — the clearest SOTA/correctness win, but it needs `parse()`'s construction reworked (the snapshot is currently assigned after `new`).
   - [ ] **Consider a `ParserState: int` backed enum** in place of the 13 `STATE_*` int constants. Gives type-safety on `$ctx->state`/`$subState` and would likely retire the Psalm state-narrowing baseline entries. Gate on a benchmark: the dispatch is a hot loop, so measure enum-vs-int comparison/array-key overhead before committing (the no-regression constraint still applies).
   - [ ] Drop the `chars`/`len` double source of truth (loop locals vs context properties — kept for hot-loop locality; measure before changing).
