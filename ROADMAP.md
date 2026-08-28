@@ -71,6 +71,21 @@ Continuous work, not tied to a specific release.
 **Maintainability:**
 - [x] **`parse()` decomposition** (delivered; unreleased). The ~772-line state-machine loop is now a ~185-line dispatch loop over per-state handler methods, backed by a typed, per-parse `ParseContext` (a fresh instance per call keeps the parser reentrant). Behavior-preserving — same logic, conditions, ordering, and output. See [ARCHITECTURE.md](ARCHITECTURE.md). Follow-ups in the backlog below.
 
+## Strategic direction (North Star)
+
+Three longer-horizon goals — **PHP framework integration** (Symfony/Laravel), **localized error messages**, and **ports to other languages** (JS/Python/…) — all converge on one architectural principle:
+
+> **Decouple error _identity_ from error _presentation_.** An error is a `ParseErrorCode` plus named parameters (the language-agnostic identity); the human string is _rendered_ from that (the localizable presentation).
+
+This single decoupling serves all three: **i18n** = swap the message catalog; **ports** = the spec asserts on `code + parameters`, message text is non-normative and rendered per implementation; **framework hooks** = the framework's translator is the renderer. `ParseErrorCode` already supplies the identity; the 4.1 keystone adds the parameters + a swappable `MessageProvider`.
+
+Assets that make this credible — protect them as first-class:
+- **`testspec.yml`** — a language-agnostic conformance suite; the canonical spec for ports (assert on `invalid_reason_code` + parameters; treat message text as non-normative).
+- **`ARCHITECTURE.md`** — the portable algorithm reference for ports.
+- **`ParseErrorCode`** — the stable error contract that i18n and ports bind to.
+
+Framework packages (`email-parse-symfony`, `email-parse-laravel`) live in separate repos on their own track, wrapping the frozen 4.0 typed API and wiring the framework Translator in as the `MessageProvider`.
+
 ## Planned
 
 ### v4.0 — Breaking modernization
@@ -84,19 +99,37 @@ Continuous work, not tied to a specific release.
 
 _v4.0 is deliberately **lean**: breaking API cleanup + internal modernization only (see [UPGRADE.md](UPGRADE.md)), so it ships fast and upgrades mechanically. The larger new features once slated here are additive and move to later minors; only the genuinely breaking one (group syntax) moves to 5.0. Internal modernization (`ParseContext` camelCase + readonly, the `ParserState` enum) is tracked under the Backlog below._
 
-### v4.1 — planned
+### v4.1 — Structured errors (the keystone)
 
-- [ ] DNS/MX validation via a `DnsValidator` callback interface. Additive and opt-in (off by default): the `Parse` constructor gains a parameter, and synchronous lookups change performance characteristics, so callers choose it explicitly.
+The highest-leverage post-4.0 work: it unlocks i18n, framework-native localization, and clean ports at once (see North Star above). Additive / non-breaking — `invalid_reason` keeps returning today's English strings by default.
+
+- [ ] Capture **named message parameters** at each error site and expose them as `ParsedEmailAddress::$messageParameters` (`array<string, scalar>`; `[]` when valid).
+- [ ] Introduce a `MessageProvider` interface with a built-in `EnglishMessageProvider` default that renders `invalid_reason` from `code + parameters`:
+  ```php
+  interface MessageProvider
+  {
+      /** @param array<string, scalar> $parameters e.g. ['char' => ':'] or ['limit' => 64] */
+      public function message(ParseErrorCode $code, array $parameters = [], ?string $locale = null): string;
+  }
+  ```
+  **Named** (not positional) parameters — word order varies across languages. Frameworks re-render from `code + messageParameters` via their own translator; injecting a custom `MessageProvider` into `Parse` is the optional path for localized `invalid_reason` at the source.
+- [ ] Evolve `testspec.yml` so `invalid_reason_code` (+ parameters) is the normative assertion and message text is non-normative — making the spec port-ready.
 
 ### v4.2 — planned
 
+- [ ] DNS/MX validation via a `DnsValidator` callback interface. Additive and opt-in (off by default): the `Parse` constructor gains a parameter, and synchronous lookups change performance characteristics, so callers choose it explicitly.
+
+### v4.3 — planned
+
 - [ ] Confusable-against-a-target-list matching — compare the domain's Unicode skeleton against a caller-supplied brand/skeleton set (`Spoofchecker::areConfusable()`), following on from the v3.8 single-string check. Additive; deferred until the caller-provided target-list API is designed.
+- [ ] **RFC 6854 group syntax** (`Group Name: addr1, addr2;`; empty groups `Name:;`) — parse the group construct (RFC 5322 §3.4 / RFC 6854) **additively**: group members flatten into `emailAddresses` unchanged (each gaining an optional `->group` name), plus a `ParseResult::groups()` typed view (`ParsedGroup { string $name; ParsedEmailAddress[] $addresses }`) for callers who want structure, including empty groups. Non-breaking, so it stays a minor — only a *structural* redesign that changed `emailAddresses`' type would force a major.
 
 ### v5.0 — planned
 
 - [ ] Remove the deprecated `parse()` method (deprecated in 4.0). `parseSingle()` / `parseMultiple()` / `parseStream()` are the entry points; the private `parseInternal()` core stays.
 - [ ] Remove the deprecated `Parse::getInstance()` singleton (deprecated in 4.0). Use `new Parse($logger, $options)`.
-- [ ] **RFC 6854 group syntax** (`Group Name: addr1, addr2;`; empty groups `Name:;`) — parse the group construct (RFC 5322 §3.4 / RFC 6854). Breaking: a group is a *named container* of mailboxes, not a single address, so `parseMultiple()`'s result gains a new group-node shape.
+
+_(RFC 6854 group syntax moved to 4.2/4.3 — it can be added additively, see above; only a structural redesign of `emailAddresses` would make it a 5.0 break.)_
 
 ### Backlog (unversioned)
 
