@@ -205,6 +205,10 @@ class Parse
      *               'invalid' => boolean, 'invalid_reason' => string|null,
      *               'invalid_reason_code' => ParseErrorCode|null, 'comments' => array)
      *               endif;
+     *
+     * @psalm-suppress PossiblyUnusedMethod Deprecated public API — the typed
+     *   methods use parseInternal() directly, so nothing internal calls this,
+     *   but external code still does until its 5.0 removal.
      */
     public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
