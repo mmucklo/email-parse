@@ -1,5 +1,90 @@
 # Upgrade Guide
 
+## v3.x → v4.0
+
+v4.0 is a **breaking-modernization** release. Parsing behavior is unchanged — no changes to parsing logic, error codes, or the output shape — so a valid address parses identically. The breaks are all API-surface cleanup: the long-deprecated mutating setters are gone, `ParseOptions` config is now fully immutable, and two internal methods became `private`. Two public methods are newly deprecated (they still work).
+
+For most callers the upgrade is a mechanical find-and-replace. If you only ever call `parseSingle()` / `parseMultiple()` / `parseStream()` and configure options with the constructor or `withX()` builders, **no changes are required.**
+
+### Breaking Changes
+
+#### 1. `ParseOptions` mutating setters removed
+
+The seven setters that were `@deprecated` since v3.0 are removed. `ParseOptions` is now a fully immutable value object: every property is `readonly`, and you configure a new instance via the constructor or the `withX()` fluent builders.
+
+The one behavioral difference to watch: `withX()` returns a **new** instance, so you must **reassign** — the old setters mutated in place.
+
+| Removed setter | Replacement |
+|---|---|
+| `$o->setBannedChars($a)` | `$o = $o->withBannedChars($a)` |
+| `$o->setSeparators($a)` | `$o = $o->withSeparators($a)` |
+| `$o->setUseWhitespaceAsSeparator($b)` | `$o = $o->withUseWhitespaceAsSeparator($b)` |
+| `$o->setLengthLimits($l)` | `$o = $o->withLengthLimits($l)` |
+| `$o->setMaxLocalPartLength($n)` | `$o = $o->withLengthLimits(new LengthLimits($n, $o->getMaxTotalLength(), $o->getMaxDomainLabelLength()))` |
+| `$o->setMaxTotalLength($n)` | `$o = $o->withLengthLimits(new LengthLimits($o->getMaxLocalPartLength(), $n, $o->getMaxDomainLabelLength()))` |
+| `$o->setMaxDomainLabelLength($n)` | `$o = $o->withLengthLimits(new LengthLimits($o->getMaxLocalPartLength(), $o->getMaxTotalLength(), $n))` |
+
+```php
+// Before (v3.x)
+$options = new ParseOptions();
+$options->setBannedChars(['%', '!']);
+$options->setSeparators([',', ';']);
+
+// After (v4.0) — reassign; each withX() returns a new instance
+$options = (new ParseOptions())
+    ->withBannedChars(['%', '!'])
+    ->withSeparators([',', ';']);
+```
+
+The `getX()` accessors (`getBannedChars()`, `getSeparators()`, `getLengthLimits()`, `getMaxLocalPartLength()`, …) are unchanged, and the state fields are now also readable directly as `public readonly` properties (`$options->bannedChars`, `$options->separators`, etc.).
+
+#### 2. `Parse::validateLocalPart()` and `validateDomainName()` are now `private`
+
+These took the parser's internal accumulator and were never a documented extension point. If you subclassed `Parse` to override either, move that logic to `ParseOptions` configuration (rule properties, or the `withLocalPartNormalizer()` callback). `validateLocalPart()`'s brief `array`-signature deprecation window in 3.9 is now closed.
+
+### Deprecated (Still Functional)
+
+Both keep working in the entire 4.x line and are removed in **5.0**.
+
+#### 1. `Parse::parse()`
+
+The polymorphic `$multiple`-boolean, array-returning method is deprecated in favor of the typed API:
+
+```php
+// Before
+$rows = $parser->parse($input, true);       // array of address arrays
+$row  = $parser->parse($input, false);       // single address array
+
+// After
+$result = $parser->parseMultiple($input);    // ParseResult (typed)
+$addr   = $parser->parseSingle($input);       // ParsedEmailAddress (typed)
+
+// Need the legacy array shape? Call ->toArray():
+$rows = $parser->parseMultiple($input)->toArray()['email_addresses'];
+$row  = $parser->parseSingle($input)->toArray();
+```
+
+#### 2. `Parse::getInstance()`
+
+The default-options singleton is deprecated — it carries process-global state and is pinned to the LEGACY preset (permissive v2.x behavior). Instantiate explicitly, which also lets you pass a logger and custom options:
+
+```php
+// Before
+$parser = Parse::getInstance();
+
+// After
+$parser = new Parse();                        // default options
+$parser = new Parse(null, ParseOptions::rfc5322());  // configured
+```
+
+### Internal Changes (No Action Needed)
+
+These are implementation details behind `@internal` and do not affect callers: the `Parse::STATE_*` constants became a `ParserState` enum, and the internal `ParseContext` accumulator was modernized (camelCase fields, readonly input snapshot/config). They are listed only for completeness — if your code reached into these, it was relying on unsupported internals.
+
+### Minimum Requirements (Unchanged)
+
+PHP **8.1+**, with the `mbstring` and `intl` extensions.
+
 ## v3.2 → v3.3
 
 v3.3 is fully additive — no breaking changes, no behavior changes for existing callers. Everything listed here is opt-in.

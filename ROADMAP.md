@@ -82,15 +82,21 @@ Continuous work, not tied to a specific release.
 - [x] **Deprecate** the `getInstance()` singleton (recommend explicit instantiation — the static singleton carries process-global state and is pinned to the LEGACY preset). Kept working; **removal deferred to 5.0**.
 - [x] Removed the deprecated `Parse::validateLocalPart(array)` extension point (deprecated in 3.9) — local-part validation is now a `private`, `ParseContext`-based method, and `validateDomainName()` is `private` too. They took the parser's internal accumulator and were never a supported extension point — validation is customized through `ParseOptions`.
 
-**New capabilities (breaking or late-binding):**
-- [ ] DNS/MX validation via a `DnsValidator` callback interface — breaking because the `Parse` constructor grows, and synchronous lookups change performance characteristics.
-- [ ] Group syntax (RFC 6854: `Group Name: addr1, addr2;`) — introduces a new output-container shape for grouped results.
-- [ ] Confusable-against-a-target-list matching — compare the domain's Unicode skeleton against a caller-supplied brand/skeleton set (`Spoofchecker::areConfusable()`), following on from the v3.8 single-string check. Deferred until the caller-provided target list is designed.
+_v4.0 is deliberately **lean**: breaking API cleanup + internal modernization only (see [UPGRADE.md](UPGRADE.md)), so it ships fast and upgrades mechanically. The larger new features once slated here are additive and move to later minors; only the genuinely breaking one (group syntax) moves to 5.0. Internal modernization (`ParseContext` camelCase + readonly, the `ParserState` enum) is tracked under the Backlog below._
+
+### v4.1 — planned
+
+- [ ] DNS/MX validation via a `DnsValidator` callback interface. Additive and opt-in (off by default): the `Parse` constructor gains a parameter, and synchronous lookups change performance characteristics, so callers choose it explicitly.
+
+### v4.2 — planned
+
+- [ ] Confusable-against-a-target-list matching — compare the domain's Unicode skeleton against a caller-supplied brand/skeleton set (`Spoofchecker::areConfusable()`), following on from the v3.8 single-string check. Additive; deferred until the caller-provided target-list API is designed.
 
 ### v5.0 — planned
 
 - [ ] Remove the deprecated `parse()` method (deprecated in 4.0). `parseSingle()` / `parseMultiple()` / `parseStream()` are the entry points; the private `parseInternal()` core stays.
 - [ ] Remove the deprecated `Parse::getInstance()` singleton (deprecated in 4.0). Use `new Parse($logger, $options)`.
+- [ ] **RFC 6854 group syntax** (`Group Name: addr1, addr2;`; empty groups `Name:;`) — parse the group construct (RFC 5322 §3.4 / RFC 6854). Breaking: a group is a *named container* of mailboxes, not a single address, so `parseMultiple()`'s result gains a new group-node shape.
 
 ### Backlog (unversioned)
 
