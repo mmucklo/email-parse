@@ -10,30 +10,11 @@ use Psr\Log\LoggerInterface;
  */
 class Parse
 {
-    // Constants for the state-machine of the parser
-    private const STATE_TRIM = 0;
-    private const STATE_QUOTE = 1;
-    private const STATE_ADDRESS = 2;
-    private const STATE_COMMENT = 3;
-    private const STATE_NAME = 4;
-    private const STATE_LOCAL_PART = 5;
-    private const STATE_DOMAIN = 6;
-    private const STATE_AFTER_DOMAIN = 7;
-    private const STATE_SQUARE_BRACKET = 8;
-    private const STATE_SKIP_AHEAD = 9;
-    private const STATE_END_ADDRESS = 10;
-    private const STATE_START = 11;
+    // The state-machine states are the {@see ParserState} enum (formerly
+    // Parse::STATE_* constants).
 
     /** The full set of whitespace characters, as a lookup map (RFC 5234 WSP + CR/LF). */
     private const WHITESPACE = [' ' => true, "\t" => true, "\r" => true, "\n" => true];
-
-    /**
-     * Absorbs the obsolete source-route prefix inside angle-addr
-     * (RFC 5322 §4.4 obs-route: `"<" obs-domain-list ":" addr-spec ">"`).
-     * Consumes characters from the leading `@` up to the `:` terminator,
-     * then resumes normal addr-spec parsing.
-     */
-    private const STATE_OBS_ROUTE = 12;
 
     /**
      * @var ?Parse
@@ -322,8 +303,8 @@ class Parse
         // the context is fully initialized before first use. $chars/$len are also
         // kept as locals below for the tight loop counter.
         $ctx = new ParseContext(
-            self::STATE_TRIM,
-            self::STATE_START,
+            ParserState::TRIM,
+            ParserState::START,
             $chars,
             $len,
             $multiple,
@@ -339,33 +320,33 @@ class Parse
             $prevChar = $curChar; // Previous Character
             $curChar = $chars[$i]; // Current Character
             switch ($ctx->state) {
-                case self::STATE_SKIP_AHEAD:
+                case ParserState::SKIP_AHEAD:
                     $this->handleStateSkipAhead($ctx, $curChar);
 
                     break;
                     /* @noinspection PhpMissingBreakStatementInspection — STATE_TRIM falls through to STATE_ADDRESS */
-                case self::STATE_TRIM:
+                case ParserState::TRIM:
                     if (!$this->handleStateTrim($ctx, $curChar)) {
                         break;
                     }
                     // no break — a plain character falls through to STATE_ADDRESS
-                case self::STATE_ADDRESS:
+                case ParserState::ADDRESS:
                     $this->handleStateAddress($ctx, $curChar, $prevChar, $i);
 
                     break;
-                case self::STATE_SQUARE_BRACKET:
+                case ParserState::SQUARE_BRACKET:
                     $this->handleStateSquareBracket($ctx, $curChar);
 
                     break;
-                case self::STATE_OBS_ROUTE:
+                case ParserState::OBS_ROUTE:
                     $this->handleStateObsRoute($ctx, $curChar);
 
                     break;
-                case self::STATE_QUOTE:
+                case ParserState::QUOTE:
                     $this->handleStateQuote($ctx, $curChar, $i);
 
                     break;
-                case self::STATE_COMMENT:
+                case ParserState::COMMENT:
                     $this->handleStateComment($ctx, $curChar);
 
                     break;
@@ -375,13 +356,13 @@ class Parse
                     $ctx->invalid = true;
                     $ctx->invalidReason = 'Error during parsing';
                     $ctx->invalidReasonCode = Err::ParseError;
-                    $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$ctx->state}\n\$subState: {$ctx->subState}\n\$i: {$i}\n\$curChar: {$curChar}");
+                    $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$ctx->state->name}\n\$subState: {$ctx->subState->name}\n\$i: {$i}\n\$curChar: {$curChar}");
 
                     break;
             }
 
             // if there's a $ctx->originalAddress and the state is set to STATE_END_ADDRESS
-            if (self::STATE_END_ADDRESS == $ctx->state && strlen($ctx->originalAddress) > 0) {
+            if (ParserState::END_ADDRESS == $ctx->state && strlen($ctx->originalAddress) > 0) {
                 $invalid = $this->addAddress(
                     $emailAddresses,
                     $ctx,
@@ -398,7 +379,7 @@ class Parse
                 }
 
                 // Reset all per-address state before the next address in the batch.
-                $ctx->resetAddress(self::STATE_TRIM, self::STATE_START);
+                $ctx->resetAddress(ParserState::TRIM, ParserState::START);
             }
 
             // Fire once, on the transition into invalid: STATE_SKIP_AHEAD does not clear
@@ -406,9 +387,9 @@ class Parse
             // character — and interpolating the full $emails / original_address each time
             // (even under a NullLogger, the argument is still built) makes malformed input
             // O(n^2). See the DoS regression benchmark.
-            if ($ctx->invalid && self::STATE_SKIP_AHEAD !== $ctx->state) {
+            if ($ctx->invalid && ParserState::SKIP_AHEAD !== $ctx->state) {
                 $this->log('debug', "Email\\Parse->parse - invalid - {$ctx->invalidReason}\n\$ctx->originalAddress {$ctx->originalAddress}\n\$emails: {$emails}");
-                $ctx->state = self::STATE_SKIP_AHEAD;
+                $ctx->state = ParserState::SKIP_AHEAD;
             }
         }
 
@@ -416,13 +397,13 @@ class Parse
         // literal, or obs-route) — the construct was never closed. Keyed on the
         // parser state rather than quote_temp, since bracket/comment content is
         // buffered elsewhere (a closed delimiter always returns to STATE_ADDRESS).
-        if (!$ctx->invalid && in_array($ctx->state, [self::STATE_QUOTE, self::STATE_COMMENT, self::STATE_SQUARE_BRACKET, self::STATE_OBS_ROUTE], true)) {
+        if (!$ctx->invalid && in_array($ctx->state, [ParserState::QUOTE, ParserState::COMMENT, ParserState::SQUARE_BRACKET, ParserState::OBS_ROUTE], true)) {
             $ctx->invalid = true;
             [$ctx->invalidReason, $ctx->invalidReasonCode] = match ($ctx->state) {
-                self::STATE_QUOTE => ['No ending quote: \'"\'', Err::UnterminatedQuote],
-                self::STATE_COMMENT => ['No closing parenthesis: \')\'', Err::UnterminatedComment],
-                self::STATE_SQUARE_BRACKET => ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket],
-                self::STATE_OBS_ROUTE => ['Incomplete obs-route: missing colon before end of input', Err::IncompleteAddress],
+                ParserState::QUOTE => ['No ending quote: \'"\'', Err::UnterminatedQuote],
+                ParserState::COMMENT => ['No closing parenthesis: \')\'', Err::UnterminatedComment],
+                ParserState::SQUARE_BRACKET => ['No closing square bracket: \']\'', Err::UnterminatedSquareBracket],
+                ParserState::OBS_ROUTE => ['Incomplete obs-route: missing colon before end of input', Err::IncompleteAddress],
             };
         }
         if (!$ctx->invalid && ($ctx->addressTemp || $ctx->quoteTemp)) {
@@ -485,7 +466,7 @@ class Parse
         $isWhitespaceSeparator = $ctx->useWhitespaceAsSeparator && isset($ctx->allowedWhitespace[$curChar]);
 
         if ($ctx->multiple && ($isWhitespaceSeparator || isset($ctx->separators[$curChar]))) {
-            $ctx->state = self::STATE_END_ADDRESS;
+            $ctx->state = ParserState::END_ADDRESS;
         } else {
             $ctx->originalAddress .= $curChar;
         }
@@ -502,16 +483,16 @@ class Parse
         if (isset($ctx->allowedWhitespace[$curChar])) {
             return false;
         }
-        $ctx->state = self::STATE_ADDRESS;
+        $ctx->state = ParserState::ADDRESS;
         if ('"' == $curChar) {
             $ctx->originalAddress .= $curChar;
-            $ctx->state = self::STATE_QUOTE;
+            $ctx->state = ParserState::QUOTE;
 
             return false;
         }
         if ('(' == $curChar) {
             $ctx->originalAddress .= $curChar;
-            $ctx->state = self::STATE_COMMENT;
+            $ctx->state = ParserState::COMMENT;
             // A leading comment opens at nest level 1 (matches the
             // STATE_ADDRESS entry); without this an unbalanced nested
             // comment like "((x)" would appear closed after one ")".
@@ -560,15 +541,15 @@ class Parse
 
         if ('(' == $curChar) {
             // Handle comment
-            $ctx->state = self::STATE_COMMENT;
+            $ctx->state = ParserState::COMMENT;
             $ctx->commentNestLevel = 1;
 
             return;
         } elseif (isset($ctx->separators[$curChar])) {
             // Handle separator (comma, semicolon, etc.)
-            if ($ctx->multiple && (self::STATE_DOMAIN == $ctx->subState || self::STATE_AFTER_DOMAIN == $ctx->subState)) {
+            if ($ctx->multiple && (ParserState::DOMAIN == $ctx->subState || ParserState::AFTER_DOMAIN == $ctx->subState)) {
                 // If we're already in the domain part, this should be the end of the address
-                $ctx->state = self::STATE_END_ADDRESS;
+                $ctx->state = ParserState::END_ADDRESS;
 
                 return;
             } else {
@@ -587,13 +568,13 @@ class Parse
             }
         } elseif ('<' == $curChar) {
             // Start of the local part
-            if (self::STATE_LOCAL_PART == $ctx->subState || self::STATE_DOMAIN == $ctx->subState) {
+            if (ParserState::LOCAL_PART == $ctx->subState || ParserState::DOMAIN == $ctx->subState) {
                 $ctx->invalid = true;
                 $ctx->invalidReason = 'Email address contains multiple opening "<" (either a typo or multiple emails that need to be separated by a comma or space)';
                 $ctx->invalidReasonCode = Err::MultipleOpeningAngle;
             } else {
                 // Here should be the start of the local part for sure everything else then is part of the name
-                $ctx->subState = self::STATE_LOCAL_PART;
+                $ctx->subState = ParserState::LOCAL_PART;
                 $ctx->specialCharInSubstate = null;
                 $ctx->inAngleAddr = true;
                 // Any quote before `<` was the display name, not the local part;
@@ -611,10 +592,10 @@ class Parse
             // domain-literal (`<user@[1.2.3.4]>`, `]` transitions to AFTER_DOMAIN)
             // or trailing CFWS reaches — but only when a domain or IP is actually
             // present, so `<user@ >` / `<user@[]>` still fail.
-            if (self::STATE_DOMAIN == $ctx->subState
-                || (self::STATE_AFTER_DOMAIN == $ctx->subState
+            if (ParserState::DOMAIN == $ctx->subState
+                || (ParserState::AFTER_DOMAIN == $ctx->subState
                     && ('' !== $ctx->domain || '' !== $ctx->ip))) {
-                $ctx->subState = self::STATE_AFTER_DOMAIN;
+                $ctx->subState = ParserState::AFTER_DOMAIN;
                 $ctx->inAngleAddr = false;
             } else {
                 $ctx->invalid = true;
@@ -623,12 +604,12 @@ class Parse
             }
         } elseif ('"' == $curChar) {
             // If we hit a quote - change to the quote state, unless it's in the domain, in which case it's error
-            if (self::STATE_DOMAIN == $ctx->subState || self::STATE_AFTER_DOMAIN == $ctx->subState) {
+            if (ParserState::DOMAIN == $ctx->subState || ParserState::AFTER_DOMAIN == $ctx->subState) {
                 $ctx->invalid = true;
                 $ctx->invalidReason = 'Quote \'"\' found where it shouldn\'t be';
                 $ctx->invalidReasonCode = Err::MisplacedQuote;
             } else {
-                $ctx->state = self::STATE_QUOTE;
+                $ctx->state = ParserState::QUOTE;
             }
         } elseif ('@' == $curChar) {
             $this->handleAddressAt($ctx);
@@ -638,7 +619,7 @@ class Parse
             // part, and not after domain characters or a first literal. Accepting
             // it mid-domain used to set both domain and ip and surface as an
             // internal "parser confusion" error.
-            if (self::STATE_DOMAIN != $ctx->subState) {
+            if (ParserState::DOMAIN != $ctx->subState) {
                 $ctx->invalid = true;
                 $ctx->invalidReason = "Invalid character '[' in email address";
                 $ctx->invalidReasonCode = Err::InvalidOpeningBracket;
@@ -647,7 +628,7 @@ class Parse
                 $ctx->invalidReason = "A domain literal '[...]' must be the entire domain, not combined with other domain characters";
                 $ctx->invalidReasonCode = Err::InvalidOpeningBracket;
             } else {
-                $ctx->state = self::STATE_SQUARE_BRACKET;
+                $ctx->state = ParserState::SQUARE_BRACKET;
             }
         } elseif ('.' == $curChar) {
             // Period placement (RFC 5322 §3.4) — inlined as it is per-character hot.
@@ -656,7 +637,7 @@ class Parse
                 $ctx->invalid = true;
                 $ctx->invalidReason = "Email address should not contain two dots '.' in a row";
                 $ctx->invalidReasonCode = Err::ConsecutiveDots;
-            } elseif (self::STATE_LOCAL_PART == $ctx->subState) {
+            } elseif (ParserState::LOCAL_PART == $ctx->subState) {
                 if (!$ctx->localPartParsed && !$this->options->allowObsLocalPart) {
                     // Leading dots only allowed when obs-local-part is enabled
                     $ctx->invalid = true;
@@ -665,13 +646,13 @@ class Parse
                 } else {
                     $ctx->localPartParsed .= $curChar;
                 }
-            } elseif (self::STATE_DOMAIN == $ctx->subState) {
+            } elseif (ParserState::DOMAIN == $ctx->subState) {
                 $ctx->domain .= $curChar;
-            } elseif (self::STATE_AFTER_DOMAIN == $ctx->subState) {
+            } elseif (ParserState::AFTER_DOMAIN == $ctx->subState) {
                 $ctx->invalid = true;
                 $ctx->invalidReason = "Stray period '.' found after domain of email address";
                 $ctx->invalidReasonCode = Err::StrayPeriodAfterDomain;
-            } elseif (self::STATE_START == $ctx->subState) {
+            } elseif (ParserState::START == $ctx->subState) {
                 if ($ctx->quoteTemp) {
                     $ctx->addressTemp .= $ctx->quoteTemp;
                     $ctx->addressTempQuoted = true;
@@ -699,7 +680,7 @@ class Parse
                 $ctx->invalid = true;
                 $ctx->invalidReason = "This character is not allowed at the beginning of an email address (please put in quotes if needed): '{$curChar}'";
                 $ctx->invalidReasonCode = Err::InvalidCharacterAtStart;
-            } elseif (self::STATE_LOCAL_PART == $ctx->subState) {
+            } elseif (ParserState::LOCAL_PART == $ctx->subState) {
                 // Legitimate character - Determine where to append based on the current 'substate'
 
                 if ($ctx->quoteTemp) {
@@ -708,14 +689,14 @@ class Parse
                     $ctx->localPartQuoted = true;
                 }
                 $ctx->localPartParsed .= $curChar;
-            } elseif (self::STATE_NAME == $ctx->subState) {
+            } elseif (ParserState::NAME == $ctx->subState) {
                 if ($ctx->quoteTemp) {
                     $ctx->nameParsed .= $ctx->quoteTemp;
                     $ctx->quoteTemp = '';
                     $ctx->nameQuoted = true;
                 }
                 $ctx->nameParsed .= $curChar;
-            } elseif (self::STATE_DOMAIN == $ctx->subState) {
+            } elseif (ParserState::DOMAIN == $ctx->subState) {
                 $ctx->domain .= $curChar;
             } else {
                 if ($ctx->quoteTemp) {
@@ -768,7 +749,7 @@ class Parse
         // rejected per-address (whitespace still separates addresses).
         $cfwsAbsorbed = false;
         if (!$foundComment && $lookAheadChar !== null && !($ctx->multiple && $this->options->strictMultiWhitespace)) {
-            if (self::STATE_LOCAL_PART === $ctx->subState) {
+            if (ParserState::LOCAL_PART === $ctx->subState) {
                 if ('@' === $lookAheadChar) {
                     // Trailing CFWS of the local-part dot-atom: "local @domain".
                     $cfwsAbsorbed = true;
@@ -781,13 +762,13 @@ class Parse
                     // Leading CFWS inside angle-addr: "<  local@domain>".
                     $cfwsAbsorbed = true;
                 }
-            } elseif (self::STATE_DOMAIN === $ctx->subState) {
+            } elseif (ParserState::DOMAIN === $ctx->subState) {
                 if ($ctx->domain === '' && $ctx->ip === '') {
                     // Leading CFWS of the domain dot-atom: "local@ domain".
                     $cfwsAbsorbed = true;
                 }
             } elseif (
-                self::STATE_START === $ctx->subState
+                ParserState::START === $ctx->subState
                 && '@' === $lookAheadChar
                 && $ctx->addressTemp !== ''
             ) {
@@ -801,34 +782,34 @@ class Parse
         if ($cfwsAbsorbed) {
             // Silently skip the whitespace character; state unchanged.
         } elseif ($foundComment) {
-            if (self::STATE_DOMAIN == $ctx->subState) {
-                $ctx->subState = self::STATE_AFTER_DOMAIN;
-            } elseif (self::STATE_LOCAL_PART == $ctx->subState) {
+            if (ParserState::DOMAIN == $ctx->subState) {
+                $ctx->subState = ParserState::AFTER_DOMAIN;
+            } elseif (ParserState::LOCAL_PART == $ctx->subState) {
                 $ctx->invalid = true;
                 $ctx->invalidReason = 'Email address contains whitespace';
                 $ctx->invalidReasonCode = Err::WhitespaceInAddress;
             }
         } elseif (
             $ctx->inAngleAddr
-            && self::STATE_DOMAIN == $ctx->subState
+            && ParserState::DOMAIN == $ctx->subState
             && $lookAheadChar === '>'
         ) {
             // Trailing CFWS inside angle-addr before `>`: "<local@domain >".
             // Absorb and transition as if we saw `>` next.
-            $ctx->subState = self::STATE_AFTER_DOMAIN;
+            $ctx->subState = ParserState::AFTER_DOMAIN;
         } elseif (
             $ctx->multiple
             && $lookAheadChar !== null
             && isset($ctx->separators[$lookAheadChar])
-            && (self::STATE_DOMAIN == $ctx->subState || self::STATE_AFTER_DOMAIN == $ctx->subState)
+            && (ParserState::DOMAIN == $ctx->subState || ParserState::AFTER_DOMAIN == $ctx->subState)
         ) {
             // Whitespace between the domain and a following separator
             // ("a@b.com , c@d.com"): absorb it and let the separator terminate
             // the address, rather than ending here and leaving the separator to
             // open an empty next address (a "misplaced separator" error).
-            $ctx->subState = self::STATE_AFTER_DOMAIN;
+            $ctx->subState = ParserState::AFTER_DOMAIN;
         } elseif ($ctx->useWhitespaceAsSeparator &&
-                  (self::STATE_DOMAIN == $ctx->subState || self::STATE_AFTER_DOMAIN == $ctx->subState)) {
+                  (ParserState::DOMAIN == $ctx->subState || ParserState::AFTER_DOMAIN == $ctx->subState)) {
             // Already past `@` and whitespace-as-separator: end address.
             // Single mode has no next address to separate; if the trailing
             // whitespace run contains a whitespace char excluded from the
@@ -845,11 +826,11 @@ class Parse
                     }
                 }
             }
-            $ctx->state = self::STATE_END_ADDRESS;
+            $ctx->state = ParserState::END_ADDRESS;
 
             return true;
         } else {
-            if (self::STATE_LOCAL_PART == $ctx->subState) {
+            if (ParserState::LOCAL_PART == $ctx->subState) {
                 $ctx->invalid = true;
                 $ctx->invalidReason = 'Email address contains whitespace';
                 $ctx->invalidReasonCode = Err::WhitespaceInAddress;
@@ -869,11 +850,11 @@ class Parse
      */
     private function handleAddressAt(ParseContext $ctx): void
     {
-        if (self::STATE_DOMAIN == $ctx->subState) {
+        if (ParserState::DOMAIN == $ctx->subState) {
             $ctx->invalid = true;
             $ctx->invalidReason = "Multiple at '@' symbols in email address";
             $ctx->invalidReasonCode = Err::MultipleAtSymbols;
-        } elseif (self::STATE_AFTER_DOMAIN == $ctx->subState) {
+        } elseif (ParserState::AFTER_DOMAIN == $ctx->subState) {
             $ctx->invalid = true;
             $ctx->invalidReason = "Stray at '@' symbol found after domain name";
             $ctx->invalidReasonCode = Err::StrayAtAfterDomain;
@@ -902,10 +883,10 @@ class Parse
             // preceding local-part starts the source-route prefix. Consume
             // the remainder until `:` via STATE_OBS_ROUTE, then resume
             // addr-spec parsing with local-part reset.
-            $ctx->state = self::STATE_OBS_ROUTE;
+            $ctx->state = ParserState::OBS_ROUTE;
             $ctx->obsRoute = '@';
         } else {
-            $ctx->subState = self::STATE_DOMAIN;
+            $ctx->subState = ParserState::DOMAIN;
             // A trailing quoted word after earlier words ("x"."y", x."y")
             // is the final word of an obs-local-part (RFC 5322 §3.4.1:
             // word *("." word), word = atom / quoted-string). Flush it onto
@@ -936,7 +917,7 @@ class Parse
      */
     private function handleAddressNonAtext(ParseContext $ctx, string $curChar): void
     {
-        if (self::STATE_DOMAIN == $ctx->subState) {
+        if (ParserState::DOMAIN == $ctx->subState) {
             if ($this->isUtf8Char($curChar)) {
                 $ctx->domain .= $curChar;
             } else {
@@ -958,13 +939,13 @@ class Parse
                     $ctx->invalidReasonCode = Err::InvalidCharacterInDomain;
                 }
             }
-        } elseif (self::STATE_START === $ctx->subState || self::STATE_LOCAL_PART === $ctx->subState) {
+        } elseif (ParserState::START === $ctx->subState || ParserState::LOCAL_PART === $ctx->subState) {
             // Handle non-atext characters in both STATE_START and STATE_LOCAL_PART consistently
-            if ($ctx->subState === self::STATE_START && $ctx->quoteTemp) {
+            if ($ctx->subState === ParserState::START && $ctx->quoteTemp) {
                 $ctx->addressTemp .= $ctx->quoteTemp;
                 $ctx->addressTempQuoted = true;
                 $ctx->quoteTemp = '';
-            } elseif ($ctx->subState === self::STATE_LOCAL_PART && $ctx->quoteTemp) {
+            } elseif ($ctx->subState === ParserState::LOCAL_PART && $ctx->quoteTemp) {
                 $ctx->localPartParsed .= $ctx->quoteTemp;
                 $ctx->quoteTemp = '';
                 $ctx->localPartQuoted = true;
@@ -974,14 +955,14 @@ class Parse
 
             if ($isUtf8 && $this->options->allowUtf8LocalPart) {
                 // UTF-8 character allowed
-                if ($ctx->subState === self::STATE_START) {
+                if ($ctx->subState === ParserState::START) {
                     $ctx->addressTemp .= $curChar;
                 } else {
                     $ctx->localPartParsed .= $curChar;
                 }
             } elseif ($isUtf8) {
                 // UTF-8 present but not allowed by rules — collect and reject in validateLocalPart()
-                if ($ctx->subState === self::STATE_START) {
+                if ($ctx->subState === ParserState::START) {
                     $ctx->addressTemp .= $curChar;
                     // ??= preserves the first invalid character seen; later chars must not overwrite it
                     $ctx->specialCharInSubstate ??= $curChar;
@@ -992,7 +973,7 @@ class Parse
                 }
             } else {
                 // Non-UTF-8, non-atext character
-                if ($ctx->subState === self::STATE_START) {
+                if ($ctx->subState === ParserState::START) {
                     // ??= preserves the first invalid character seen; later chars must not overwrite it
                     $ctx->specialCharInSubstate ??= $curChar;
                     $ctx->addressTemp .= $curChar;
@@ -1002,7 +983,7 @@ class Parse
                     $ctx->invalidReasonCode = Err::InvalidCharacterInLocalPart;
                 }
             }
-        } elseif (self::STATE_NAME === $ctx->subState) {
+        } elseif (ParserState::NAME === $ctx->subState) {
             if ($ctx->quoteTemp) {
                 $ctx->nameParsed .= $ctx->quoteTemp;
                 $ctx->quoteTemp = '';
@@ -1024,8 +1005,8 @@ class Parse
     {
         $ctx->originalAddress .= $curChar;
         if (']' == $curChar) {
-            $ctx->subState = self::STATE_AFTER_DOMAIN;
-            $ctx->state = self::STATE_ADDRESS;
+            $ctx->subState = ParserState::AFTER_DOMAIN;
+            $ctx->state = ParserState::ADDRESS;
         } else {
             $ctx->ip .= $curChar;
         }
@@ -1040,16 +1021,16 @@ class Parse
     {
         $ctx->originalAddress .= $curChar;
         if (':' == $curChar) {
-            $ctx->state = self::STATE_ADDRESS;
-            $ctx->subState = self::STATE_LOCAL_PART;
+            $ctx->state = ParserState::ADDRESS;
+            $ctx->subState = ParserState::LOCAL_PART;
         } elseif ('>' == $curChar) {
             // `<@host>` without a colon — incomplete obs-route.
             $ctx->invalid = true;
             $ctx->invalidReason = 'Incomplete obs-route: missing colon before closing angle-bracket';
             $ctx->invalidReasonCode = Err::IncompleteAddress;
             $ctx->inAngleAddr = false;
-            $ctx->state = self::STATE_ADDRESS;
-            $ctx->subState = self::STATE_AFTER_DOMAIN;
+            $ctx->state = ParserState::ADDRESS;
+            $ctx->subState = ParserState::AFTER_DOMAIN;
         } else {
             $ctx->obsRoute .= $curChar;
         }
@@ -1086,7 +1067,7 @@ class Parse
                 // empty in that case, so the '@' handler below can't tell. A
                 // display-name quote self-corrects: the real local-part resets
                 // this flag from address_temp_quoted when '@' is reached.
-                $ctx->state = self::STATE_ADDRESS;
+                $ctx->state = ParserState::ADDRESS;
                 $ctx->localPartQuoted = true;
                 $ctx->afterClosingQuote = true;
             }
@@ -1124,13 +1105,13 @@ class Parse
                     $ctx->comments[] = $ctx->commentTemp;
                     $ctx->commentTemp = '';
                 }
-                $ctx->state = self::STATE_ADDRESS;
+                $ctx->state = ParserState::ADDRESS;
                 // Flag a comment that closed mid-word in the local part (before
                 // `@`), so a token resuming the word can be rejected. Covers a
                 // preceding atext run (address_temp/local_part_parsed) or a
                 // preceding quoted-string (local_part_quoted) — "x"(c)y is as
                 // invalid as x(c)y. Domain and display-name comments are excluded.
-                if ((self::STATE_LOCAL_PART === $ctx->subState || self::STATE_START === $ctx->subState)
+                if ((ParserState::LOCAL_PART === $ctx->subState || ParserState::START === $ctx->subState)
                     && ('' !== $ctx->addressTemp || '' !== $ctx->localPartParsed || $ctx->localPartQuoted)) {
                     $ctx->commentAfterLocalAtext = true;
                 }

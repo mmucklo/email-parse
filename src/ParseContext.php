@@ -30,16 +30,11 @@ final class ParseContext
 
     // --- Loop control state (state/subState reset per address by parse()). ---
 
-    /** Current parser state (one of Parse::STATE_*). */
-    public int $state = 0;
+    /** Current parser state. Initialized by the constructor / resetAddress(). */
+    public ParserState $state;
 
-    /**
-     * Current parser sub-state within an addr-spec (one of Parse::STATE_*).
-     * Initialized by the constructor / resetAddress(); the literal 0 default is
-     * STATE_TRIM, not a valid starting sub-state (which is STATE_START), so it
-     * must never be relied on un-initialized.
-     */
-    public int $subState = 0;
+    /** Current parser sub-state within an addr-spec. Set by the constructor / resetAddress(). */
+    public ParserState $subState;
 
     /** Current comment nesting depth. */
     public int $commentNestLevel = 0;
@@ -129,8 +124,8 @@ final class ParseContext
     public string $obsRoute = '';
 
     /**
-     * @param int                 $state                    Initial parser state (a Parse::STATE_* value).
-     * @param int                 $subState                 Initial addr-spec sub-state (a Parse::STATE_* value).
+     * @param ParserState         $state                    Initial parser state.
+     * @param ParserState         $subState                 Initial addr-spec sub-state.
      * @param array<int, string>  $chars                    Input split into characters.
      * @param int                 $len                      Number of characters in $chars.
      * @param bool                $multiple                 Whether multiple addresses are being parsed.
@@ -141,8 +136,8 @@ final class ParseContext
      * @param array<string, bool> $allowedWhitespace        Insignificant (foldable/trimmable) whitespace, as a lookup map.
      */
     public function __construct(
-        int $state,
-        int $subState,
+        ParserState $state,
+        ParserState $subState,
         public readonly array $chars,
         public readonly int $len,
         public readonly bool $multiple,
@@ -163,10 +158,10 @@ final class ParseContext
      * for the next address in a multi-address parse (matches the historical
      * "rebuild the $emailAddress array" behaviour).
      *
-     * @param int $state    Parser state to start the next address in (Parse::STATE_*).
-     * @param int $subState Addr-spec sub-state to start it in (Parse::STATE_*).
+     * @param ParserState $state    Parser state to start the next address in.
+     * @param ParserState $subState Addr-spec sub-state to start it in.
      */
-    public function resetAddress(int $state, int $subState): void
+    public function resetAddress(ParserState $state, ParserState $subState): void
     {
         // Loop-control state, reset here so every per-address field has a single
         // source of truth. commentNestLevel in particular has no other reset:
