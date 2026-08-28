@@ -788,6 +788,11 @@ class ParseTest extends \PHPUnit\Framework\TestCase
             ['withIncludeDomainAscii',         true,  'includeDomainAscii'],
             ['withValidateDisplayNamePhrase',  true,  'validateDisplayNamePhrase'],
             ['withStrictIdna',                 true,  'strictIdna'],
+            ['withAllowObsRoute',              true,  'allowObsRoute'],
+            ['withTrimSingleAddressWhitespace', true, 'trimSingleAddressWhitespace'],
+            ['withStrictMultiWhitespace',      true,  'strictMultiWhitespace'],
+            ['withRejectTrailingDot',          true,  'rejectTrailingDot'],
+            ['withDetectConfusableDomain',     true,  'detectConfusableDomain'],
             ['withUseWhitespaceAsSeparator',   false, null],
         ];
         foreach ($cases as [$method, $value, $property]) {
@@ -832,6 +837,7 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertSame(['%' => true], $opts->getBannedChars());
         $this->assertSame([';' => true], $opts->getSeparators());
         $this->assertFalse($opts->getUseWhitespaceAsSeparator());
+        $this->assertSame(10, $opts->getMaxLocalPartLength());
         $this->assertSame(20, $opts->getMaxTotalLength());
         $this->assertSame(5, $opts->getMaxDomainLabelLength());
     }
@@ -1722,5 +1728,51 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($innerResult->invalid);
         $this->assertSame('inner.user', $innerResult->localPart);
         $this->assertSame('nested.example.org', $innerResult->domain);
+    }
+
+    /**
+     * getInstance() is deprecated (removed in 5.0) but still a working public
+     * method: it returns a shared Parse configured with default options.
+     */
+    public function testGetInstanceReturnsSharedDefaultInstance(): void
+    {
+        $a = Parse::getInstance();
+        $b = Parse::getInstance();
+
+        $this->assertInstanceOf(Parse::class, $a);
+        $this->assertSame($a, $b, 'getInstance() must return the same shared instance');
+
+        // Usable and applies the default (LEGACY) options.
+        $this->assertFalse($a->parseSingle('john@example.com')->invalid);
+    }
+
+    /**
+     * A quoted UTF-8 local part under an ASCII-only preset (rfc5321) is accepted
+     * structurally by the parser, then rejected by the validation gate with the
+     * precise code — exercises the allowUtf8LocalPart check in validateLocalPart().
+     */
+    public function testQuotedUtf8LocalPartRejectedUnderAsciiPreset(): void
+    {
+        $result = (new Parse(null, ParseOptions::rfc5321()))->parseSingle('"münchen"@example.com');
+
+        $this->assertTrue($result->invalid);
+        $this->assertSame(\Email\ParseErrorCode::Utf8NotAllowedInLocalPart, $result->invalidReasonCode);
+    }
+
+    /**
+     * When the local-part normalizer rewrites a *quoted* local part, the display
+     * form is re-derived with the quotes preserved — exercises the re-quote
+     * branch after normalization.
+     */
+    public function testQuotedLocalPartIsRequotedAfterNormalizer(): void
+    {
+        $opts = ParseOptions::rfc5322()
+            ->withLocalPartNormalizer(fn (string $local, string $domain): string => strtolower($local));
+        $result = (new Parse(null, $opts))->parseSingle('"John Doe"@example.com');
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame('john doe', $result->localPartParsed);
+        // Quotes preserved because the local part still needs quoting.
+        $this->assertSame('"john doe"', $result->localPart);
     }
 }
