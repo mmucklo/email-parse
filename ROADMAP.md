@@ -113,7 +113,7 @@ The highest-leverage post-4.0 work: it unlocks i18n, framework-native localizati
   }
   ```
   **Named** (not positional) parameters — word order varies across languages. Frameworks re-render from `code + messageParameters` via their own translator; injecting a custom `MessageProvider` into `Parse` is the optional path for localized `invalid_reason` at the source.
-- [ ] Evolve `testspec.yml` so `invalid_reason_code` (+ parameters) is the normative assertion and message text is non-normative — making the spec port-ready.
+- [ ] Restructure `testspec.yml` so `invalid_reason_code` (+ parameters) is the normative assertion and message text is non-normative — making the spec port-ready.
 
 ### v4.2 — planned
 
