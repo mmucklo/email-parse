@@ -1775,4 +1775,32 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         // Quotes preserved because the local part still needs quoting.
         $this->assertSame('"john doe"', $result->localPart);
     }
+
+    /**
+     * A display name mixing a quoted word and unquoted atext — the quoted run is
+     * flushed into the parsed name and parsing continues (exercises the NAME
+     * sub-state quote-flush branch).
+     */
+    public function testDisplayNameMixesQuotedAndUnquotedWords(): void
+    {
+        $result = (new Parse(null, ParseOptions::rfc5322()))->parseSingle('"J" Doe <j@example.com>');
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame('J Doe', $result->nameParsed);
+        $this->assertSame('j@example.com', $result->simpleAddress);
+    }
+
+    /**
+     * An unquoted local part in NFD form under rfc6531 is NFC-normalized, and the
+     * display form is re-derived from the normalized value (RFC 6532 §3.1).
+     */
+    public function testUnquotedLocalPartIsNfcNormalized(): void
+    {
+        // "cafe" + U+0301 (combining acute) → NFC "café" (U+00E9)
+        $nfd = "cafe\xCC\x81@example.com";
+        $result = (new Parse(null, ParseOptions::rfc6531()))->parseSingle($nfd);
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame("caf\u{00E9}", $result->localPartParsed);
+    }
 }
