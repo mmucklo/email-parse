@@ -1791,6 +1791,20 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * A quoted word in the *middle* of an unquoted display-name phrase — atext,
+     * then a quoted-string, then more atext — flushes the quoted run into the
+     * parsed name (RFC 5322 §3.2.5 phrase = 1*word).
+     */
+    public function testDisplayNameWithMidStringQuotedWord(): void
+    {
+        $result = (new Parse(null, ParseOptions::rfc5322()))->parseSingle('John "The Man" Smith <j@example.com>');
+
+        $this->assertFalse($result->invalid);
+        $this->assertSame('John The Man Smith', $result->nameParsed);
+        $this->assertSame('j@example.com', $result->simpleAddress);
+    }
+
+    /**
      * An unquoted local part in NFD form under rfc6531 is NFC-normalized, and the
      * display form is re-derived from the normalized value (RFC 6532 §3.1).
      */

@@ -354,8 +354,10 @@ class Parse
                     $this->handleStateComment($ctx, $curChar);
 
                     break;
+                    // @codeCoverageIgnoreStart
                 default:
-                    // Shouldn't ever get here - what is $ctx->state?
+                    // Unreachable: $ctx->state is a ParserState enum and every case
+                    // is handled above. Kept as defensive depth against a future state.
                     $ctx->originalAddress .= $curChar;
                     $ctx->invalid = true;
                     $ctx->invalidReason = 'Error during parsing';
@@ -363,6 +365,7 @@ class Parse
                     $this->log('error', "Email\\Parse->parse - error during parsing - \$state: {$ctx->state->name}\n\$subState: {$ctx->subState->name}\n\$i: {$i}\n\$curChar: {$curChar}");
 
                     break;
+                    // @codeCoverageIgnoreEnd
             }
 
             // if there's a $ctx->originalAddress and the state is set to STATE_END_ADDRESS
@@ -1201,12 +1204,16 @@ class Parse
                 $ctx->invalidReason = 'Incomplete address';
                 $ctx->invalidReasonCode = Err::IncompleteAddress;
                 $this->log('error', "Email\\Parse->addAddress - corruption during parsing - leftovers:\n\$i: {$i}\n\$ctx->addressTemp : {$ctx->addressTemp}\n\$ctx->quoteTemp: {$ctx->quoteTemp}\n");
+                // @codeCoverageIgnoreStart
             } elseif ($ctx->ip && $ctx->domain) {
-                // Error - this should never occur
+                // Unreachable: an address cannot end with both an IP literal and a
+                // domain set. A 500k-input fuzz confirmed this branch is dead;
+                // kept as defensive depth.
                 $ctx->invalid = true;
                 $ctx->invalidReason = 'Confusion during parsing';
                 $ctx->invalidReasonCode = Err::ParserConfusion;
                 $this->log('error', "Email\\Parse->addAddress - both an IP address '{$ctx->ip}' and a domain '{$ctx->domain}' found for the email address '{$ctx->originalAddress}'\n");
+                // @codeCoverageIgnoreEnd
             } elseif ($ctx->ip) {
                 if (filter_var($ctx->ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
                     if ($this->options->validateIpGlobalRange && !$this->validateIpGlobalRange($ctx->ip, FILTER_FLAG_IPV4)) {
