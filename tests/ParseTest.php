@@ -1791,6 +1791,26 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * IP-literal domains are validated against the global range when
+     * validateIpGlobalRange is on (rfc5321): private/reserved IPv4 and IPv6
+     * literals are rejected, a globally-routable one is accepted.
+     */
+    public function testIpLiteralGlobalRangeValidation(): void
+    {
+        $parser = new Parse(null, ParseOptions::rfc5321());
+
+        $this->assertSame(
+            \Email\ParseErrorCode::IpNotInGlobalRange,
+            $parser->parseSingle('user@[192.168.1.1]')->invalidReasonCode,
+        );
+        $this->assertSame(
+            \Email\ParseErrorCode::Ipv6NotInGlobalRange,
+            $parser->parseSingle('user@[IPv6:fe80::1]')->invalidReasonCode,
+        );
+        $this->assertFalse($parser->parseSingle('user@[8.8.8.8]')->invalid);
+    }
+
+    /**
      * A quoted word in the *middle* of an unquoted display-name phrase — atext,
      * then a quoted-string, then more atext — flushes the quoted run into the
      * parsed name (RFC 5322 §3.2.5 phrase = 1*word).
