@@ -109,7 +109,11 @@ class ParseOptions
         $this->allowedWhitespace = $whitespaceMap;
     }
 
-    /** @return array<string, bool> */
+    /**
+     * @deprecated 4.0 Read the public readonly `$allowedWhitespace` property directly. Removed in 5.0.
+     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
+     * @return array<string, bool>
+     */
     public function getAllowedWhitespace(): array
     {
         return $this->allowedWhitespace;
@@ -443,24 +447,45 @@ class ParseOptions
     }
 
     // ===== Accessors for the state fields =====
+    //
+    // The four getters below duplicate the public readonly properties they
+    // return; they are @deprecated in 4.0 (read the property) and removed in 5.0.
+    // The getMax*Length() helpers further down are not duplicates — they reach
+    // into $lengthLimits — and remain supported.
 
-    /** @return array<string, bool> */
+    /**
+     * @deprecated 4.0 Read the public readonly `$bannedChars` property directly. Removed in 5.0.
+     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
+     * @return array<string, bool>
+     */
     public function getBannedChars(): array
     {
         return $this->bannedChars;
     }
 
-    /** @return array<string, bool> */
+    /**
+     * @deprecated 4.0 Read the public readonly `$separators` property directly. Removed in 5.0.
+     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
+     * @return array<string, bool>
+     */
     public function getSeparators(): array
     {
         return $this->separators;
     }
 
+    /**
+     * @deprecated 4.0 Read the public readonly `$useWhitespaceAsSeparator` property directly. Removed in 5.0.
+     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
+     */
     public function getUseWhitespaceAsSeparator(): bool
     {
         return $this->useWhitespaceAsSeparator;
     }
 
+    /**
+     * @deprecated 4.0 Read the public readonly `$lengthLimits` property directly. Removed in 5.0.
+     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
+     */
     public function getLengthLimits(): LengthLimits
     {
         return $this->lengthLimits;

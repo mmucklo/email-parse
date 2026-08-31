@@ -82,13 +82,13 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-suggest
 
       - name: Run test suite with coverage
-        # Pin SEED so coverage is deterministic: PropertyTest fuzzes from a
-        # time-based seed by default, which makes the measured line count (and
-        # thus the Codecov delta) jitter run-to-run. A fixed seed gives a
-        # reproducible, comparable number. The 8.1–8.6 test jobs stay unseeded
-        # so they keep fuzzing across the matrix.
+        # Pin an arbitrary SEED so coverage is deterministic: PropertyTest fuzzes
+        # from a time-based seed by default, which makes the measured line count
+        # (and the Codecov delta) jitter run-to-run. The value is chosen for
+        # reproducibility only, not to maximize the number. The 8.1–8.6 test jobs
+        # stay unseeded so they keep fuzzing across the matrix.
         env:
-          SEED: '12345'
+          SEED: '1'
         run: bin/phpunit --coverage-clover=coverage.xml --coverage-text
 
       - name: Upload coverage to Codecov

@@ -77,6 +77,15 @@ $parser = new Parse();                        // default options
 $parser = new Parse(null, ParseOptions::rfc5322());  // configured
 ```
 
+#### 3. `ParseOptions` pass-through getters
+
+Now that the state fields are `public readonly`, `getBannedChars()`, `getSeparators()`, `getUseWhitespaceAsSeparator()`, `getLengthLimits()`, and `getAllowedWhitespace()` just duplicate the properties and are deprecated — read the property instead. (`getMaxLocalPartLength()` etc. are **not** deprecated; they read into `$lengthLimits`.)
+
+```php
+$options->getBannedChars();   // →  $options->bannedChars
+$options->getLengthLimits();  // →  $options->lengthLimits
+```
+
 ### Internal Changes (No Action Needed)
 
 These are implementation details behind `@internal` and do not affect callers: the `Parse::STATE_*` constants became a `ParserState` enum, and the internal `ParseContext` accumulator was modernized (camelCase fields, readonly input snapshot/config). They are listed only for completeness — if your code reached into these, it was relying on unsupported internals.

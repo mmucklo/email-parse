@@ -294,13 +294,13 @@ class Parse
         // Whitespace treated as insignificant (folding/separators; trimmable). In
         // single-address mode CR and LF are excluded — a lone addr-spec has no line
         // endings — unless trimSingleAddressWhitespace opts back into liberal trimming.
-        $allowedWhitespace = $this->options->getAllowedWhitespace();
+        $allowedWhitespace = $this->options->allowedWhitespace;
         if (!$multiple && !$this->options->trimSingleAddressWhitespace) {
             unset($allowedWhitespace["\r"], $allowedWhitespace["\n"]);
         }
 
         // Per-parse accumulator. A fresh instance (never an instance property)
-        // keeps parse() reentrant across a localPartNormalizer callback. The
+        // keeps the parser reentrant across a localPartNormalizer callback. The
         // constructor takes the initial state (STATE_TRIM) and sub-state
         // (STATE_START) plus the immutable input snapshot + hoisted config, which
         // it exposes as readonly properties — so no handler can mutate config, and
@@ -313,9 +313,9 @@ class Parse
             $len,
             $multiple,
             $emails,
-            $this->options->getSeparators(),
-            $this->options->getBannedChars(),
-            $this->options->getUseWhitespaceAsSeparator(),
+            $this->options->separators,
+            $this->options->bannedChars,
+            $this->options->useWhitespaceAsSeparator,
             $allowedWhitespace,
         );
 
@@ -1360,7 +1360,7 @@ class Parse
         // RFC 5321 §4.5.3.1: all limits are in octets (bytes), not characters.
         // For quoted local-parts the wire form adds 2 DQUOTE bytes to the length.
         if (!$ctx->invalid && $this->options->enforceLengthLimits) {
-            $limits = $this->options->getLengthLimits();
+            $limits = $this->options->lengthLimits;
             // RFC 5321 §4.5.3.1.1: local-part max 64 octets (wire form includes DQUOTE for quoted strings)
             $localPartWireLen = $ctx->localPartQuoted
                 ? strlen($ctx->localPartParsed) + 2
@@ -1656,7 +1656,7 @@ class Parse
             // Labels are guaranteed non-empty: the state machine rejects consecutive
             // and edge dots (ConsecutiveDots) before the domain validator runs.
             $parts = explode('.', $domain);
-            $maxLabelLen = $this->options->getLengthLimits()->maxDomainLabelLength;
+            $maxLabelLen = $this->options->lengthLimits->maxDomainLabelLength;
             foreach ($parts as $part) {
                 if (strlen($part) > $maxLabelLen) {
                     return ['valid' => false, 'reason' => "Domain name part '{$part}' must be less than {$maxLabelLen} octets", 'code' => Err::DomainLabelTooLong];

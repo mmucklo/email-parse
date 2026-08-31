@@ -35,6 +35,7 @@ below as a record; planned work follows.
 - **v3.9 → removed v4.0:** `protected Parse::validateLocalPart(array $emailAddress)` was deprecated in 3.9 and is removed in 4.0 (now a `private` `ParseContext`-based method). Validation is customized via `ParseOptions`.
 - **v4.0:** `Parse::parse()` (the polymorphic array API) marked `@deprecated` — kept as a working shim over the typed methods; removal targeted for v5.0.
 - **v4.0:** `Parse::getInstance()` (default-options singleton) marked `@deprecated` — use `new Parse($logger, $options)`; removal targeted for v5.0.
+- **v4.0:** `ParseOptions` pass-through getters (`getBannedChars`, `getSeparators`, `getUseWhitespaceAsSeparator`, `getLengthLimits`, `getAllowedWhitespace`) marked `@deprecated` — read the `public readonly` property instead; removal targeted for v5.0. (The `getMax*Length()` helpers stay — they read into `$lengthLimits`.)
 - `RfcMode` never shipped (existed only on a feature branch).
 
 ### Community & documentation
@@ -128,6 +129,7 @@ The highest-leverage post-4.0 work: it unlocks i18n, framework-native localizati
 
 - [ ] Remove the deprecated `parse()` method (deprecated in 4.0). `parseSingle()` / `parseMultiple()` / `parseStream()` are the entry points; the private `parseInternal()` core stays.
 - [ ] Remove the deprecated `Parse::getInstance()` singleton (deprecated in 4.0). Use `new Parse($logger, $options)`.
+- [ ] Remove the deprecated `ParseOptions` pass-through getters (deprecated in 4.0). Read the `public readonly` properties instead.
 
 _(RFC 6854 group syntax moved to 4.2/4.3 — it can be added additively, see above; only a structural redesign of `emailAddresses` would make it a 5.0 break.)_
 
