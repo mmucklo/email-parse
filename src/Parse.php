@@ -3,12 +3,13 @@
 namespace Email;
 
 use Email\ParseErrorCode as Err;
+use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
 /**
  * Class Parse.
  */
-class Parse
+class Parse implements LoggerAwareInterface
 {
     // The state-machine states are the {@see ParserState} enum (formerly
     // Parse::STATE_* constants).
@@ -67,17 +68,19 @@ class Parse
     }
 
     /**
-     * Allows for post-construct injection of a logger.
-     *
-     * @param LoggerInterface $logger PSR-3 compliant logger
+     * Inject a PSR-3 logger post-construction, per {@see LoggerAwareInterface}.
+     * (A logger may also be passed to the constructor.)
      */
-    public function setLogger(LoggerInterface $logger): Parse
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
-
-        return $this;
     }
 
+    /**
+     * @deprecated 4.0 Pass options to the constructor — a parser's configuration
+     *             should be immutable for the life of the instance; mutating it on
+     *             a shared parser is a footgun. Removed in 5.0.
+     */
     public function setOptions(ParseOptions $options): Parse
     {
         $this->options = $options;
@@ -205,10 +208,6 @@ class Parse
      *               'invalid' => boolean, 'invalid_reason' => string|null,
      *               'invalid_reason_code' => ParseErrorCode|null, 'comments' => array)
      *               endif;
-     *
-     * @psalm-suppress PossiblyUnusedMethod Deprecated public API — the typed
-     *   methods use parseInternal() directly, so nothing internal calls this,
-     *   but external code still does until its 5.0 removal.
      */
     public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {

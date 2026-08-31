@@ -42,6 +42,22 @@ The `getX()` accessors (`getBannedChars()`, `getSeparators()`, `getLengthLimits(
 
 These took the parser's internal accumulator and were never a documented extension point. If you subclassed `Parse` to override either, move that logic to `ParseOptions` configuration (rule properties, or the `withLocalPartNormalizer()` callback). `validateLocalPart()`'s brief `array`-signature deprecation window in 3.9 is now closed.
 
+#### 3. `Parse::setLogger()` returns `void`
+
+`Parse` now implements `Psr\Log\LoggerAwareInterface`, so `setLogger()` returns `void` instead of `$this`. This is the standard PSR-3 pattern (DI containers can auto-inject the logger). Only affects you if you *chained* on it:
+
+```php
+// Before (chained)
+$parser->setLogger($logger)->parseSingle($email);
+
+// After — two statements
+$parser->setLogger($logger);
+$parser->parseSingle($email);
+
+// Or inject at construction (preferred)
+$parser = new Parse($logger, $options);
+```
+
 ### Deprecated (Still Functional)
 
 Both keep working in the entire 4.x line and are removed in **5.0**.
@@ -84,6 +100,17 @@ Now that the state fields are `public readonly`, `getBannedChars()`, `getSeparat
 ```php
 $options->getBannedChars();   // →  $options->bannedChars
 $options->getLengthLimits();  // →  $options->lengthLimits
+```
+
+#### 4. `Parse::setOptions()`
+
+Deprecated — a parser's configuration should be fixed for the life of the instance (mutating it on a shared parser is a footgun). Pass options to the constructor instead:
+
+```php
+// Before
+$parser->setOptions(ParseOptions::rfc5322());
+// After
+$parser = new Parse(null, ParseOptions::rfc5322());
 ```
 
 ### Internal Changes (No Action Needed)

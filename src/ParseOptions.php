@@ -111,7 +111,6 @@ class ParseOptions
 
     /**
      * @deprecated 4.0 Read the public readonly `$allowedWhitespace` property directly. Removed in 5.0.
-     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
      * @return array<string, bool>
      */
     public function getAllowedWhitespace(): array
@@ -455,7 +454,6 @@ class ParseOptions
 
     /**
      * @deprecated 4.0 Read the public readonly `$bannedChars` property directly. Removed in 5.0.
-     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
      * @return array<string, bool>
      */
     public function getBannedChars(): array
@@ -465,7 +463,6 @@ class ParseOptions
 
     /**
      * @deprecated 4.0 Read the public readonly `$separators` property directly. Removed in 5.0.
-     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
      * @return array<string, bool>
      */
     public function getSeparators(): array
@@ -475,7 +472,6 @@ class ParseOptions
 
     /**
      * @deprecated 4.0 Read the public readonly `$useWhitespaceAsSeparator` property directly. Removed in 5.0.
-     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
      */
     public function getUseWhitespaceAsSeparator(): bool
     {
@@ -484,7 +480,6 @@ class ParseOptions
 
     /**
      * @deprecated 4.0 Read the public readonly `$lengthLimits` property directly. Removed in 5.0.
-     * @psalm-suppress PossiblyUnusedMethod Public BC accessor; internal code reads the property.
      */
     public function getLengthLimits(): LengthLimits
     {

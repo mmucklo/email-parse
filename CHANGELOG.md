@@ -8,8 +8,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 - **`ParseOptions` state fields are now `public readonly`** — `bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, and `allowedWhitespace` are readable directly as properties (the existing `getX()` accessors remain). Every `ParseOptions` property is now readonly; configure via the constructor or the `withX()` builders.
+- **BREAKING: `Parse` now implements `Psr\Log\LoggerAwareInterface`, and `Parse::setLogger()` returns `void`** (was fluent, returned `Parse`). Standard PSR-3 logger injection; frameworks can auto-inject. If you chained on `setLogger()` (`$parser->setLogger($l)->…`), split it into two statements.
 
 ### Deprecated
+- **`Parse::setOptions()`** — a parser's configuration should be immutable for the life of the instance; mutating it on a shared parser is a footgun. Pass options to the constructor (`new Parse($logger, $options)`) instead. Removed in 5.0.
 - **`Parse::parse()`** (the polymorphic `$multiple`-boolean, array-returning API) is deprecated. Use `parseSingle()` / `parseMultiple()` for typed value objects, or `parseStream()` for large batches; call `->toArray()` on a result if you need the legacy array shape. `parse()` keeps working as a thin shim over the typed core and will be removed in 5.0.
 - **`Parse::getInstance()`** — the default-options singleton is deprecated; use explicit instantiation (`new Parse($logger, $options)`), which also lets you pass custom options. Removed in 5.0.
 - **`ParseOptions` pass-through getters** — `getBannedChars()`, `getSeparators()`, `getUseWhitespaceAsSeparator()`, `getLengthLimits()`, and `getAllowedWhitespace()` are deprecated; read the corresponding `public readonly` property instead (e.g. `$options->bannedChars`). They now duplicate the promoted properties. Removed in 5.0. The `getMax*Length()` helpers are **not** deprecated — they read into `$lengthLimits`.

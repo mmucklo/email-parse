@@ -36,6 +36,7 @@ below as a record; planned work follows.
 - **v4.0:** `Parse::parse()` (the polymorphic array API) marked `@deprecated` — kept as a working shim over the typed methods; removal targeted for v5.0.
 - **v4.0:** `Parse::getInstance()` (default-options singleton) marked `@deprecated` — use `new Parse($logger, $options)`; removal targeted for v5.0.
 - **v4.0:** `ParseOptions` pass-through getters (`getBannedChars`, `getSeparators`, `getUseWhitespaceAsSeparator`, `getLengthLimits`, `getAllowedWhitespace`) marked `@deprecated` — read the `public readonly` property instead; removal targeted for v5.0. (The `getMax*Length()` helpers stay — they read into `$lengthLimits`.)
+- **v4.0:** `Parse::setOptions()` marked `@deprecated` — pass options to the constructor; a parser's configuration should be immutable for the life of the instance. Removal targeted for v5.0. (`Parse::setLogger()` now returns `void` via `LoggerAwareInterface` — a 4.0 breaking change, not a deprecation.)
 - `RfcMode` never shipped (existed only on a feature branch).
 
 ### Community & documentation
@@ -130,11 +131,14 @@ The highest-leverage post-4.0 work: it unlocks i18n, framework-native localizati
 - [ ] Remove the deprecated `parse()` method (deprecated in 4.0). `parseSingle()` / `parseMultiple()` / `parseStream()` are the entry points; the private `parseInternal()` core stays.
 - [ ] Remove the deprecated `Parse::getInstance()` singleton (deprecated in 4.0). Use `new Parse($logger, $options)`.
 - [ ] Remove the deprecated `ParseOptions` pass-through getters (deprecated in 4.0). Read the `public readonly` properties instead.
+- [ ] Remove the deprecated `Parse::setOptions()` (deprecated in 4.0) and make `Parse`'s `$options`/`$logger` `readonly` — a parser instance's configuration becomes immutable after construction, completing the immutability/DI direction begun in 4.0.
 
 _(RFC 6854 group syntax moved to 4.2/4.3 — it can be added additively, see above; only a structural redesign of `emailAddresses` would make it a 5.0 break.)_
 
 ### Backlog (unversioned)
 
+- [ ] **`ParseOptions` has a 27-parameter constructor** (principal-review finding). Usable today via named arguments + preset factories + `withX()` builders, but at the edge of maintainability. Group related flags into cohesive value objects (e.g. `LocalPartRules` / `DomainRules`) — breaking, so a v5.0 candidate.
+- [ ] **`Parse` is a ~1,700-LOC god-class** (principal-review finding) carrying the state machine, all validation, IDN/punycode conversion, NFC normalization, and output assembly. Extract the validation and IDN/normalization concerns into collaborators; the per-state handler split (below) is the first step.
 - [ ] **`parse()` refactor & modernization follow-ups** (from review; non-blocking, each behavior-preserving and test-gated):
   - [x] Renamed `ParseContext`'s accumulator fields `snake_case` → `camelCase` to match the codebase. Output-array keys stay `snake_case` (public API, string literals in `addAddress()`); only the internal properties changed.
   - [x] **Encoded `ParseContext`'s three concerns structurally.** The input snapshot (`chars`/`len`/`emails`) and hoisted config (`separators`, `bannedChars`, …) are now `public readonly` constructor-promoted properties, so only the per-address accumulator stays mutable — a handler can no longer write config. `parseInternal()`'s setup was reordered to build the config before constructing the context.

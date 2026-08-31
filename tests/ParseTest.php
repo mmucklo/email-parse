@@ -843,18 +843,22 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Exercises the fluent and deprecated mutators on the Parse class itself.
-     * Pre-existing public API covered here for the first time.
+     * The mutators on the Parse class itself: setOptions() is deprecated but
+     * still fluent (removed in 5.0); setLogger() implements PSR-3
+     * LoggerAwareInterface (returns void).
      */
-    public function testParseSetLoggerAndSetOptionsAreFluent(): void
+    public function testParseSetOptionsFluentAndSetLoggerIsLoggerAware(): void
     {
         $parser = new Parse();
+        $this->assertInstanceOf(\Psr\Log\LoggerAwareInterface::class, $parser);
+
         $opts = ParseOptions::rfc5322();
         $this->assertSame($parser, $parser->setOptions($opts), 'setOptions() is fluent');
         $this->assertSame($opts, $parser->getOptions());
 
-        $logger = new \Psr\Log\NullLogger();
-        $this->assertSame($parser, $parser->setLogger($logger), 'setLogger() is fluent');
+        // LoggerAwareInterface::setLogger() returns void; the injected logger is used.
+        $parser->setLogger(new \Psr\Log\NullLogger());
+        $this->assertFalse($parser->parseSingle('a@b.com')->invalid);
     }
 
     /**
