@@ -1731,6 +1731,40 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
+     * The deprecated raw-array parse() must stay byte-identical to the typed
+     * API's ->toArray(). The spec fixtures now drive the typed path, so this is
+     * the oracle that guards the legacy array contract (until parse()'s 5.0
+     * removal) and pins parse() == parseSingle()/parseMultiple()->toArray().
+     */
+    public function testDeprecatedParseEqualsTypedToArray(): void
+    {
+        $parser = new Parse(null, ParseOptions::rfc5322());
+
+        // Single mode: valid, invalid, name-addr, IP-literal, comment.
+        foreach ([
+            '"J Doe" <john@example.com>',
+            'not-an-email',
+            'plain@example.com',
+            'ip@[8.8.8.8]',
+            'c@example.com (note)',
+        ] as $in) {
+            $this->assertSame(
+                $parser->parse($in, false),
+                $parser->parseSingle($in)->toArray(),
+                "parse('{$in}', false) must equal parseSingle()->toArray()",
+            );
+        }
+
+        // Multiple mode: a mixed batch (valid + invalid + name-addr).
+        $batch = 'a@a.com, bad@, "Q" <q@example.com>';
+        $this->assertSame(
+            $parser->parse($batch, true),
+            $parser->parseMultiple($batch)->toArray(),
+            'parse(batch, true) must equal parseMultiple()->toArray()',
+        );
+    }
+
+    /**
      * getInstance() is deprecated (removed in 5.0) but still a working public
      * method: it returns a shared Parse configured with default options.
      */
