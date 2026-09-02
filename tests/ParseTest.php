@@ -1875,4 +1875,53 @@ class ParseTest extends \PHPUnit\Framework\TestCase
         $this->assertFalse($result->invalid);
         $this->assertSame("caf\u{00E9}", $result->localPartParsed);
     }
+
+    /**
+     * Every deprecated public method emits a runtime E_USER_DEPRECATED notice
+     * (via symfony/deprecation-contracts' trigger_deprecation), so callers see
+     * it and tools like symfony/phpunit-bridge can aggregate it.
+     */
+    public function testDeprecatedMethodsTriggerRuntimeDeprecations(): void
+    {
+        $seen = [];
+        set_error_handler(static function (int $errno, string $message) use (&$seen): bool {
+            if (E_USER_DEPRECATED === $errno) {
+                $seen[] = $message;
+            }
+
+            return true; // handled — don't propagate
+        });
+
+        try {
+            $opts = ParseOptions::rfc5322();
+            $parser = new Parse(null, $opts);
+
+            $parser->parse('a@b.com', false);
+            Parse::getInstance();
+            $parser->setOptions($opts);
+            $opts->getBannedChars();
+            $opts->getSeparators();
+            $opts->getUseWhitespaceAsSeparator();
+            $opts->getLengthLimits();
+            $opts->getAllowedWhitespace();
+        } finally {
+            restore_error_handler();
+        }
+
+        $joined = implode("\n", $seen);
+        foreach ([
+            'Parse::parse()',
+            'Parse::getInstance()',
+            'Parse::setOptions()',
+            'ParseOptions::getBannedChars()',
+            'ParseOptions::getSeparators()',
+            'ParseOptions::getUseWhitespaceAsSeparator()',
+            'ParseOptions::getLengthLimits()',
+            'ParseOptions::getAllowedWhitespace()',
+        ] as $needle) {
+            $this->assertStringContainsString($needle, $joined, "expected a deprecation naming {$needle}");
+        }
+        // trigger_deprecation prefixes the package + version.
+        $this->assertStringContainsString('Since mmucklo/email-parse 4.0:', $joined);
+    }
 }

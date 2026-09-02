@@ -46,6 +46,8 @@ class Parse implements LoggerAwareInterface
      */
     public static function getInstance(): Parse
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'Parse::getInstance() is deprecated, use "new Parse($logger, $options)" instead. It is removed in 5.0.');
+
         if (!self::$instance) {
             return self::$instance = new self();
         }
@@ -83,6 +85,8 @@ class Parse implements LoggerAwareInterface
      */
     public function setOptions(ParseOptions $options): Parse
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'Parse::setOptions() is deprecated, pass options to the constructor instead — a parser\'s configuration should be immutable. It is removed in 5.0.');
+
         $this->options = $options;
 
         return $this;
@@ -211,6 +215,8 @@ class Parse implements LoggerAwareInterface
      */
     public function parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'Parse::parse() is deprecated, use parseSingle()/parseMultiple() (or parseStream()) and ->toArray() if you need the array shape. It is removed in 5.0.');
+
         return $this->parseInternal($emails, $multiple, $encoding);
     }
 

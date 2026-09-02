@@ -115,6 +115,8 @@ class ParseOptions
      */
     public function getAllowedWhitespace(): array
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'ParseOptions::getAllowedWhitespace() is deprecated, read the $allowedWhitespace property instead. It is removed in 5.0.');
+
         return $this->allowedWhitespace;
     }
 
@@ -458,6 +460,8 @@ class ParseOptions
      */
     public function getBannedChars(): array
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'ParseOptions::getBannedChars() is deprecated, read the $bannedChars property instead. It is removed in 5.0.');
+
         return $this->bannedChars;
     }
 
@@ -467,6 +471,8 @@ class ParseOptions
      */
     public function getSeparators(): array
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'ParseOptions::getSeparators() is deprecated, read the $separators property instead. It is removed in 5.0.');
+
         return $this->separators;
     }
 
@@ -475,6 +481,8 @@ class ParseOptions
      */
     public function getUseWhitespaceAsSeparator(): bool
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'ParseOptions::getUseWhitespaceAsSeparator() is deprecated, read the $useWhitespaceAsSeparator property instead. It is removed in 5.0.');
+
         return $this->useWhitespaceAsSeparator;
     }
 
@@ -483,6 +491,8 @@ class ParseOptions
      */
     public function getLengthLimits(): LengthLimits
     {
+        trigger_deprecation('mmucklo/email-parse', '4.0', 'ParseOptions::getLengthLimits() is deprecated, read the $lengthLimits property instead. It is removed in 5.0.');
+
         return $this->lengthLimits;
     }
 
