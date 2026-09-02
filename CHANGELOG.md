@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **Rector migration config** (`rector/upgrade-4.0.php`) that auto-fixes the mechanical 3.x → 4.0 call-site changes: `Parse::getInstance()` → `new Parse()`, `ParseOptions` pass-through getters → readonly-property reads, and the removed mutating setters → their `withX()` builders. Opt-in (you run it and review the diff); see [UPGRADE.md](UPGRADE.md).
+
 ### Changed
 - **`ParseOptions` state fields are now `public readonly`** — `bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, and `allowedWhitespace` are readable directly as properties (the existing `getX()` accessors remain). Every `ParseOptions` property is now readonly; configure via the constructor or the `withX()` builders.
 - **BREAKING: `Parse` now implements `Psr\Log\LoggerAwareInterface`, and `Parse::setLogger()` returns `void`** (was fluent, returned `Parse`). Standard PSR-3 logger injection; frameworks can auto-inject. If you chained on `setLogger()` (`$parser->setLogger($l)->…`), split it into two statements.

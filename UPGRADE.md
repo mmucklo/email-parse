@@ -6,6 +6,23 @@ v4.0 is a **breaking-modernization** release. Parsing behavior is unchanged — 
 
 For most callers the upgrade is a mechanical find-and-replace. If you only ever call `parseSingle()` / `parseMultiple()` / `parseStream()` and configure options with the constructor or `withX()` builders, **no changes are required.**
 
+### Automated migration (Rector)
+
+The mechanical call-site changes can be auto-fixed with the [Rector](https://getrector.com) config shipped in the package. Install Rector if you don't have it, then run the config against your source:
+
+```bash
+composer require --dev rector/rector
+vendor/bin/rector process src --config vendor/mmucklo/email-parse/rector/upgrade-4.0.php --dry-run
+```
+
+Drop `--dry-run` to apply, then **review the diff and commit** (Rector never runs on its own — it's opt-in, and a dependency update will not modify your code). It rewrites:
+
+- `Parse::getInstance()` → `new Parse()`
+- `$options->getBannedChars()` (and the other four pass-through getters) → the `public readonly` property read
+- `$options->setBannedChars($v)` (and `setSeparators` / `setUseWhitespaceAsSeparator` / `setLengthLimits`) → `$options = $options->withX($v)`
+
+It deliberately leaves the **semantic** changes for you to do by hand (they can't be rewritten safely): the `parse()` → `parseSingle()`/`parseMultiple()` migration (the return *shape* changes from array to object), `setMaxLocalPartLength()` etc. (rebuild a `LengthLimits`), `setOptions()` → constructor, and chained `setLogger()`. Those are covered below.
+
 ### Breaking Changes
 
 #### 1. `ParseOptions` mutating setters removed
