@@ -1,4 +1,9 @@
 # .scrutinizer.yml
+#
+# Scrutinizer is used for coverage reporting only. Its bundled PHP analyzer
+# (php-scrutinizer-run) does not model PHP 8.1 readonly properties or enum
+# ->name/->value and flags correct code as bugs; static analysis is covered
+# by PHPStan (level 8) and Psalm in GitHub Actions instead.
 
 filter:
     paths:
@@ -6,11 +11,6 @@ filter:
     excluded_paths:
         - 'tests/*'
         - 'vendor/*'
-
-checks:
-    php:
-        code_rating: true
-        duplication: true
 
 build:
     image: default-jammy
@@ -20,15 +20,13 @@ build:
         override:
             - composer install --no-interaction --no-scripts --ignore-platform-reqs
     nodes:
-        analysis:
-            tests:
-                override:
-                    - php-scrutinizer-run
         tests:
             tests:
                 override:
                     -
-                        command: 'XDEBUG_MODE=coverage bin/phpunit --coverage-clover=.coverage'
+                        # SEED pins the property-test fuzzer so the measured
+                        # coverage is deterministic (matches the CI coverage job).
+                        command: 'SEED=1 XDEBUG_MODE=coverage bin/phpunit --coverage-clover=.coverage'
                         coverage:
                             file: '.coverage'
                             format: 'clover'
