@@ -237,11 +237,10 @@ class ParseOptions
 
     // ===== Fluent builders =====
     //
-    // The readonly rule properties cannot be reassigned. Each `withX()` method
-    // returns a new ParseOptions instance with the single field replaced and
-    // every other field preserved. The four non-readonly state fields
-    // (bannedChars, separators, useWhitespaceAsSeparator, lengthLimits) also
-    // have `withX()` builders for symmetry; they will become readonly in v4.0.
+    // Every property is readonly, so nothing can be reassigned in place. Each
+    // `withX()` method returns a new ParseOptions instance with the single field
+    // replaced and every other field preserved; this is the only way to derive
+    // a differently-configured instance.
 
     /** @param array<string> $bannedChars */
     public function withBannedChars(array $bannedChars): self

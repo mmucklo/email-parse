@@ -107,16 +107,17 @@ last kind is cleared between addresses in a batch:
 |---|---|---|
 | Input snapshot | Set once per parse, never reset | `chars[]`, `len`, `emails`, `multiple` |
 | Hoisted config | Set once per parse, never reset | `separators`, `bannedChars`, `allowedWhitespace`, `useWhitespaceAsSeparator` |
-| Per-address accumulator + loop control | Cleared by `resetAddress()` | `state`, `subState`, `commentNestLevel`, `original_address`, `local_part_parsed`, `domain`, `quote_temp`, `comments[]`, `in_angle_addr`, ... (~24 total) |
+| Per-address accumulator + loop control | Cleared by `resetAddress()` | `state`, `subState`, `commentNestLevel`, `originalAddress`, `localPartParsed`, `domain`, `quoteTemp`, `comments[]`, `inAngleAddr`, ... (~24 total) |
 
-The accumulator field names deliberately mirror the historical loop-local
-variable names so they thread through the validation helpers unchanged; the
-rename to the codebase's `camelCase` convention is a tracked follow-up (see
-[`ROADMAP.md`](ROADMAP.md)).
+The input snapshot and hoisted config are `public readonly` constructor-promoted
+properties, so a state handler cannot mutate configuration mid-parse; only the
+accumulator is writable. `state` and `subState` are typed as the `ParserState`
+backed enum (`src/ParserState.php`), which replaced the former `Parse::STATE_*`
+integer constants: the context can never hold an out-of-range state.
 
 ## Per-address reset
 
-`resetAddress(int $state, int $subState)` is the single source of truth for
+`resetAddress(ParserState $state, ParserState $subState)` is the single source of truth for
 clearing per-address state between addresses in a batch. It zeroes the
 accumulator *and* the three loop-control fields — `state`, `subState`, and
 `commentNestLevel`. Both call sites use it: the initial setup before the loop and

@@ -8,5 +8,6 @@ parameters:
         - tests
         - rector
     excludePaths:
+        - tests/fixtures
         - vendor
     reportUnmatchedIgnoredErrors: false

@@ -7,10 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
-- **Rector migration config** (`rector/upgrade-4.0.php`) that auto-fixes the mechanical 3.x → 4.0 call-site changes: `Parse::getInstance()` → `new Parse()`, `ParseOptions` pass-through getters → readonly-property reads, and the removed mutating setters → their `withX()` builders. Opt-in (you run it and review the diff); see [UPGRADE.md](UPGRADE.md).
+- **Rector migration config** (`rector/upgrade-4.0.php`) that auto-fixes the mechanical 3.x → 4.0 call-site changes: `Parse::getInstance()` → `new Parse()`, `ParseOptions` pass-through getters → readonly-property reads, and the removed mutating setters → their `withX()` builders where the receiver is provably locally owned. Aliased receivers (parameters, `getOptions()` results, instances already passed to a parser) are left in place and annotated with a `TODO email-parse 4.0:` comment instead of being rewritten into a silently-diverging local reassignment. Opt-in (you run it and review the diff); see [UPGRADE.md](UPGRADE.md).
 
 ### Changed
-- **`ParseOptions` state fields are now `public readonly`** — `bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, and `allowedWhitespace` are readable directly as properties (the existing `getX()` accessors remain). Every `ParseOptions` property is now readonly; configure via the constructor or the `withX()` builders.
+- **`ParseOptions` state fields are now `public readonly`** — `bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, and `allowedWhitespace` are readable directly as properties (the pass-through `getX()` accessors still work but are deprecated, see below). Every `ParseOptions` property is now readonly; configure via the constructor or the `withX()` builders.
 - **BREAKING: `Parse` now implements `Psr\Log\LoggerAwareInterface`, and `Parse::setLogger()` returns `void`** (was fluent, returned `Parse`). Standard PSR-3 logger injection; frameworks can auto-inject. If you chained on `setLogger()` (`$parser->setLogger($l)->…`), split it into two statements.
 
 ### Deprecated
@@ -22,6 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Removed
 - **BREAKING: the deprecated `ParseOptions` mutating setters** — `setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength` (deprecated since v3.0) are removed. Configure via the constructor or the `withX()` builders; the state fields are now `public readonly`.
+- **BREAKING: subclass overrides of `Parse::parse()` no longer affect `parseSingle()` / `parseMultiple()` / `parseStream()`.** The typed methods now call a private `parseInternal()` directly; the deprecated `parse()` is a shim beside them rather than the trunk they route through. Overriding the entry point was never a documented extension point; pre-process input before calling the parser, or wrap the typed result. See UPGRADE.md.
 - **BREAKING: `Parse::validateLocalPart()`** — the `@deprecated` (3.9) `array`-based method is removed; local-part validation is now a `private`, `ParseContext`-based method. **`Parse::validateDomainName()` is now `private`.** Both took the parser's internal accumulator and were never a supported extension point — customize validation via `ParseOptions`. Any subclass that overrode them must move to `ParseOptions`-based configuration.
 
 ## [3.9.0]

@@ -306,8 +306,8 @@ class Parse implements LoggerAwareInterface
 
         // Per-parse accumulator. A fresh instance (never an instance property)
         // keeps the parser reentrant across a localPartNormalizer callback. The
-        // constructor takes the initial state (STATE_TRIM) and sub-state
-        // (STATE_START) plus the immutable input snapshot + hoisted config, which
+        // constructor takes the initial state (ParserState::TRIM) and sub-state
+        // (ParserState::START) plus the immutable input snapshot + hoisted config, which
         // it exposes as readonly properties — so no handler can mutate config, and
         // the context is fully initialized before first use. $chars/$len are also
         // kept as locals below for the tight loop counter.
@@ -333,12 +333,12 @@ class Parse implements LoggerAwareInterface
                     $this->handleStateSkipAhead($ctx, $curChar);
 
                     break;
-                    /* @noinspection PhpMissingBreakStatementInspection — STATE_TRIM falls through to STATE_ADDRESS */
+                    /* @noinspection PhpMissingBreakStatementInspection — ParserState::TRIM falls through to ParserState::ADDRESS */
                 case ParserState::TRIM:
                     if (!$this->handleStateTrim($ctx, $curChar)) {
                         break;
                     }
-                    // no break — a plain character falls through to STATE_ADDRESS
+                    // no break — a plain character falls through to ParserState::ADDRESS
                 case ParserState::ADDRESS:
                     $this->handleStateAddress($ctx, $curChar, $prevChar, $i);
 
@@ -361,8 +361,10 @@ class Parse implements LoggerAwareInterface
                     break;
                     // @codeCoverageIgnoreStart
                 default:
-                    // Unreachable: $ctx->state is a ParserState enum and every case
-                    // is handled above. Kept as defensive depth against a future state.
+                    // Defensive: the outer loop only ever assigns the seven states
+                    // handled above; the other ParserState cases are sub-states that
+                    // belong in $ctx->subState. Reaching here means a handler mixed
+                    // the two up, so fail the address rather than loop silently.
                     $ctx->originalAddress .= $curChar;
                     $ctx->invalid = true;
                     $ctx->invalidReason = 'Error during parsing';
@@ -373,7 +375,7 @@ class Parse implements LoggerAwareInterface
                     // @codeCoverageIgnoreEnd
             }
 
-            // if there's a $ctx->originalAddress and the state is set to STATE_END_ADDRESS
+            // if there's a $ctx->originalAddress and the state is set to ParserState::END_ADDRESS
             if (ParserState::END_ADDRESS == $ctx->state && strlen($ctx->originalAddress) > 0) {
                 $invalid = $this->addAddress(
                     $emailAddresses,
@@ -394,7 +396,7 @@ class Parse implements LoggerAwareInterface
                 $ctx->resetAddress(ParserState::TRIM, ParserState::START);
             }
 
-            // Fire once, on the transition into invalid: STATE_SKIP_AHEAD does not clear
+            // Fire once, on the transition into invalid: ParserState::SKIP_AHEAD does not clear
             // the flag, so without the state guard this block would re-run every remaining
             // character — and interpolating the full $emails / original_address each time
             // (even under a NullLogger, the argument is still built) makes malformed input
@@ -408,7 +410,7 @@ class Parse implements LoggerAwareInterface
         // End-of-input reached still inside a delimiter (quote, comment, domain
         // literal, or obs-route) — the construct was never closed. Keyed on the
         // parser state rather than quote_temp, since bracket/comment content is
-        // buffered elsewhere (a closed delimiter always returns to STATE_ADDRESS).
+        // buffered elsewhere (a closed delimiter always returns to ParserState::ADDRESS).
         if (!$ctx->invalid && in_array($ctx->state, [ParserState::QUOTE, ParserState::COMMENT, ParserState::SQUARE_BRACKET, ParserState::OBS_ROUTE], true)) {
             $ctx->invalid = true;
             [$ctx->invalidReason, $ctx->invalidReasonCode] = match ($ctx->state) {
@@ -470,8 +472,8 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_SKIP_AHEAD: a bad address was seen; discard characters until the next
-     * separator, then let the main loop transition to STATE_END_ADDRESS.
+     * ParserState::SKIP_AHEAD: a bad address was seen; discard characters until the next
+     * separator, then let the main loop transition to ParserState::END_ADDRESS.
      */
     private function handleStateSkipAhead(ParseContext $ctx, string $curChar): void
     {
@@ -485,10 +487,10 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_TRIM: skip leading whitespace and detect a leading quote/comment.
+     * ParserState::TRIM: skip leading whitespace and detect a leading quote/comment.
      *
      * @return bool true when the character is ordinary and parsing should fall
-     *              through to STATE_ADDRESS; false when it was consumed here
+     *              through to ParserState::ADDRESS; false when it was consumed here
      */
     private function handleStateTrim(ParseContext $ctx, string $curChar): bool
     {
@@ -506,19 +508,19 @@ class Parse implements LoggerAwareInterface
             $ctx->originalAddress .= $curChar;
             $ctx->state = ParserState::COMMENT;
             // A leading comment opens at nest level 1 (matches the
-            // STATE_ADDRESS entry); without this an unbalanced nested
+            // ParserState::ADDRESS entry); without this an unbalanced nested
             // comment like "((x)" would appear closed after one ")".
             $ctx->commentNestLevel = 1;
 
             return false;
         }
 
-        // Non-whitespace, non-special char: fall through to STATE_ADDRESS processing.
+        // Non-whitespace, non-special char: fall through to ParserState::ADDRESS processing.
         return true;
     }
 
     /**
-     * STATE_ADDRESS: the main dispatch on the current character. Small structural
+     * ParserState::ADDRESS: the main dispatch on the current character. Small structural
      * branches are handled inline; the heavier ones (CFWS, '@', '.', atext and
      * non-atext runs) delegate to dedicated helpers below.
      */
@@ -599,8 +601,8 @@ class Parse implements LoggerAwareInterface
                 $this->handleQuote($ctx);
             }
         } elseif ('>' == $curChar) {
-            // Should be the end of the domain part. Accept STATE_DOMAIN
-            // (normal dot-atom domain) and also STATE_AFTER_DOMAIN, which a
+            // Should be the end of the domain part. Accept ParserState::DOMAIN
+            // (normal dot-atom domain) and also ParserState::AFTER_DOMAIN, which a
             // domain-literal (`<user@[1.2.3.4]>`, `]` transitions to AFTER_DOMAIN)
             // or trailing CFWS reaches — but only when a domain or IP is actually
             // present, so `<user@ >` / `<user@[]>` still fail.
@@ -724,12 +726,12 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_ADDRESS whitespace (RFC 5322 §3.2.2 CFWS). Looks ahead past the WSP
+     * ParserState::ADDRESS whitespace (RFC 5322 §3.2.2 CFWS). Looks ahead past the WSP
      * run to classify the fold and decide whether it is absorbed, ends the
      * address, or is an error.
      *
      * @return bool true when the address is complete and the caller should stop
-     *              processing this character (STATE_END_ADDRESS was set)
+     *              processing this character (ParserState::END_ADDRESS was set)
      */
     private function handleAddressWhitespace(ParseContext $ctx, string $curChar, int $i): bool
     {
@@ -857,7 +859,7 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_ADDRESS '@' handling: reject a misplaced '@', start an obs-route, or
+     * ParserState::ADDRESS '@' handling: reject a misplaced '@', start an obs-route, or
      * flush the accumulated word(s) into the local-part and enter the domain.
      */
     private function handleAddressAt(ParseContext $ctx): void
@@ -893,7 +895,7 @@ class Parse implements LoggerAwareInterface
         ) {
             // RFC 5322 §4.4 obs-route: first `@` seen inside `<...>` with no
             // preceding local-part starts the source-route prefix. Consume
-            // the remainder until `:` via STATE_OBS_ROUTE, then resume
+            // the remainder until `:` via ParserState::OBS_ROUTE, then resume
             // addr-spec parsing with local-part reset.
             $ctx->state = ParserState::OBS_ROUTE;
             $ctx->obsRoute = '@';
@@ -924,7 +926,7 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_ADDRESS non-atext handling — UTF-8 domain/local-part characters
+     * ParserState::ADDRESS non-atext handling — UTF-8 domain/local-part characters
      * (punycode-tested for the domain) plus rejection of other stray bytes.
      */
     private function handleAddressNonAtext(ParseContext $ctx, string $curChar): void
@@ -952,7 +954,7 @@ class Parse implements LoggerAwareInterface
                 }
             }
         } elseif (ParserState::START === $ctx->subState || ParserState::LOCAL_PART === $ctx->subState) {
-            // Handle non-atext characters in both STATE_START and STATE_LOCAL_PART consistently
+            // Handle non-atext characters in both ParserState::START and ParserState::LOCAL_PART consistently
             if ($ctx->subState === ParserState::START && $ctx->quoteTemp) {
                 $ctx->addressTemp .= $ctx->quoteTemp;
                 $ctx->addressTempQuoted = true;
@@ -1011,7 +1013,7 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_SQUARE_BRACKET: accumulate a domain-literal IP until the closing ']'.
+     * ParserState::SQUARE_BRACKET: accumulate a domain-literal IP until the closing ']'.
      */
     private function handleStateSquareBracket(ParseContext $ctx, string $curChar): void
     {
@@ -1025,7 +1027,7 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_OBS_ROUTE (RFC 5322 §4.4): consume the `@host1,@host2:` source-route
+     * ParserState::OBS_ROUTE (RFC 5322 §4.4): consume the `@host1,@host2:` source-route
      * prefix inside angle-addr. On `:` resume addr-spec parsing; an unterminated
      * route (`>` or end of input before `:`) is invalid.
      */
@@ -1049,9 +1051,9 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_QUOTE: accumulate a quoted-string, honouring backslash escapes and
+     * ParserState::QUOTE: accumulate a quoted-string, honouring backslash escapes and
      * rejecting bare C0 controls, until the real closing quote returns to
-     * STATE_ADDRESS.
+     * ParserState::ADDRESS.
      */
     private function handleStateQuote(ParseContext $ctx, string $curChar, int $i): void
     {
@@ -1095,7 +1097,7 @@ class Parse implements LoggerAwareInterface
     }
 
     /**
-     * STATE_COMMENT (RFC 5322 §3.2.2): accumulate comment text, tracking nesting
+     * ParserState::COMMENT (RFC 5322 §3.2.2): accumulate comment text, tracking nesting
      * and quoted-pairs, and on close flag a comment that split a local-part atom.
      */
     private function handleStateComment(ParseContext $ctx, string $curChar): void

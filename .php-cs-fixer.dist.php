@@ -4,6 +4,7 @@ $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__ . '/src')
     ->in(__DIR__ . '/tests')
     ->in(__DIR__ . '/rector')
+    ->exclude('fixtures')
     ->name('*.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);

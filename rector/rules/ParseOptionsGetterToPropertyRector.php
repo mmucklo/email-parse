@@ -6,6 +6,8 @@ namespace Email\Rector;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\NullsafeMethodCall;
+use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PHPStan\Type\ObjectType;
 use Rector\Rector\AbstractRector;
@@ -15,6 +17,8 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * Rewrites the deprecated `Email\ParseOptions` pass-through getters (removed in
  * 5.0) to direct reads of the corresponding `public readonly` property.
+ *
+ * Nullsafe calls (`$o?->getX()`) become nullsafe property reads.
  *
  * The getMax*Length() helpers are intentionally excluded — they read into
  * $lengthLimits and are not deprecated.
@@ -48,12 +52,12 @@ final class ParseOptionsGetterToPropertyRector extends AbstractRector
      */
     public function getNodeTypes(): array
     {
-        return [MethodCall::class];
+        return [MethodCall::class, NullsafeMethodCall::class];
     }
 
     public function refactor(Node $node): ?Node
     {
-        /** @var MethodCall $node */
+        /** @var MethodCall|NullsafeMethodCall $node */
         if ($node->isFirstClassCallable() || $node->getArgs() !== []) {
             return null;
         }
@@ -67,6 +71,10 @@ final class ParseOptionsGetterToPropertyRector extends AbstractRector
             return null;
         }
 
-        return new PropertyFetch($node->var, self::GETTER_TO_PROPERTY[$method]);
+        $property = self::GETTER_TO_PROPERTY[$method];
+
+        return $node instanceof NullsafeMethodCall
+            ? new NullsafePropertyFetch($node->var, $property)
+            : new PropertyFetch($node->var, $property);
     }
 }

@@ -1885,11 +1885,12 @@ class ParseTest extends \PHPUnit\Framework\TestCase
     {
         $seen = [];
         set_error_handler(static function (int $errno, string $message) use (&$seen): bool {
-            if (E_USER_DEPRECATED === $errno) {
-                $seen[] = $message;
+            if (E_USER_DEPRECATED !== $errno) {
+                return false; // anything else falls through to PHPUnit's handler
             }
+            $seen[] = $message;
 
-            return true; // handled — don't propagate
+            return true;
         });
 
         try {
