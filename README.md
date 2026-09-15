@@ -15,7 +15,7 @@ Email\Parse is a batch email address parser with configurable RFC compliance lev
 
 It parses a list of 1 to n email addresses separated by comma and whitespace by default, with configurable separators (e.g. semicolon).
 
-**Other docs:** [Cookbook (recipes)](docs/cookbook.md) · [CHANGELOG](CHANGELOG.md) · [UPGRADE guide (v2.x → v3.0)](UPGRADE.md) · [DESIGN / RFC reference](DESIGN.md) · [ARCHITECTURE](ARCHITECTURE.md) · [ROADMAP](ROADMAP.md)
+**Other docs:** [Cookbook (recipes)](docs/cookbook.md) · [CHANGELOG](CHANGELOG.md) · [UPGRADE guide](UPGRADE.md) · [DESIGN / RFC reference](DESIGN.md) · [ARCHITECTURE](ARCHITECTURE.md) · [ROADMAP](ROADMAP.md)
 
 Installation:
 -------------
@@ -32,28 +32,26 @@ Usage:
 ```php
 use Email\Parse;
 
-// Array-based API (v2.x-compatible)
-$result = Parse::getInstance()->parse("a@aaa.com b@bbb.com");
-
-// Typed value objects (v3.1+, recommended for new code)
-$address = Parse::getInstance()->parseSingle('john@example.com');
+// Typed value objects — parseSingle() / parseMultiple() / parseStream().
+// (The legacy array-returning parse() is deprecated; see "Other Examples" below.)
+$address = (new Parse())->parseSingle('john@example.com');
 echo $address->localPart;           // "john"
 echo $address->domain;              // "example.com"
 if ($address->invalid) {
     echo $address->invalidReasonCode->value;
 }
 
-$result = Parse::getInstance()->parseMultiple('a@a.com, b@b.com');
+$result = (new Parse())->parseMultiple('a@a.com, b@b.com');
 foreach ($result->emailAddresses as $addr) { /* ... */ }
 
 // Streaming for large batches (v3.2+) — yields one address at a time.
-foreach (Parse::getInstance()->parseStream($csvRows) as $addr) {
+foreach ((new Parse())->parseStream($csvRows) as $addr) {
     if ($addr->invalid) continue;
     // ...
 }
 
 // Serialization (v3.3+)
-$parsed = Parse::getInstance()->parseSingle('"J Doe" <j@example.com>');
+$parsed = (new Parse())->parseSingle('"J Doe" <j@example.com>');
 (string) $parsed;        // "j@example.com" — Stringable returns simple_address
 $parsed->canonical();    // 'J Doe <j@example.com>' — minimal RFC 5322 quoting
 $parsed->toArray();      // legacy array shape, for mixed-API code
@@ -71,18 +69,18 @@ use Email\ParseOptions;
 // Example 1: Use comma and semicolon as separators (default behavior includes whitespace)
 $options = new ParseOptions([], [',', ';']);
 $parser = new Parse(null, $options);
-$result = $parser->parse("a@aaa.com; b@bbb.com, c@ccc.com");
+$result = $parser->parseMultiple("a@aaa.com; b@bbb.com, c@ccc.com");
 
 // Example 2: Disable whitespace as separator (only comma and semicolon work)
 $options = new ParseOptions([], [',', ';'], false);
 $parser = new Parse(null, $options);
-$result = $parser->parse("a@aaa.com; b@bbb.com"); // Works - uses semicolon
-$result = $parser->parse("a@aaa.com b@bbb.com");  // Won't split - whitespace not a separator
+$result = $parser->parseMultiple("a@aaa.com; b@bbb.com"); // Works - uses semicolon
+$result = $parser->parseMultiple("a@aaa.com b@bbb.com");  // Won't split - whitespace not a separator
 
 // Example 3: Names with spaces always work regardless of whitespace separator setting
 $options = new ParseOptions([], [',', ';'], false);
 $parser = new Parse(null, $options);
-$result = $parser->parse("John Doe <john@example.com>, Jane Smith <jane@example.com>");
+$result = $parser->parseMultiple("John Doe <john@example.com>, Jane Smith <jane@example.com>");
 // Returns 2 valid emails with names preserved
 ```
 
@@ -265,19 +263,19 @@ RFC 5322 allows comments in email addresses using parentheses. The parser automa
 use Email\Parse;
 
 // Single comment
-$result = Parse::getInstance()->parseSingle('john@example.com (home address)');
+$result = (new Parse())->parseSingle('john@example.com (home address)');
 // $result->comments === ['home address']
 
 // Multiple comments
-$result = Parse::getInstance()->parseSingle('test(comment1)(comment2)@example.com');
+$result = (new Parse())->parseSingle('test(comment1)(comment2)@example.com');
 // $result->comments === ['comment1', 'comment2']
 
 // Nested comments
-$result = Parse::getInstance()->parseSingle('test@example.com (comment with (nested) parens)');
+$result = (new Parse())->parseSingle('test@example.com (comment with (nested) parens)');
 // $result->comments === ['comment with (nested) parens']
 
 // No comments
-$result = Parse::getInstance()->parseSingle('test@example.com');
+$result = (new Parse())->parseSingle('test@example.com');
 // $result->comments === []
 ```
 
@@ -293,7 +291,7 @@ See [UPGRADE.md](UPGRADE.md) for the complete list of breaking changes, deprecat
 
 ```php
 // v2.x default (legacy behavior — still works in v3.0)
-$parser = Parse::getInstance();
+$parser = new Parse();
 
 // v3.0 recommended default
 $options = ParseOptions::rfc5322();
@@ -366,11 +364,11 @@ $result = $parser->parseSingle('müller@münchen.de');
 Other Examples:
 ---------------
 
-The following examples use the legacy array-returning `parse()` method to document its full output shape. New code should prefer `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed return values; both APIs expose the same underlying fields.
+New code uses `parseSingle()` / `parseMultiple()` (see Basic Usage) for typed value objects; call `->toArray()` on either result for the array form. The examples below illustrate the principal fields — see [`ParsedEmailAddress`](src/ParsedEmailAddress.php) for the complete, canonical set. (The old `parse()` method is deprecated and will be removed in 5.0.)
 
 ```php
  $email = '"J Doe" <johndoe@xyz.com>';
- $result = Email\Parse::getInstance()->parse($email, false);
+ $result = (new Email\Parse())->parseSingle($email)->toArray();
 
  $result == array(
      'address' => '"J Doe" <johndoe@xyz.com>',
@@ -389,7 +387,7 @@ The following examples use the legacy array-returning `parse()` method to docume
      'comments' => []);
 
  $emails = 'testing@[8.8.8.8] testing@xyz.com, "test.2"@xyz.com (comment)';
- $result = Email\Parse::getInstance()->parse($emails);
+ $result = (new Email\Parse())->parseMultiple($emails)->toArray();
  $result == array(
      'success' => true,
      'reason' => null,

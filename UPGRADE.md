@@ -1,5 +1,157 @@
 # Upgrade Guide
 
+## v3.x → v4.0
+
+v4.0 is a **breaking-modernization** release. Parsing behavior is unchanged — no changes to parsing logic, error codes, or the output shape — so a valid address parses identically. The breaks are all API-surface cleanup: the long-deprecated mutating setters are gone, `ParseOptions` config is now fully immutable, two internal methods became `private`, `setLogger()` follows PSR-3 `LoggerAwareInterface`, and the typed entry points no longer route through `parse()`. Several public methods are newly deprecated: they still work, but each one now **emits a runtime `E_USER_DEPRECATED` notice** when called (see *Deprecated* below), so a test suite that promotes deprecations to failures will flag them.
+
+For most callers the upgrade is a mechanical find-and-replace. If you only ever call `parseSingle()` / `parseMultiple()` / `parseStream()` and configure options with the constructor or `withX()` builders, **no changes are required.**
+
+### Automated migration (Rector)
+
+The mechanical call-site changes can be auto-fixed with the [Rector](https://getrector.com) config shipped in the package. Install Rector if you don't have it, then run the config against your source:
+
+```bash
+composer require --dev rector/rector
+vendor/bin/rector process src --config vendor/mmucklo/email-parse/rector/upgrade-4.0.php --dry-run
+```
+
+Drop `--dry-run` to apply, then **review the diff and commit** (Rector never runs on its own — it's opt-in, and a dependency update will not modify your code). It rewrites:
+
+- `Parse::getInstance()` → `new Parse()`
+- `$options->getBannedChars()` (and the other four pass-through getters, including nullsafe `$options?->getX()`) → the `public readonly` property read
+- `$options->setBannedChars($v)` (and `setSeparators` / `setUseWhitespaceAsSeparator` / `setLengthLimits`) → `$options = $options->withX($v)` — **only where `$options` is provably the sole holder**: it was created in the same scope (`new ParseOptions(...)`, a `ParseOptions::rfc*()` preset, or a `withX()` chain) and has not yet been passed anywhere, copied, or captured. A `$this->options->setX($v)` call on the object's own property becomes `$this->options = $this->options->withX($v)`.
+
+Where the receiver is shared — a parameter, a `$parser->getOptions()` result, or a variable that was already handed to `new Parse(null, $o)` — a local reassignment would silently stop affecting the other holder, so Rector **leaves the call in place** (it fails loudly on 4.0, since the setter no longer exists) and inserts a `// TODO email-parse 4.0:` comment above it explaining the manual fix: build the configured `ParseOptions` where it is created and pass it in.
+
+It deliberately leaves the other **semantic** changes for you to do by hand (they can't be rewritten safely): the `parse()` → `parseSingle()`/`parseMultiple()` migration (the return *shape* changes from array to object), `setMaxLocalPartLength()` etc. (rebuild a `LengthLimits`), `setOptions()` → constructor, and chained `setLogger()`. Those are covered below.
+
+### Breaking Changes
+
+#### 1. `ParseOptions` mutating setters removed
+
+The seven setters that were `@deprecated` since v3.0 are removed. `ParseOptions` is now a fully immutable value object: every property is `readonly`, and you configure a new instance via the constructor or the `withX()` fluent builders.
+
+The one behavioral difference to watch: `withX()` returns a **new** instance, so you must **reassign** — the old setters mutated in place.
+
+| Removed setter | Replacement |
+|---|---|
+| `$o->setBannedChars($a)` | `$o = $o->withBannedChars($a)` |
+| `$o->setSeparators($a)` | `$o = $o->withSeparators($a)` |
+| `$o->setUseWhitespaceAsSeparator($b)` | `$o = $o->withUseWhitespaceAsSeparator($b)` |
+| `$o->setLengthLimits($l)` | `$o = $o->withLengthLimits($l)` |
+| `$o->setMaxLocalPartLength($n)` | `$o = $o->withLengthLimits(new LengthLimits($n, $o->getMaxTotalLength(), $o->getMaxDomainLabelLength()))` |
+| `$o->setMaxTotalLength($n)` | `$o = $o->withLengthLimits(new LengthLimits($o->getMaxLocalPartLength(), $n, $o->getMaxDomainLabelLength()))` |
+| `$o->setMaxDomainLabelLength($n)` | `$o = $o->withLengthLimits(new LengthLimits($o->getMaxLocalPartLength(), $o->getMaxTotalLength(), $n))` |
+
+```php
+// Before (v3.x)
+$options = new ParseOptions();
+$options->setBannedChars(['%', '!']);
+$options->setSeparators([',', ';']);
+
+// After (v4.0) — reassign; each withX() returns a new instance
+$options = (new ParseOptions())
+    ->withBannedChars(['%', '!'])
+    ->withSeparators([',', ';']);
+```
+
+The state fields are now readable directly as `public readonly` properties (`$options->bannedChars`, `$options->separators`, `$options->lengthLimits`, …). The pass-through `getX()` accessors still work but are deprecated in favour of the properties (see *Deprecated #3*); `getMaxLocalPartLength()` / `getMaxTotalLength()` / `getMaxDomainLabelLength()` are unchanged.
+
+#### 2. `Parse::validateLocalPart()` and `validateDomainName()` are now `private`
+
+These took the parser's internal accumulator and were never a documented extension point. If you subclassed `Parse` to override either, move that logic to `ParseOptions` configuration (rule properties, or the `withLocalPartNormalizer()` callback). `validateLocalPart()`'s brief `array`-signature deprecation window in 3.9 is now closed.
+
+#### 3. `Parse::setLogger()` returns `void`
+
+`Parse` now implements `Psr\Log\LoggerAwareInterface`, so `setLogger()` returns `void` instead of `$this`. This is the standard PSR-3 pattern (DI containers can auto-inject the logger). Only affects you if you *chained* on it:
+
+```php
+// Before (chained)
+$parser->setLogger($logger)->parseSingle($email);
+
+// After — two statements
+$parser->setLogger($logger);
+$parser->parseSingle($email);
+
+// Or inject at construction (preferred)
+$parser = new Parse($logger, $options);
+```
+
+#### 4. Subclass overrides of `parse()` no longer affect the typed methods
+
+In 3.x, `parseSingle()`, `parseMultiple()` and `parseStream()` all dispatched through the public `parse()`, so a subclass that overrode `parse()` (say, to pre-process input) sat on every code path. In 4.0 the parser core lives in a private `parseInternal()`; the typed methods call it directly and the deprecated `parse()` is a thin shim beside them. An override of `parse()` therefore only sees callers of `parse()` itself:
+
+```
+3.x   parseSingle()/parseMultiple()/parseStream()  ─►  parse()  ─►  core
+4.0   parseSingle()/parseMultiple()/parseStream()  ─►  parseInternal()  ─►  core
+      parse() [deprecated]                          ─►  parseInternal()
+```
+
+Overriding the entry point was never a documented extension point. If you did it to rewrite input, do the rewrite before calling the parser; if you did it to post-process results, wrap the typed result instead. (`Parse` remains non-final so PSR-3 logger injection and decoration keep working.)
+
+### Deprecated (Still Functional)
+
+Everything in this section keeps working for the whole 4.x line and is removed in **5.0**. Each call now emits a runtime `E_USER_DEPRECATED` notice via `trigger_deprecation()` (from `symfony/deprecation-contracts`), so tools such as `symfony/phpunit-bridge` will list the exact call-sites; the shipped Rector config (above) fixes most of them.
+
+#### 1. `Parse::parse()`
+
+The polymorphic `$multiple`-boolean, array-returning method is deprecated in favor of the typed API:
+
+```php
+// Before
+$batch = $parser->parse($input, true);   // ['success' => bool, 'reason' => ?string, 'email_addresses' => [...]]
+$row   = $parser->parse($input, false);  // single address array
+
+// After
+$result = $parser->parseMultiple($input);   // ParseResult (typed)
+$addr   = $parser->parseSingle($input);      // ParsedEmailAddress (typed)
+
+// Need the legacy array shape? ->toArray() reproduces it exactly, envelope included:
+$batch = $parser->parseMultiple($input)->toArray();   // same success/reason/email_addresses keys
+$row   = $parser->parseSingle($input)->toArray();
+```
+
+#### 2. `Parse::getInstance()`
+
+The default-options singleton is deprecated — it carries process-global state and is pinned to the LEGACY preset (permissive v2.x behavior). Instantiate explicitly, which also lets you pass a logger and custom options:
+
+```php
+// Before
+$parser = Parse::getInstance();
+
+// After
+$parser = new Parse();                        // default options
+$parser = new Parse(null, ParseOptions::rfc5322());  // configured
+```
+
+#### 3. `ParseOptions` pass-through getters
+
+Now that the state fields are `public readonly`, `getBannedChars()`, `getSeparators()`, `getUseWhitespaceAsSeparator()`, `getLengthLimits()`, and `getAllowedWhitespace()` just duplicate the properties and are deprecated — read the property instead. (`getMaxLocalPartLength()` etc. are **not** deprecated; they read into `$lengthLimits`.)
+
+```php
+$options->getBannedChars();   // →  $options->bannedChars
+$options->getLengthLimits();  // →  $options->lengthLimits
+```
+
+#### 4. `Parse::setOptions()`
+
+Deprecated — a parser's configuration should be fixed for the life of the instance (mutating it on a shared parser is a footgun). Pass options to the constructor instead:
+
+```php
+// Before
+$parser->setOptions(ParseOptions::rfc5322());
+// After
+$parser = new Parse(null, ParseOptions::rfc5322());
+```
+
+### Internal Changes (No Action Needed)
+
+These are implementation details behind `@internal` and do not affect callers: the `Parse::STATE_*` constants became a `ParserState` enum, and the internal `ParseContext` accumulator was modernized (camelCase fields, readonly input snapshot/config). They are listed only for completeness — if your code reached into these, it was relying on unsupported internals.
+
+### Minimum Requirements (Unchanged)
+
+PHP **8.1+**, with the `mbstring` and `intl` extensions.
+
 ## v3.2 → v3.3
 
 v3.3 is fully additive — no breaking changes, no behavior changes for existing callers. Everything listed here is opt-in.
@@ -167,9 +319,9 @@ Recommended: match on the `invalid` boolean, not error text. A typed `ParseError
 Each parsed address now includes a `domain_ascii` field. It is `null` unless `ParseOptions::$includeDomainAscii` is `true` (the default in the `rfc6531()` preset only). Existing code that reads other fields is unaffected.
 
 ```php
-$result = $parser->parse('user@bücher.de', false);
-$result['domain'];       // 'bücher.de'
-$result['domain_ascii']; // 'xn--bcher-kva.de' (when includeDomainAscii=true), else null
+$addr = $parser->parseSingle('user@bücher.de');
+$addr->domain;       // 'bücher.de'
+$addr->domainAscii;  // 'xn--bcher-kva.de' (when includeDomainAscii=true), else null
 ```
 
 #### New factory presets on `ParseOptions`

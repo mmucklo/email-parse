@@ -203,14 +203,14 @@ foreach ($addresses as $raw) {
 }
 ```
 
-Prefer explicit instantiation; `Parse::getInstance()` (a singleton with default options) exists for convenience and backward compatibility.
+Prefer explicit instantiation — `new Parse()`. `Parse::getInstance()` (a default-options singleton) is **deprecated** and will be removed in 5.0.
 
-## The legacy array API
+## The array shape
 
-`parse()` returns the original array shape — `parse($input, multiple: false)` for one address, `true` for many. Typed objects expose the same data via `->toArray()`.
+Need the original array shape rather than a value object? Call `->toArray()` on any `parseSingle()` / `parseMultiple()` result — it exposes the same fields. (The old array-returning `parse()` method is deprecated and will be removed in 5.0.)
 
 ```php
-$arr = (new Parse())->parse('john@example.com', false);
+$arr = (new Parse())->parseSingle('john@example.com')->toArray();
 $arr['local_part']; // 'john'
 $arr['domain'];     // 'example.com'
 $arr['invalid'];    // false

@@ -10,11 +10,12 @@ over per-state handlers, backed by a per-parse context object.
 
 | | |
 |---|---|
-| Entry point | `parse(string $emails, bool $multiple = true, string $encoding = 'UTF-8'): array` |
+| Entry points | `parseSingle()` → `ParsedEmailAddress`, `parseMultiple()` → `ParseResult`, `parseStream()` → `Generator` (plus the deprecated array-returning `parse()`) |
+| Core | All entry points funnel into the private `parseInternal(string $emails, bool $multiple, string $encoding): array` |
 | Model | Character-by-character state machine, 12 states |
-| `parse()` body | Setup + a `switch ($ctx->state)` dispatch loop (~193 lines) |
+| Core body | Setup + a `switch ($ctx->state)` dispatch loop (~185 lines) |
 | State handlers | 7 methods (one per switch arm) |
-| Working state | `ParseContext` — one object per `parse()` call, ~24 accumulator fields |
+| Working state | `ParseContext` — one object per parse, ~24 accumulator fields |
 | Reentrancy | A fresh context per call; nothing parse-specific is stored on the `Parse` instance |
 
 ## The dispatch loop
@@ -106,16 +107,17 @@ last kind is cleared between addresses in a batch:
 |---|---|---|
 | Input snapshot | Set once per parse, never reset | `chars[]`, `len`, `emails`, `multiple` |
 | Hoisted config | Set once per parse, never reset | `separators`, `bannedChars`, `allowedWhitespace`, `useWhitespaceAsSeparator` |
-| Per-address accumulator + loop control | Cleared by `resetAddress()` | `state`, `subState`, `commentNestLevel`, `original_address`, `local_part_parsed`, `domain`, `quote_temp`, `comments[]`, `in_angle_addr`, ... (~24 total) |
+| Per-address accumulator + loop control | Cleared by `resetAddress()` | `state`, `subState`, `commentNestLevel`, `originalAddress`, `localPartParsed`, `domain`, `quoteTemp`, `comments[]`, `inAngleAddr`, ... (~24 total) |
 
-The accumulator field names deliberately mirror the historical loop-local
-variable names so they thread through the validation helpers unchanged; the
-rename to the codebase's `camelCase` convention is a tracked follow-up (see
-[`ROADMAP.md`](ROADMAP.md)).
+The input snapshot and hoisted config are `public readonly` constructor-promoted
+properties, so a state handler cannot mutate configuration mid-parse; only the
+accumulator is writable. `state` and `subState` are typed as the `ParserState`
+backed enum (`src/ParserState.php`), which replaced the former `Parse::STATE_*`
+integer constants: the context can never hold an out-of-range state.
 
 ## Per-address reset
 
-`resetAddress(int $state, int $subState)` is the single source of truth for
+`resetAddress(ParserState $state, ParserState $subState)` is the single source of truth for
 clearing per-address state between addresses in a batch. It zeroes the
 accumulator *and* the three loop-control fields — `state`, `subState`, and
 `commentNestLevel`. Both call sites use it: the initial setup before the loop and

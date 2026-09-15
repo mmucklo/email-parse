@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Added
+- **Rector migration config** (`rector/upgrade-4.0.php`) that auto-fixes the mechanical 3.x → 4.0 call-site changes: `Parse::getInstance()` → `new Parse()`, `ParseOptions` pass-through getters → readonly-property reads, and the removed mutating setters → their `withX()` builders where the receiver is provably locally owned. Aliased receivers (parameters, `getOptions()` results, instances already passed to a parser) are left in place and annotated with a `TODO email-parse 4.0:` comment instead of being rewritten into a silently-diverging local reassignment. Opt-in (you run it and review the diff); see [UPGRADE.md](UPGRADE.md).
+
+### Changed
+- **`ParseOptions` state fields are now `public readonly`** — `bannedChars`, `separators`, `useWhitespaceAsSeparator`, `lengthLimits`, and `allowedWhitespace` are readable directly as properties (the pass-through `getX()` accessors still work but are deprecated, see below). Every `ParseOptions` property is now readonly; configure via the constructor or the `withX()` builders.
+- **BREAKING: `Parse` now implements `Psr\Log\LoggerAwareInterface`, and `Parse::setLogger()` returns `void`** (was fluent, returned `Parse`). Standard PSR-3 logger injection; frameworks can auto-inject. If you chained on `setLogger()` (`$parser->setLogger($l)->…`), split it into two statements.
+
+### Deprecated
+- **Every deprecated method now emits a runtime `E_USER_DEPRECATED` notice** (via the new `symfony/deprecation-contracts` dependency's `trigger_deprecation()`), so you see the deprecation *when you call the old API* — not just as a docblock. Tools like `symfony/phpunit-bridge` aggregate these into a report pointing at the exact call-sites, and the shipped Rector config (see Added) can then auto-fix most of them.
+- **`Parse::setOptions()`** — a parser's configuration should be immutable for the life of the instance; mutating it on a shared parser is a footgun. Pass options to the constructor (`new Parse($logger, $options)`) instead. Removed in 5.0.
+- **`Parse::parse()`** (the polymorphic `$multiple`-boolean, array-returning API) is deprecated. Use `parseSingle()` / `parseMultiple()` for typed value objects, or `parseStream()` for large batches; call `->toArray()` on a result if you need the legacy array shape. `parse()` keeps working as a thin shim over the typed core and will be removed in 5.0.
+- **`Parse::getInstance()`** — the default-options singleton is deprecated; use explicit instantiation (`new Parse($logger, $options)`), which also lets you pass custom options. Removed in 5.0.
+- **`ParseOptions` pass-through getters** — `getBannedChars()`, `getSeparators()`, `getUseWhitespaceAsSeparator()`, `getLengthLimits()`, and `getAllowedWhitespace()` are deprecated; read the corresponding `public readonly` property instead (e.g. `$options->bannedChars`). They now duplicate the promoted properties. Removed in 5.0. The `getMax*Length()` helpers are **not** deprecated — they read into `$lengthLimits`.
+
+### Removed
+- **BREAKING: the deprecated `ParseOptions` mutating setters** — `setBannedChars`, `setSeparators`, `setUseWhitespaceAsSeparator`, `setLengthLimits`, `setMaxLocalPartLength`, `setMaxTotalLength`, `setMaxDomainLabelLength` (deprecated since v3.0) are removed. Configure via the constructor or the `withX()` builders; the state fields are now `public readonly`.
+- **BREAKING: subclass overrides of `Parse::parse()` no longer affect `parseSingle()` / `parseMultiple()` / `parseStream()`.** The typed methods now call a private `parseInternal()` directly; the deprecated `parse()` is a shim beside them rather than the trunk they route through. Overriding the entry point was never a documented extension point; pre-process input before calling the parser, or wrap the typed result. See UPGRADE.md.
+- **BREAKING: `Parse::validateLocalPart()`** — the `@deprecated` (3.9) `array`-based method is removed; local-part validation is now a `private`, `ParseContext`-based method. **`Parse::validateDomainName()` is now `private`.** Both took the parser's internal accumulator and were never a supported extension point — customize validation via `ParseOptions`. Any subclass that overrode them must move to `ParseOptions`-based configuration.
+
 ## [3.9.0]
 
 Internal refactor of the `parse()` state machine into per-state handler methods backed by a new `ParseContext` object. Behavior-preserving and fully backward compatible — no public or protected signature changed and output is byte-identical. Adds the `ParseContext` type and deprecates `Parse::validateLocalPart()` (removed in 4.0). See [ARCHITECTURE.md](ARCHITECTURE.md).

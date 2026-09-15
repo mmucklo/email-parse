@@ -6,6 +6,8 @@ parameters:
     paths:
         - src
         - tests
+        - rector
     excludePaths:
+        - tests/fixtures
         - vendor
     reportUnmatchedIgnoredErrors: false

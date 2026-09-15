@@ -15,4 +15,16 @@
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+
+    <issueHandlers>
+        <!-- This is a library: public methods are its API, and Psalm cannot see
+             external callers, so findUnusedCode reports every public/BC method
+             with no internal caller (deprecated getters, the parse() shim, etc.)
+             as PossiblyUnusedMethod. Suppress it project-wide rather than
+             annotating each method; the other findUnusedCode checks stay on. -->
+        <PossiblyUnusedMethod errorLevel="suppress" />
+        <!-- The `#[\Override]` attribute is PHP 8.3+; this library targets 8.1+,
+             so we cannot annotate interface implementations (e.g. setLogger). -->
+        <MissingOverrideAttribute errorLevel="suppress" />
+    </issueHandlers>
 </psalm>

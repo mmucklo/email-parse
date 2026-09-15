@@ -78,7 +78,7 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
      */
     public function testParseSingleNeverThrows(): void
     {
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         for ($i = 0; $i < self::ITERATIONS; $i++) {
             $input = $this->randomString();
             $result = $parser->parseSingle($input);
@@ -91,7 +91,7 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
      */
     public function testParseMultipleNeverThrows(): void
     {
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         for ($i = 0; $i < self::ITERATIONS; $i++) {
             $result = $parser->parseMultiple($this->randomString());
             $this->assertIsBool($result->success);
@@ -118,7 +118,7 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
      */
     public function testInvalidImpliesBothReasonAndCode(): void
     {
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         for ($i = 0; $i < self::ITERATIONS; $i++) {
             $s = $this->randomString();
             $r = $parser->parseSingle($s);
@@ -137,7 +137,7 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
      */
     public function testInvalidAlwaysHasSeverity(): void
     {
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         for ($i = 0; $i < self::ITERATIONS; $i++) {
             $r = $parser->parseSingle($this->randomString());
             if ($r->invalid) {
@@ -153,7 +153,7 @@ class PropertyTest extends \PHPUnit\Framework\TestCase
      */
     public function testStringableContract(): void
     {
-        $parser = Parse::getInstance();
+        $parser = new Parse();
         for ($i = 0; $i < self::ITERATIONS; $i++) {
             $r = $parser->parseSingle($this->randomString());
             $expected = $r->invalid ? '' : $r->simpleAddress;
