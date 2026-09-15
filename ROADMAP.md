@@ -71,7 +71,7 @@ Continuous work, not tied to a specific release.
 - [x] Hot-path fix — per-character `mb_substr` (O(n²) for multi-byte encodings) replaced with a single `mb_str_split` pass and array indexing. ~10–27% faster across the suite.
 
 **Maintainability:**
-- [x] **`parse()` decomposition** (delivered; unreleased). The ~772-line state-machine loop is now a ~185-line dispatch loop over per-state handler methods, backed by a typed, per-parse `ParseContext` (a fresh instance per call keeps the parser reentrant). Behavior-preserving — same logic, conditions, ordering, and output. See [ARCHITECTURE.md](ARCHITECTURE.md). Follow-ups in the backlog below.
+- [x] **`parse()` decomposition** (shipped in 3.9.0). The ~772-line state-machine loop is now a ~185-line dispatch loop over per-state handler methods, backed by a typed, per-parse `ParseContext` (a fresh instance per call keeps the parser reentrant). Behavior-preserving — same logic, conditions, ordering, and output. See [ARCHITECTURE.md](ARCHITECTURE.md). Follow-ups in the backlog below.
 
 ## Strategic direction (North Star)
 
